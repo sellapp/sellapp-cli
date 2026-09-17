@@ -1,0 +1,1964 @@
+{
+  "version": 2,
+  "language": "cli",
+  "files": [
+    ".github/workflows/ci.yml",
+    "LICENSE.txt",
+    "README.md",
+    "cmd/sellapp/main.go",
+    "docs/agent-skill.md",
+    "docs/commands.md",
+    "docs/contributing.md",
+    "docs/payments.md",
+    "docs/resources/account.md",
+    "docs/resources/add-ons.md",
+    "docs/resources/affiliate-payouts.md",
+    "docs/resources/affiliate-program.md",
+    "docs/resources/affiliate-referral-sessions.md",
+    "docs/resources/affiliate-referrals.md",
+    "docs/resources/affiliates.md",
+    "docs/resources/blacklists.md",
+    "docs/resources/bookings.md",
+    "docs/resources/bundle-items.md",
+    "docs/resources/cashback-rules.md",
+    "docs/resources/charges.md",
+    "docs/resources/community-connections.md",
+    "docs/resources/coupons.md",
+    "docs/resources/courses.md",
+    "docs/resources/credits.md",
+    "docs/resources/customer-portal.md",
+    "docs/resources/customer-sessions.md",
+    "docs/resources/customers.md",
+    "docs/resources/disputes.md",
+    "docs/resources/entitlements.md",
+    "docs/resources/events.md",
+    "docs/resources/exports.md",
+    "docs/resources/feedback.md",
+    "docs/resources/groups.md",
+    "docs/resources/highlights.md",
+    "docs/resources/invoices.md",
+    "docs/resources/license-instances.md",
+    "docs/resources/licenses.md",
+    "docs/resources/line-items.md",
+    "docs/resources/oauth-management.md",
+    "docs/resources/oauth.md",
+    "docs/resources/orders.md",
+    "docs/resources/payment-methods.md",
+    "docs/resources/product-variants.md",
+    "docs/resources/products.md",
+    "docs/resources/promotions.md",
+    "docs/resources/refunds.md",
+    "docs/resources/reward-coupon-templates.md",
+    "docs/resources/reward-grants.md",
+    "docs/resources/reward-rules.md",
+    "docs/resources/sections.md",
+    "docs/resources/store.md",
+    "docs/resources/stores.md",
+    "docs/resources/subscriptions.md",
+    "docs/resources/tickets.md",
+    "docs/resources/upsell-offers.md",
+    "docs/resources/variant-deliverable-files.md",
+    "docs/resources/variant-deliverable-folders.md",
+    "docs/resources/variant-deliverables.md",
+    "docs/resources/variant-serials.md",
+    "docs/resources/wallet-bonus-tiers.md",
+    "docs/resources/wallet.md",
+    "docs/resources/webhook-channels.md",
+    "docs/resources/webhook-platform.md",
+    "docs/usage.md",
+    "examples/README.md",
+    "examples/dry-run-write.sh",
+    "examples/first-profile-store.sh",
+    "examples/first-read.sh",
+    "examples/mcp-readonly.sh",
+    "examples/pagination-jsonl.sh",
+    "examples/read-workflow.sh",
+    "examples/structured-error.sh",
+    "go.mod",
+    "go.sum",
+    "install.sh",
+    "internal/catalog/commands.json",
+    "internal/catalog/embedding.json",
+    "internal/cli/adapters.go",
+    "internal/cli/agent_assets.go",
+    "internal/cli/agent_safety_unix.go",
+    "internal/cli/agent_safety_windows.go",
+    "internal/cli/agent_setup.go",
+    "internal/cli/agent_setup_test.go",
+    "internal/cli/catalog.go",
+    "internal/cli/commerce.go",
+    "internal/cli/commerce_test.go",
+    "internal/cli/config.go",
+    "internal/cli/convenience_test.go",
+    "internal/cli/credential_storage.go",
+    "internal/cli/credential_storage_test.go",
+    "internal/cli/credential_unix.go",
+    "internal/cli/credential_windows.go",
+    "internal/cli/credential_windows_test.go",
+    "internal/cli/help.go",
+    "internal/cli/inputs.go",
+    "internal/cli/inputs_test.go",
+    "internal/cli/integration_workflows.go",
+    "internal/cli/integration_workflows_test.go",
+    "internal/cli/mcp_bridge.go",
+    "internal/cli/mcp_bridge_test.go",
+    "internal/cli/oauth.go",
+    "internal/cli/oauth_test.go",
+    "internal/cli/product_test.go",
+    "internal/cli/profiles.go",
+    "internal/cli/prompt_secret_unix.go",
+    "internal/cli/prompt_secret_windows.go",
+    "internal/cli/root.go",
+    "internal/cli/root_test.go",
+    "internal/cli/setup.go",
+    "internal/cli/setup_test.go",
+    "internal/cli/terminal_unix.go",
+    "internal/cli/terminal_windows.go",
+    "internal/cli/ux.go",
+    "internal/cli/vault_native.go",
+    "internal/cli/vault_native_darwin.go",
+    "internal/cli/vault_native_other.go",
+    "internal/cli/vault_native_test.go",
+    "internal/cli/vault_roundtrip_windows_test.go",
+    "internal/cli/version.go",
+    "internal/cli/workflow_guides.go",
+    "internal/cli/workflows.go",
+    "internal/sdk/account.go",
+    "internal/sdk/add_ons.go",
+    "internal/sdk/add_ons_parent_products.go",
+    "internal/sdk/affiliate_payouts.go",
+    "internal/sdk/affiliate_program.go",
+    "internal/sdk/affiliate_referral_sessions.go",
+    "internal/sdk/affiliate_referrals.go",
+    "internal/sdk/affiliates.go",
+    "internal/sdk/blacklists.go",
+    "internal/sdk/bookings.go",
+    "internal/sdk/bookings_calendar_events.go",
+    "internal/sdk/bundle_items.go",
+    "internal/sdk/cashback_rules.go",
+    "internal/sdk/charges.go",
+    "internal/sdk/cli_bridge.go",
+    "internal/sdk/community_connections.go",
+    "internal/sdk/coupons.go",
+    "internal/sdk/courses.go",
+    "internal/sdk/courses_lessons.go",
+    "internal/sdk/courses_sections.go",
+    "internal/sdk/credits.go",
+    "internal/sdk/credits_balances.go",
+    "internal/sdk/credits_balances_transactions.go",
+    "internal/sdk/credits_products.go",
+    "internal/sdk/customer_portal.go",
+    "internal/sdk/customer_sessions.go",
+    "internal/sdk/customers.go",
+    "internal/sdk/disputes.go",
+    "internal/sdk/entitlements.go",
+    "internal/sdk/enums.go",
+    "internal/sdk/errors.go",
+    "internal/sdk/events.go",
+    "internal/sdk/exports.go",
+    "internal/sdk/feedback.go",
+    "internal/sdk/groups.go",
+    "internal/sdk/groups_products.go",
+    "internal/sdk/highlights.go",
+    "internal/sdk/highlights_media.go",
+    "internal/sdk/invoices.go",
+    "internal/sdk/license_instances.go",
+    "internal/sdk/licenses.go",
+    "internal/sdk/licenses_instances.go",
+    "internal/sdk/line_items.go",
+    "internal/sdk/models.go",
+    "internal/sdk/oauth.go",
+    "internal/sdk/oauth_management.go",
+    "internal/sdk/options.go",
+    "internal/sdk/orders.go",
+    "internal/sdk/orders_line_items.go",
+    "internal/sdk/pagination.go",
+    "internal/sdk/payment_methods.go",
+    "internal/sdk/payment_methods_custom.go",
+    "internal/sdk/pkg/events/events.go",
+    "internal/sdk/product_variants.go",
+    "internal/sdk/product_variants_booking.go",
+    "internal/sdk/product_variants_pricing.go",
+    "internal/sdk/products.go",
+    "internal/sdk/products_addons.go",
+    "internal/sdk/promotions.go",
+    "internal/sdk/promotions_phases.go",
+    "internal/sdk/refunds.go",
+    "internal/sdk/reward_coupon_templates.go",
+    "internal/sdk/reward_grants.go",
+    "internal/sdk/reward_rules.go",
+    "internal/sdk/runtime.go",
+    "internal/sdk/sections.go",
+    "internal/sdk/sellapp.go",
+    "internal/sdk/store_custom_domains.go",
+    "internal/sdk/store_notification_channels.go",
+    "internal/sdk/store_settings.go",
+    "internal/sdk/subscriptions.go",
+    "internal/sdk/tickets.go",
+    "internal/sdk/tickets_messages.go",
+    "internal/sdk/upsell_offers.go",
+    "internal/sdk/variant_deliverable_files.go",
+    "internal/sdk/variant_deliverable_folders.go",
+    "internal/sdk/variant_deliverables.go",
+    "internal/sdk/variant_serials.go",
+    "internal/sdk/wallet.go",
+    "internal/sdk/wallet_bonus_tiers.go",
+    "internal/sdk/wallet_settings.go",
+    "internal/sdk/wallet_topups.go",
+    "internal/sdk/wallet_transactions.go",
+    "internal/sdk/webhook_channels.go",
+    "internal/sdk/webhook_platform.go",
+    "npm/launcher.cjs",
+    "npm/package.json",
+    "skills/sellapp/SKILL.md",
+    "skills/sellapp/references/checkout.md",
+    "skills/sellapp/references/connect-store.md",
+    "skills/sellapp/references/customer-support.md",
+    "skills/sellapp/references/exports.md",
+    "skills/sellapp/references/orders-fulfillment-refunds.md",
+    "skills/sellapp/references/product-variant.md",
+    "skills/sellapp/references/subscriptions.md",
+    "skills/sellapp/references/webhooks.md",
+    "tools/release/main.go",
+    "tools/release/main_test.go",
+    "tools/test-distribution.mjs"
+  ],
+  "operations": {
+    "GET /v2/charges": {
+      "sdkMethod": "List",
+      "service": "charges"
+    },
+    "POST /v2/charges": {
+      "sdkMethod": "Create",
+      "service": "charges"
+    },
+    "GET /v2/charges/{charge}": {
+      "sdkMethod": "Get",
+      "service": "charges"
+    },
+    "PUT /v2/charges/{charge_id}/completed": {
+      "sdkMethod": "MarkCompleted",
+      "service": "charges"
+    },
+    "PUT /v2/charges/{charge_id}/voided": {
+      "sdkMethod": "MarkVoided",
+      "service": "charges"
+    },
+    "GET /v2/groups": {
+      "sdkMethod": "List",
+      "service": "groups"
+    },
+    "POST /v2/groups": {
+      "sdkMethod": "Create",
+      "service": "groups"
+    },
+    "GET /v2/groups/{group}": {
+      "sdkMethod": "Get",
+      "service": "groups"
+    },
+    "PATCH /v2/groups/{group}": {
+      "sdkMethod": "Update",
+      "service": "groups"
+    },
+    "DELETE /v2/groups/{group}": {
+      "sdkMethod": "Delete",
+      "service": "groups"
+    },
+    "POST /v2/groups/{group}/products/attach": {
+      "sdkMethod": "Add",
+      "service": "groups_products"
+    },
+    "DELETE /v2/groups/{group}/products/detach": {
+      "sdkMethod": "Remove",
+      "service": "groups_products"
+    },
+    "GET /v2/groups/{group}/products": {
+      "sdkMethod": "List",
+      "service": "groups_products"
+    },
+    "PUT /v2/groups/{group}/products": {
+      "sdkMethod": "Replace",
+      "service": "groups_products"
+    },
+    "GET /v2/groups/{group}/products/{product}": {
+      "sdkMethod": "Get",
+      "service": "groups_products"
+    },
+    "POST /v2/groups/search": {
+      "sdkMethod": "Search",
+      "service": "groups"
+    },
+    "POST /v2/groups/{group}/products/search": {
+      "sdkMethod": "Search",
+      "service": "groups_products"
+    },
+    "GET /v2/invoices": {
+      "sdkMethod": "List",
+      "service": "invoices"
+    },
+    "POST /v2/invoices": {
+      "sdkMethod": "Create",
+      "service": "invoices"
+    },
+    "POST /v2/invoices/search": {
+      "sdkMethod": "Search",
+      "service": "invoices"
+    },
+    "GET /v2/invoices/{invoice}": {
+      "sdkMethod": "Get",
+      "service": "invoices"
+    },
+    "POST /v2/invoices/{invoice}/checkout": {
+      "sdkMethod": "GoToCheckout",
+      "service": "invoices"
+    },
+    "GET /v2/invoices/{invoice}/deliverables": {
+      "sdkMethod": "GetDeliverables",
+      "service": "invoices"
+    },
+    "PATCH /v2/invoices/{invoice}/mark-completed": {
+      "sdkMethod": "MarkCompleted",
+      "service": "invoices"
+    },
+    "PATCH /v2/invoices/{invoice}/mark-voided": {
+      "sdkMethod": "MarkVoided",
+      "service": "invoices"
+    },
+    "PATCH /v2/invoices/{invoice}/issue-replacement": {
+      "sdkMethod": "IssueReplacement",
+      "service": "invoices"
+    },
+    "PATCH /v2/invoices/{invoice}/status": {
+      "sdkMethod": "UpdateStatus",
+      "service": "invoices"
+    },
+    "POST /v2/invoices/{invoice}/refunds": {
+      "sdkMethod": "CreateRefund",
+      "service": "invoices"
+    },
+    "POST /v2/invoices/{invoice}/fulfillment-retries": {
+      "sdkMethod": "RetryFulfillment",
+      "service": "invoices"
+    },
+    "POST /v2/invoices/{invoice}/dynamic-delivery-retries": {
+      "sdkMethod": "RetryDynamicDelivery",
+      "service": "invoices"
+    },
+    "POST /v2/invoices/{invoice}/fulfillment-notifications": {
+      "sdkMethod": "NotifyFulfillment",
+      "service": "invoices"
+    },
+    "POST /v2/licenses/activate": {
+      "sdkMethod": "Activate",
+      "service": "licenses"
+    },
+    "POST /v2/licenses/validate": {
+      "sdkMethod": "Validate",
+      "service": "licenses"
+    },
+    "GET /v2/license-keys": {
+      "sdkMethod": "List",
+      "service": "licenses"
+    },
+    "GET /v2/license-keys/{license_key}": {
+      "sdkMethod": "Get",
+      "service": "licenses"
+    },
+    "PATCH /v2/license-keys/{license_key}": {
+      "sdkMethod": "Update",
+      "service": "licenses"
+    },
+    "POST /v2/licenses/deactivate": {
+      "sdkMethod": "Deactivate",
+      "service": "licenses"
+    },
+    "GET /v2/license-keys/{license_key}/instances": {
+      "sdkMethod": "List",
+      "service": "licenses_instances"
+    },
+    "GET /v2/license-keys/{license_key}/instances/{instance}": {
+      "sdkMethod": "Get",
+      "service": "licenses_instances"
+    },
+    "GET /v2/license-key-instances": {
+      "sdkMethod": "List",
+      "service": "license_instances"
+    },
+    "GET /v2/products": {
+      "sdkMethod": "List",
+      "service": "products"
+    },
+    "POST /v2/products": {
+      "sdkMethod": "Create",
+      "service": "products"
+    },
+    "GET /v2/products/{product}": {
+      "sdkMethod": "Get",
+      "service": "products"
+    },
+    "PUT /v2/products/{product}": {
+      "sdkMethod": "Replace",
+      "service": "products"
+    },
+    "PATCH /v2/products/{product}": {
+      "sdkMethod": "Update",
+      "service": "products"
+    },
+    "DELETE /v2/products/{product}": {
+      "sdkMethod": "Delete",
+      "service": "products"
+    },
+    "POST /v2/products/search": {
+      "sdkMethod": "Search",
+      "service": "products"
+    },
+    "POST /v2/products/batch": {
+      "sdkMethod": "BatchCreate",
+      "service": "products"
+    },
+    "PATCH /v2/products/batch": {
+      "sdkMethod": "BatchUpdate",
+      "service": "products"
+    },
+    "DELETE /v2/products/batch": {
+      "sdkMethod": "BatchDelete",
+      "service": "products"
+    },
+    "GET /v2/products/{product}/variants": {
+      "sdkMethod": "List",
+      "service": "product_variants"
+    },
+    "POST /v2/products/{product}/variants": {
+      "sdkMethod": "Create",
+      "service": "product_variants"
+    },
+    "GET /v2/products/{product}/variants/{variant}": {
+      "sdkMethod": "Get",
+      "service": "product_variants"
+    },
+    "PUT /v2/products/{product}/variants/{variant}": {
+      "sdkMethod": "Replace",
+      "service": "product_variants"
+    },
+    "PATCH /v2/products/{product}/variants/{variant}": {
+      "sdkMethod": "Update",
+      "service": "product_variants"
+    },
+    "DELETE /v2/products/{product}/variants/{variant}": {
+      "sdkMethod": "Delete",
+      "service": "product_variants"
+    },
+    "POST /v2/products/{product}/variants/search": {
+      "sdkMethod": "Search",
+      "service": "product_variants"
+    },
+    "PUT /v2/products/{product}/variants/{variant}/pricing": {
+      "sdkMethod": "Replace",
+      "service": "product_variants_pricing"
+    },
+    "PATCH /v2/products/{product}/variants/{variant}/pricing": {
+      "sdkMethod": "Update",
+      "service": "product_variants_pricing"
+    },
+    "GET /v2/products/{product}/variants/{variant}/booking/availability": {
+      "sdkMethod": "ListAvailability",
+      "service": "product_variants_booking"
+    },
+    "POST /v2/products/{product}/variants/{variant}/booking/holds": {
+      "sdkMethod": "CreateHold",
+      "service": "product_variants_booking"
+    },
+    "DELETE /v2/products/{product}/variants/booking/holds/{hold}": {
+      "sdkMethod": "ReleaseHold",
+      "service": "product_variants_booking"
+    },
+    "POST /v2/products/{product}/variants/batch": {
+      "sdkMethod": "BatchCreate",
+      "service": "product_variants"
+    },
+    "PATCH /v2/products/{product}/variants/batch": {
+      "sdkMethod": "BatchUpdate",
+      "service": "product_variants"
+    },
+    "DELETE /v2/products/{product}/variants/batch": {
+      "sdkMethod": "BatchDelete",
+      "service": "product_variants"
+    },
+    "PATCH /v2/subscriptions/{subscription}/cancel": {
+      "sdkMethod": "Cancel",
+      "service": "subscriptions"
+    },
+    "GET /v2/subscriptions/{productSubscription}/capabilities": {
+      "sdkMethod": "GetCapabilities",
+      "service": "subscriptions"
+    },
+    "POST /v2/subscriptions/{productSubscription}/actions/cancel-period-end": {
+      "sdkMethod": "CancelAtPeriodEnd",
+      "service": "subscriptions"
+    },
+    "POST /v2/subscriptions/{productSubscription}/actions/cancel-immediately": {
+      "sdkMethod": "CancelImmediately",
+      "service": "subscriptions"
+    },
+    "POST /v2/subscriptions/{productSubscription}/actions/pause": {
+      "sdkMethod": "Pause",
+      "service": "subscriptions"
+    },
+    "POST /v2/subscriptions/{productSubscription}/actions/resume": {
+      "sdkMethod": "Resume",
+      "service": "subscriptions"
+    },
+    "POST /v2/subscriptions/{productSubscription}/actions/update-payment-method": {
+      "sdkMethod": "UpdatePaymentMethod",
+      "service": "subscriptions"
+    },
+    "POST /v2/subscriptions/{productSubscription}/actions/change-plan/preview": {
+      "sdkMethod": "PreviewPlanChange",
+      "service": "subscriptions"
+    },
+    "POST /v2/subscriptions/{productSubscription}/actions/change-plan/confirm": {
+      "sdkMethod": "ConfirmPlanChange",
+      "service": "subscriptions"
+    },
+    "POST /v2/subscriptions/{productSubscription}/actions/change-renewal-date/preview": {
+      "sdkMethod": "PreviewRenewalDate",
+      "service": "subscriptions"
+    },
+    "POST /v2/subscriptions/{productSubscription}/actions/change-renewal-date/confirm": {
+      "sdkMethod": "ConfirmRenewalDate",
+      "service": "subscriptions"
+    },
+    "GET /v2/subscriptions": {
+      "sdkMethod": "List",
+      "service": "subscriptions"
+    },
+    "POST /v2/subscriptions/search": {
+      "sdkMethod": "Search",
+      "service": "subscriptions"
+    },
+    "GET /v2/subscriptions/{productSubscription}": {
+      "sdkMethod": "Get",
+      "service": "subscriptions"
+    },
+    "GET /v2/bookings": {
+      "sdkMethod": "List",
+      "service": "bookings"
+    },
+    "POST /v2/bookings/search": {
+      "sdkMethod": "Search",
+      "service": "bookings"
+    },
+    "GET /v2/bookings/{booking}": {
+      "sdkMethod": "Get",
+      "service": "bookings"
+    },
+    "PATCH /v2/bookings/{booking}": {
+      "sdkMethod": "Update",
+      "service": "bookings"
+    },
+    "PATCH /v2/bookings/{booking}/status": {
+      "sdkMethod": "Cancel",
+      "service": "bookings"
+    },
+    "GET /v2/products/{product}/variants/{variant}/booking": {
+      "sdkMethod": "Get",
+      "service": "product_variants_booking"
+    },
+    "PUT /v2/products/{product}/variants/{variant}/booking": {
+      "sdkMethod": "Replace",
+      "service": "product_variants_booking"
+    },
+    "PATCH /v2/products/{product}/variants/{variant}/booking": {
+      "sdkMethod": "Update",
+      "service": "product_variants_booking"
+    },
+    "GET /v2/booking-calendar-events": {
+      "sdkMethod": "List",
+      "service": "bookings_calendar_events"
+    },
+    "POST /v2/booking-calendar-events": {
+      "sdkMethod": "Set",
+      "service": "bookings_calendar_events"
+    },
+    "GET /v2/bundles/{bundle}/items/{item}": {
+      "sdkMethod": "Get",
+      "service": "bundle_items"
+    },
+    "GET /v2/bundles/{bundle}/items": {
+      "sdkMethod": "List",
+      "service": "bundle_items"
+    },
+    "POST /v2/bundles/{bundle}/items/attach": {
+      "sdkMethod": "Attach",
+      "service": "bundle_items"
+    },
+    "DELETE /v2/bundles/{bundle}/items/detach": {
+      "sdkMethod": "Detach",
+      "service": "bundle_items"
+    },
+    "GET /v2/promotions": {
+      "sdkMethod": "List",
+      "service": "promotions"
+    },
+    "POST /v2/promotions": {
+      "sdkMethod": "Create",
+      "service": "promotions"
+    },
+    "POST /v2/promotions/search": {
+      "sdkMethod": "Search",
+      "service": "promotions"
+    },
+    "GET /v2/promotions/{promotion}": {
+      "sdkMethod": "Get",
+      "service": "promotions"
+    },
+    "PUT /v2/promotions/{promotion}": {
+      "sdkMethod": "Replace",
+      "service": "promotions"
+    },
+    "PATCH /v2/promotions/{promotion}": {
+      "sdkMethod": "Update",
+      "service": "promotions"
+    },
+    "DELETE /v2/promotions/{promotion}": {
+      "sdkMethod": "Delete",
+      "service": "promotions"
+    },
+    "POST /v2/promotions/{promotion}/restore": {
+      "sdkMethod": "Restore",
+      "service": "promotions"
+    },
+    "GET /v2/promotions/{promotion}/phases": {
+      "sdkMethod": "List",
+      "service": "promotions_phases"
+    },
+    "PUT /v2/promotions/{promotion}/phases": {
+      "sdkMethod": "Replace",
+      "service": "promotions_phases"
+    },
+    "GET /v2/addons": {
+      "sdkMethod": "List",
+      "service": "add_ons"
+    },
+    "POST /v2/addons": {
+      "sdkMethod": "Create",
+      "service": "add_ons"
+    },
+    "POST /v2/addons/search": {
+      "sdkMethod": "Search",
+      "service": "add_ons"
+    },
+    "GET /v2/addons/{addon}": {
+      "sdkMethod": "Get",
+      "service": "add_ons"
+    },
+    "PUT /v2/addons/{addon}": {
+      "sdkMethod": "Replace",
+      "service": "add_ons"
+    },
+    "PATCH /v2/addons/{addon}": {
+      "sdkMethod": "Update",
+      "service": "add_ons"
+    },
+    "DELETE /v2/addons/{addon}": {
+      "sdkMethod": "Delete",
+      "service": "add_ons"
+    },
+    "GET /v2/addons/{addon}/parent-products": {
+      "sdkMethod": "List",
+      "service": "add_ons_parent_products"
+    },
+    "PUT /v2/addons/{addon}/parent-products": {
+      "sdkMethod": "Replace",
+      "service": "add_ons_parent_products"
+    },
+    "GET /v2/products/{product}/addons": {
+      "sdkMethod": "List",
+      "service": "products_addons"
+    },
+    "PUT /v2/products/{product}/addons": {
+      "sdkMethod": "Replace",
+      "service": "products_addons"
+    },
+    "GET /v2/highlights": {
+      "sdkMethod": "List",
+      "service": "highlights"
+    },
+    "POST /v2/highlights": {
+      "sdkMethod": "Create",
+      "service": "highlights"
+    },
+    "POST /v2/highlights/search": {
+      "sdkMethod": "Search",
+      "service": "highlights"
+    },
+    "PATCH /v2/highlights/reorder": {
+      "sdkMethod": "Reorder",
+      "service": "highlights"
+    },
+    "GET /v2/highlights/{highlight}": {
+      "sdkMethod": "Get",
+      "service": "highlights"
+    },
+    "PUT /v2/highlights/{highlight}": {
+      "sdkMethod": "Replace",
+      "service": "highlights"
+    },
+    "PATCH /v2/highlights/{highlight}": {
+      "sdkMethod": "Update",
+      "service": "highlights"
+    },
+    "DELETE /v2/highlights/{highlight}": {
+      "sdkMethod": "Delete",
+      "service": "highlights"
+    },
+    "GET /v2/highlights/{highlight}/media": {
+      "sdkMethod": "List",
+      "service": "highlights_media"
+    },
+    "POST /v2/highlights/{highlight}/media": {
+      "sdkMethod": "Add",
+      "service": "highlights_media"
+    },
+    "PATCH /v2/highlights/{highlight}/media/reorder": {
+      "sdkMethod": "Reorder",
+      "service": "highlights_media"
+    },
+    "POST /v2/highlights/{highlight}/media/{media}": {
+      "sdkMethod": "Replace",
+      "service": "highlights_media"
+    },
+    "PUT /v2/highlights/{highlight}/media/{media}": {
+      "sdkMethod": "ReplaceMetadata",
+      "service": "highlights_media"
+    },
+    "PATCH /v2/highlights/{highlight}/media/{media}": {
+      "sdkMethod": "Update",
+      "service": "highlights_media"
+    },
+    "DELETE /v2/highlights/{highlight}/media/{media}": {
+      "sdkMethod": "Delete",
+      "service": "highlights_media"
+    },
+    "GET /v2/webhook-channels": {
+      "sdkMethod": "List",
+      "service": "webhook_channels"
+    },
+    "POST /v2/webhook-channels": {
+      "sdkMethod": "Create",
+      "service": "webhook_channels"
+    },
+    "POST /v2/webhook-channels/search": {
+      "sdkMethod": "Search",
+      "service": "webhook_channels"
+    },
+    "PUT /v2/webhook-channels/signing-secret": {
+      "sdkMethod": "Rotate",
+      "service": "webhook_channels"
+    },
+    "GET /v2/webhook-channels/{webhookChannel}": {
+      "sdkMethod": "Get",
+      "service": "webhook_channels"
+    },
+    "PUT /v2/webhook-channels/{webhookChannel}": {
+      "sdkMethod": "Replace",
+      "service": "webhook_channels"
+    },
+    "PATCH /v2/webhook-channels/{webhookChannel}": {
+      "sdkMethod": "Update",
+      "service": "webhook_channels"
+    },
+    "DELETE /v2/webhook-channels/{webhookChannel}": {
+      "sdkMethod": "Delete",
+      "service": "webhook_channels"
+    },
+    "POST /v2/webhook-channels/{webhookChannel}/test": {
+      "sdkMethod": "Send",
+      "service": "webhook_channels"
+    },
+    "GET /v2/customers": {
+      "sdkMethod": "List",
+      "service": "customers"
+    },
+    "POST /v2/customers": {
+      "sdkMethod": "Create",
+      "service": "customers"
+    },
+    "POST /v2/customers/search": {
+      "sdkMethod": "Search",
+      "service": "customers"
+    },
+    "GET /v2/customers/{customer}": {
+      "sdkMethod": "Get",
+      "service": "customers"
+    },
+    "PATCH /v2/customers/{customer}": {
+      "sdkMethod": "Update",
+      "service": "customers"
+    },
+    "GET /v2/customers/external/{externalId}": {
+      "sdkMethod": "GetByExternalID",
+      "service": "customers"
+    },
+    "PUT /v2/customers/external/{externalId}": {
+      "sdkMethod": "UpsertByExternalID",
+      "service": "customers"
+    },
+    "PATCH /v2/customers/external/{externalId}": {
+      "sdkMethod": "UpdateByExternalID",
+      "service": "customers"
+    },
+    "GET /v2/orders": {
+      "sdkMethod": "List",
+      "service": "orders"
+    },
+    "POST /v2/orders": {
+      "sdkMethod": "Create",
+      "service": "orders"
+    },
+    "POST /v2/orders/search": {
+      "sdkMethod": "Search",
+      "service": "orders"
+    },
+    "GET /v2/orders/{order}": {
+      "sdkMethod": "Get",
+      "service": "orders"
+    },
+    "PATCH /v2/orders/{order}/status": {
+      "sdkMethod": "UpdateStatus",
+      "service": "orders"
+    },
+    "POST /v2/orders/{order}/checkout": {
+      "sdkMethod": "CreateCheckout",
+      "service": "orders"
+    },
+    "POST /v2/orders/{order}/replacements": {
+      "sdkMethod": "CreateReplacement",
+      "service": "orders"
+    },
+    "POST /v2/orders/{order}/refunds": {
+      "sdkMethod": "CreateRefund",
+      "service": "orders"
+    },
+    "POST /v2/orders/{order}/fulfillment-retries": {
+      "sdkMethod": "RetryFulfillment",
+      "service": "orders"
+    },
+    "POST /v2/orders/{order}/dynamic-delivery-retries": {
+      "sdkMethod": "RetryDynamicDelivery",
+      "service": "orders"
+    },
+    "POST /v2/orders/{order}/fulfillment-notifications": {
+      "sdkMethod": "SendFulfillmentNotifications",
+      "service": "orders"
+    },
+    "GET /v2/orders/{order}/deliverables": {
+      "sdkMethod": "ListDeliverables",
+      "service": "orders"
+    },
+    "POST /v2/orders/wallet": {
+      "sdkMethod": "CreateFromWallet",
+      "service": "orders"
+    },
+    "POST /v2/orders/{order}/wallet-payments": {
+      "sdkMethod": "PayFromWallet",
+      "service": "orders"
+    },
+    "GET /v2/line-items": {
+      "sdkMethod": "List",
+      "service": "line_items"
+    },
+    "POST /v2/line-items/search": {
+      "sdkMethod": "Search",
+      "service": "line_items"
+    },
+    "GET /v2/line-items/{lineItem}": {
+      "sdkMethod": "Get",
+      "service": "line_items"
+    },
+    "GET /v2/orders/{order}/line-items": {
+      "sdkMethod": "List",
+      "service": "orders_line_items"
+    },
+    "POST /v2/orders/{order}/line-items/search": {
+      "sdkMethod": "Search",
+      "service": "orders_line_items"
+    },
+    "GET /v2/orders/{order}/line-items/{lineItem}": {
+      "sdkMethod": "Get",
+      "service": "orders_line_items"
+    },
+    "GET /v2/products/{product}/variants/{variant}/deliverable": {
+      "sdkMethod": "Get",
+      "service": "variant_deliverables"
+    },
+    "PUT /v2/products/{product}/variants/{variant}/deliverable": {
+      "sdkMethod": "Replace",
+      "service": "variant_deliverables"
+    },
+    "GET /v2/products/{product}/variants/{variant}/deliverable/files": {
+      "sdkMethod": "List",
+      "service": "variant_deliverable_files"
+    },
+    "POST /v2/products/{product}/variants/{variant}/deliverable/files": {
+      "sdkMethod": "Upload",
+      "service": "variant_deliverable_files"
+    },
+    "GET /v2/products/{product}/variants/{variant}/deliverable/files/{file}": {
+      "sdkMethod": "Get",
+      "service": "variant_deliverable_files"
+    },
+    "PUT /v2/products/{product}/variants/{variant}/deliverable/files/{file}": {
+      "sdkMethod": "Replace",
+      "service": "variant_deliverable_files"
+    },
+    "PATCH /v2/products/{product}/variants/{variant}/deliverable/files/{file}": {
+      "sdkMethod": "Update",
+      "service": "variant_deliverable_files"
+    },
+    "DELETE /v2/products/{product}/variants/{variant}/deliverable/files/{file}": {
+      "sdkMethod": "Delete",
+      "service": "variant_deliverable_files"
+    },
+    "GET /v2/products/{product}/variants/{variant}/deliverable/folders": {
+      "sdkMethod": "List",
+      "service": "variant_deliverable_folders"
+    },
+    "POST /v2/products/{product}/variants/{variant}/deliverable/folders": {
+      "sdkMethod": "Create",
+      "service": "variant_deliverable_folders"
+    },
+    "GET /v2/products/{product}/variants/{variant}/deliverable/folders/{folder}": {
+      "sdkMethod": "Get",
+      "service": "variant_deliverable_folders"
+    },
+    "PUT /v2/products/{product}/variants/{variant}/deliverable/folders/{folder}": {
+      "sdkMethod": "Replace",
+      "service": "variant_deliverable_folders"
+    },
+    "PATCH /v2/products/{product}/variants/{variant}/deliverable/folders/{folder}": {
+      "sdkMethod": "Update",
+      "service": "variant_deliverable_folders"
+    },
+    "DELETE /v2/products/{product}/variants/{variant}/deliverable/folders/{folder}": {
+      "sdkMethod": "Delete",
+      "service": "variant_deliverable_folders"
+    },
+    "GET /v2/products/{product}/variants/{variant}/serials": {
+      "sdkMethod": "List",
+      "service": "variant_serials"
+    },
+    "POST /v2/products/{product}/variants/{variant}/serials": {
+      "sdkMethod": "Append",
+      "service": "variant_serials"
+    },
+    "PUT /v2/products/{product}/variants/{variant}/serials": {
+      "sdkMethod": "Replace",
+      "service": "variant_serials"
+    },
+    "POST /v2/products/{product}/variants/{variant}/serials/import": {
+      "sdkMethod": "Queue",
+      "service": "variant_serials"
+    },
+    "DELETE /v2/products/{product}/variants/{variant}/serials/{serial}": {
+      "sdkMethod": "Delete",
+      "service": "variant_serials"
+    },
+    "GET /v2/affiliate-program": {
+      "sdkMethod": "Get",
+      "service": "affiliate_program"
+    },
+    "PUT /v2/affiliate-program": {
+      "sdkMethod": "Replace",
+      "service": "affiliate_program"
+    },
+    "GET /v2/affiliate-invitations": {
+      "sdkMethod": "List",
+      "service": "affiliate_program"
+    },
+    "POST /v2/affiliate-invitations": {
+      "sdkMethod": "Invite",
+      "service": "affiliate_program"
+    },
+    "GET /v2/reward-rules": {
+      "sdkMethod": "List",
+      "service": "reward_rules"
+    },
+    "POST /v2/reward-rules": {
+      "sdkMethod": "Create",
+      "service": "reward_rules"
+    },
+    "POST /v2/reward-rules/search": {
+      "sdkMethod": "Search",
+      "service": "reward_rules"
+    },
+    "GET /v2/reward-rules/{rewardRule}": {
+      "sdkMethod": "Get",
+      "service": "reward_rules"
+    },
+    "PUT /v2/reward-rules/{rewardRule}": {
+      "sdkMethod": "Replace",
+      "service": "reward_rules"
+    },
+    "PATCH /v2/reward-rules/{rewardRule}": {
+      "sdkMethod": "Update",
+      "service": "reward_rules"
+    },
+    "GET /v2/reward-coupon-templates": {
+      "sdkMethod": "List",
+      "service": "reward_coupon_templates"
+    },
+    "POST /v2/reward-coupon-templates": {
+      "sdkMethod": "Create",
+      "service": "reward_coupon_templates"
+    },
+    "POST /v2/reward-coupon-templates/search": {
+      "sdkMethod": "Search",
+      "service": "reward_coupon_templates"
+    },
+    "GET /v2/reward-coupon-templates/{rewardCouponTemplate}": {
+      "sdkMethod": "Get",
+      "service": "reward_coupon_templates"
+    },
+    "PUT /v2/reward-coupon-templates/{rewardCouponTemplate}": {
+      "sdkMethod": "Replace",
+      "service": "reward_coupon_templates"
+    },
+    "PATCH /v2/reward-coupon-templates/{rewardCouponTemplate}": {
+      "sdkMethod": "Update",
+      "service": "reward_coupon_templates"
+    },
+    "GET /v2/reward-grants": {
+      "sdkMethod": "List",
+      "service": "reward_grants"
+    },
+    "POST /v2/reward-grants": {
+      "sdkMethod": "Issue",
+      "service": "reward_grants"
+    },
+    "POST /v2/reward-grants/search": {
+      "sdkMethod": "Search",
+      "service": "reward_grants"
+    },
+    "GET /v2/reward-grants/{rewardGrant}": {
+      "sdkMethod": "Get",
+      "service": "reward_grants"
+    },
+    "GET /v2/upsell-offers": {
+      "sdkMethod": "List",
+      "service": "upsell_offers"
+    },
+    "POST /v2/upsell-offers": {
+      "sdkMethod": "Create",
+      "service": "upsell_offers"
+    },
+    "POST /v2/upsell-offers/search": {
+      "sdkMethod": "Search",
+      "service": "upsell_offers"
+    },
+    "GET /v2/upsell-offers/{upsellOffer}": {
+      "sdkMethod": "Get",
+      "service": "upsell_offers"
+    },
+    "PUT /v2/upsell-offers/{upsellOffer}": {
+      "sdkMethod": "Replace",
+      "service": "upsell_offers"
+    },
+    "PATCH /v2/upsell-offers/{upsellOffer}": {
+      "sdkMethod": "Update",
+      "service": "upsell_offers"
+    },
+    "DELETE /v2/upsell-offers/{upsellOffer}": {
+      "sdkMethod": "Delete",
+      "service": "upsell_offers"
+    },
+    "GET /v2/community-connections": {
+      "sdkMethod": "List",
+      "service": "community_connections"
+    },
+    "POST /v2/community-connections/{platform}/connect": {
+      "sdkMethod": "Start",
+      "service": "community_connections"
+    },
+    "GET /v2/community-connections/{platform}/status": {
+      "sdkMethod": "Poll",
+      "service": "community_connections"
+    },
+    "POST /v2/community-connections/{platform}/complete": {
+      "sdkMethod": "Complete",
+      "service": "community_connections"
+    },
+    "POST /v2/community-connections/{platform}/verify": {
+      "sdkMethod": "Verify",
+      "service": "community_connections"
+    },
+    "DELETE /v2/community-connections/{platform}": {
+      "sdkMethod": "Disconnect",
+      "service": "community_connections"
+    },
+    "GET /v2/wallet/settings": {
+      "sdkMethod": "Get",
+      "service": "wallet_settings"
+    },
+    "PUT /v2/wallet/settings": {
+      "sdkMethod": "Replace",
+      "service": "wallet_settings"
+    },
+    "GET /v2/wallets": {
+      "sdkMethod": "List",
+      "service": "wallet"
+    },
+    "GET /v2/wallets/{customer}": {
+      "sdkMethod": "Get",
+      "service": "wallet"
+    },
+    "POST /v2/wallets/{customer}/adjustments": {
+      "sdkMethod": "Adjust",
+      "service": "wallet"
+    },
+    "PATCH /v2/wallets/{customer}/status": {
+      "sdkMethod": "UpdateStatus",
+      "service": "wallet"
+    },
+    "GET /v2/wallets/{customer}/transactions": {
+      "sdkMethod": "List",
+      "service": "wallet_transactions"
+    },
+    "POST /v2/wallets/{customer}/top-ups": {
+      "sdkMethod": "Create",
+      "service": "wallet_topups"
+    },
+    "GET /v2/cashback-rules": {
+      "sdkMethod": "List",
+      "service": "cashback_rules"
+    },
+    "POST /v2/cashback-rules": {
+      "sdkMethod": "Create",
+      "service": "cashback_rules"
+    },
+    "PUT /v2/cashback-rules/{cashbackRule}": {
+      "sdkMethod": "Replace",
+      "service": "cashback_rules"
+    },
+    "PATCH /v2/cashback-rules/{cashbackRule}": {
+      "sdkMethod": "Update",
+      "service": "cashback_rules"
+    },
+    "DELETE /v2/cashback-rules/{cashbackRule}": {
+      "sdkMethod": "Archive",
+      "service": "cashback_rules"
+    },
+    "POST /v2/cashback-rules/{cashbackRule}/restore": {
+      "sdkMethod": "Restore",
+      "service": "cashback_rules"
+    },
+    "GET /v2/wallet-bonus-tiers": {
+      "sdkMethod": "List",
+      "service": "wallet_bonus_tiers"
+    },
+    "POST /v2/wallet-bonus-tiers": {
+      "sdkMethod": "Create",
+      "service": "wallet_bonus_tiers"
+    },
+    "PUT /v2/wallet-bonus-tiers/{bonusTier}": {
+      "sdkMethod": "Replace",
+      "service": "wallet_bonus_tiers"
+    },
+    "PATCH /v2/wallet-bonus-tiers/{bonusTier}": {
+      "sdkMethod": "Update",
+      "service": "wallet_bonus_tiers"
+    },
+    "DELETE /v2/wallet-bonus-tiers/{bonusTier}": {
+      "sdkMethod": "Archive",
+      "service": "wallet_bonus_tiers"
+    },
+    "POST /v2/wallet-bonus-tiers/{bonusTier}/restore": {
+      "sdkMethod": "Restore",
+      "service": "wallet_bonus_tiers"
+    },
+    "GET /v2/courses": {
+      "sdkMethod": "List",
+      "service": "courses"
+    },
+    "POST /v2/courses/search": {
+      "sdkMethod": "Search",
+      "service": "courses"
+    },
+    "GET /v2/courses/{course}": {
+      "sdkMethod": "Get",
+      "service": "courses"
+    },
+    "PUT /v2/courses/{course}": {
+      "sdkMethod": "Replace",
+      "service": "courses"
+    },
+    "PATCH /v2/courses/{course}": {
+      "sdkMethod": "Update",
+      "service": "courses"
+    },
+    "POST /v2/courses/{course}/sections": {
+      "sdkMethod": "Create",
+      "service": "courses_sections"
+    },
+    "PUT /v2/courses/{course}/sections/{section}": {
+      "sdkMethod": "Replace",
+      "service": "courses_sections"
+    },
+    "PATCH /v2/courses/{course}/sections/{section}": {
+      "sdkMethod": "Update",
+      "service": "courses_sections"
+    },
+    "DELETE /v2/courses/{course}/sections/{section}": {
+      "sdkMethod": "Delete",
+      "service": "courses_sections"
+    },
+    "PATCH /v2/courses/{course}/sections/reorder": {
+      "sdkMethod": "Reorder",
+      "service": "courses_sections"
+    },
+    "POST /v2/courses/{course}/sections/{section}/lessons": {
+      "sdkMethod": "Create",
+      "service": "courses_lessons"
+    },
+    "PUT /v2/courses/{course}/lessons/{lesson}": {
+      "sdkMethod": "Replace",
+      "service": "courses_lessons"
+    },
+    "PATCH /v2/courses/{course}/lessons/{lesson}": {
+      "sdkMethod": "Update",
+      "service": "courses_lessons"
+    },
+    "DELETE /v2/courses/{course}/lessons/{lesson}": {
+      "sdkMethod": "Delete",
+      "service": "courses_lessons"
+    },
+    "PATCH /v2/courses/{course}/lessons/reorder": {
+      "sdkMethod": "Reorder",
+      "service": "courses_lessons"
+    },
+    "GET /v2/payment-methods": {
+      "sdkMethod": "List",
+      "service": "payment_methods"
+    },
+    "GET /v2/payment-methods/{paymentMethod}": {
+      "sdkMethod": "Get",
+      "service": "payment_methods"
+    },
+    "PATCH /v2/payment-methods/{paymentMethod}": {
+      "sdkMethod": "Enable",
+      "service": "payment_methods"
+    },
+    "POST /v2/payment-methods/{paymentMethod}/connect": {
+      "sdkMethod": "Connect",
+      "service": "payment_methods"
+    },
+    "PUT /v2/payment-methods/{paymentMethod}/configuration": {
+      "sdkMethod": "Validate",
+      "service": "payment_methods"
+    },
+    "GET /v2/payment-methods/custom": {
+      "sdkMethod": "List",
+      "service": "payment_methods_custom"
+    },
+    "POST /v2/payment-methods/custom": {
+      "sdkMethod": "Create",
+      "service": "payment_methods_custom"
+    },
+    "GET /v2/payment-methods/custom/{customPaymentMethod}": {
+      "sdkMethod": "Get",
+      "service": "payment_methods_custom"
+    },
+    "PUT /v2/payment-methods/custom/{customPaymentMethod}": {
+      "sdkMethod": "Replace",
+      "service": "payment_methods_custom"
+    },
+    "PATCH /v2/payment-methods/custom/{customPaymentMethod}": {
+      "sdkMethod": "Update",
+      "service": "payment_methods_custom"
+    },
+    "DELETE /v2/payment-methods/custom/{customPaymentMethod}": {
+      "sdkMethod": "Delete",
+      "service": "payment_methods_custom"
+    },
+    "GET /v2/store/settings": {
+      "sdkMethod": "Get",
+      "service": "store_settings"
+    },
+    "PUT /v2/store/settings/general": {
+      "sdkMethod": "ReplaceGeneral",
+      "service": "store_settings"
+    },
+    "PATCH /v2/store/settings/general": {
+      "sdkMethod": "UpdateGeneral",
+      "service": "store_settings"
+    },
+    "PUT /v2/store/settings/analytics": {
+      "sdkMethod": "ReplaceAnalytics",
+      "service": "store_settings"
+    },
+    "PATCH /v2/store/settings/analytics": {
+      "sdkMethod": "UpdateAnalytics",
+      "service": "store_settings"
+    },
+    "PUT /v2/store/settings/marketing": {
+      "sdkMethod": "ReplaceMarketing",
+      "service": "store_settings"
+    },
+    "PATCH /v2/store/settings/marketing": {
+      "sdkMethod": "UpdateMarketing",
+      "service": "store_settings"
+    },
+    "GET /v2/store/notification-channels": {
+      "sdkMethod": "List",
+      "service": "store_notification_channels"
+    },
+    "POST /v2/store/notification-channels": {
+      "sdkMethod": "Create",
+      "service": "store_notification_channels"
+    },
+    "GET /v2/store/notification-channels/{notificationChannel}": {
+      "sdkMethod": "Get",
+      "service": "store_notification_channels"
+    },
+    "PUT /v2/store/notification-channels/{notificationChannel}": {
+      "sdkMethod": "Replace",
+      "service": "store_notification_channels"
+    },
+    "PATCH /v2/store/notification-channels/{notificationChannel}": {
+      "sdkMethod": "Update",
+      "service": "store_notification_channels"
+    },
+    "DELETE /v2/store/notification-channels/{notificationChannel}": {
+      "sdkMethod": "Delete",
+      "service": "store_notification_channels"
+    },
+    "GET /v2/store/custom-domains": {
+      "sdkMethod": "List",
+      "service": "store_custom_domains"
+    },
+    "POST /v2/store/custom-domains": {
+      "sdkMethod": "Connect",
+      "service": "store_custom_domains"
+    },
+    "GET /v2/store/custom-domains/{customDomain}": {
+      "sdkMethod": "Get",
+      "service": "store_custom_domains"
+    },
+    "DELETE /v2/store/custom-domains/{customDomain}": {
+      "sdkMethod": "Disconnect",
+      "service": "store_custom_domains"
+    },
+    "POST /v2/store/custom-domains/{customDomain}/refresh": {
+      "sdkMethod": "Refresh",
+      "service": "store_custom_domains"
+    },
+    "GET /v2/credit-products": {
+      "sdkMethod": "List",
+      "service": "credits_products"
+    },
+    "POST /v2/credit-products": {
+      "sdkMethod": "Create",
+      "service": "credits_products"
+    },
+    "POST /v2/credit-products/search": {
+      "sdkMethod": "Search",
+      "service": "credits_products"
+    },
+    "GET /v2/credit-products/{creditProduct}": {
+      "sdkMethod": "Get",
+      "service": "credits_products"
+    },
+    "PUT /v2/credit-products/{creditProduct}": {
+      "sdkMethod": "Replace",
+      "service": "credits_products"
+    },
+    "PATCH /v2/credit-products/{creditProduct}": {
+      "sdkMethod": "Update",
+      "service": "credits_products"
+    },
+    "DELETE /v2/credit-products/{creditProduct}": {
+      "sdkMethod": "Delete",
+      "service": "credits_products"
+    },
+    "GET /v2/credit-balances": {
+      "sdkMethod": "List",
+      "service": "credits_balances"
+    },
+    "GET /v2/credit-balances/{customer}/{creditProduct}": {
+      "sdkMethod": "Get",
+      "service": "credits_balances"
+    },
+    "POST /v2/credit-transactions": {
+      "sdkMethod": "Record",
+      "service": "credits"
+    },
+    "GET /v2/credit-balances/{customer}/{creditProduct}/transactions": {
+      "sdkMethod": "List",
+      "service": "credits_balances_transactions"
+    },
+    "GET /v2/affiliates": {
+      "sdkMethod": "List",
+      "service": "affiliates"
+    },
+    "GET /v2/affiliates/{affiliate}": {
+      "sdkMethod": "Get",
+      "service": "affiliates"
+    },
+    "PATCH /v2/affiliates/{affiliate}/status": {
+      "sdkMethod": "Update",
+      "service": "affiliates"
+    },
+    "GET /v2/affiliate-referrals": {
+      "sdkMethod": "List",
+      "service": "affiliate_referrals"
+    },
+    "GET /v2/affiliate-referrals/{referral}": {
+      "sdkMethod": "Get",
+      "service": "affiliate_referrals"
+    },
+    "PATCH /v2/affiliate-referrals/{referral}/status": {
+      "sdkMethod": "Update",
+      "service": "affiliate_referrals"
+    },
+    "GET /v2/affiliate-referral-sessions": {
+      "sdkMethod": "List",
+      "service": "affiliate_referral_sessions"
+    },
+    "GET /v2/affiliate-referral-sessions/{referralSession}": {
+      "sdkMethod": "Get",
+      "service": "affiliate_referral_sessions"
+    },
+    "GET /v2/affiliate-payouts": {
+      "sdkMethod": "List",
+      "service": "affiliate_payouts"
+    },
+    "GET /v2/affiliate-payouts/{payout}": {
+      "sdkMethod": "Get",
+      "service": "affiliate_payouts"
+    },
+    "POST /v2/affiliates/{affiliate}/payouts": {
+      "sdkMethod": "Create",
+      "service": "affiliate_payouts"
+    },
+    "PATCH /v2/affiliate-payouts/{payout}/status": {
+      "sdkMethod": "Update",
+      "service": "affiliate_payouts"
+    },
+    "GET /v2/refunds": {
+      "sdkMethod": "List",
+      "service": "refunds"
+    },
+    "GET /v2/refunds/{refund}": {
+      "sdkMethod": "Get",
+      "service": "refunds"
+    },
+    "GET /v2/exports": {
+      "sdkMethod": "List",
+      "service": "exports"
+    },
+    "POST /v2/exports": {
+      "sdkMethod": "Create",
+      "service": "exports"
+    },
+    "GET /v2/exports/{export}": {
+      "sdkMethod": "Get",
+      "service": "exports"
+    },
+    "GET /v2/exports/{export}/download": {
+      "sdkMethod": "Download",
+      "service": "exports"
+    },
+    "GET /v2/disputes": {
+      "sdkMethod": "List",
+      "service": "disputes"
+    },
+    "GET /v2/disputes/{dispute}": {
+      "sdkMethod": "Get",
+      "service": "disputes"
+    },
+    "GET /v2/customers/{customer}/entitlements": {
+      "sdkMethod": "ListCustomerEntitlements",
+      "service": "entitlements"
+    },
+    "GET /v2/customers/external/{externalId}/entitlements": {
+      "sdkMethod": "ListCustomerEntitlementsByExternalID",
+      "service": "entitlements"
+    },
+    "POST /v2/customer-sessions": {
+      "sdkMethod": "Create",
+      "service": "customer_sessions"
+    },
+    "DELETE /v2/customer-sessions/{session}": {
+      "sdkMethod": "Revoke",
+      "service": "customer_sessions"
+    },
+    "GET /v2/customer-portal/me": {
+      "sdkMethod": "GetProfile",
+      "service": "customer_portal"
+    },
+    "PATCH /v2/customer-portal/me": {
+      "sdkMethod": "UpdateProfile",
+      "service": "customer_portal"
+    },
+    "GET /v2/customer-portal/orders": {
+      "sdkMethod": "ListOrders",
+      "service": "customer_portal"
+    },
+    "GET /v2/customer-portal/orders/{order}": {
+      "sdkMethod": "GetOrder",
+      "service": "customer_portal"
+    },
+    "GET /v2/customer-portal/subscriptions": {
+      "sdkMethod": "ListSubscriptions",
+      "service": "customer_portal"
+    },
+    "GET /v2/customer-portal/subscriptions/{subscription}": {
+      "sdkMethod": "GetSubscription",
+      "service": "customer_portal"
+    },
+    "GET /v2/customer-portal/subscriptions/{subscription}/capabilities": {
+      "sdkMethod": "GetSubscriptionCapabilities",
+      "service": "customer_portal"
+    },
+    "GET /v2/customer-portal/entitlements": {
+      "sdkMethod": "ListEntitlements",
+      "service": "customer_portal"
+    },
+    "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/cancel-period-end": {
+      "sdkMethod": "CancelSubscriptionAtPeriodEnd",
+      "service": "customer_portal"
+    },
+    "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/cancel-immediately": {
+      "sdkMethod": "CancelSubscriptionImmediately",
+      "service": "customer_portal"
+    },
+    "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/pause": {
+      "sdkMethod": "PauseSubscription",
+      "service": "customer_portal"
+    },
+    "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/resume": {
+      "sdkMethod": "ResumeSubscription",
+      "service": "customer_portal"
+    },
+    "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/update-payment-method": {
+      "sdkMethod": "UpdateSubscriptionPaymentMethod",
+      "service": "customer_portal"
+    },
+    "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/change-plan/preview": {
+      "sdkMethod": "PreviewSubscriptionPlanChange",
+      "service": "customer_portal"
+    },
+    "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/change-plan/confirm": {
+      "sdkMethod": "ConfirmSubscriptionPlanChange",
+      "service": "customer_portal"
+    },
+    "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/change-renewal-date/preview": {
+      "sdkMethod": "PreviewSubscriptionRenewalDateChange",
+      "service": "customer_portal"
+    },
+    "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/change-renewal-date/confirm": {
+      "sdkMethod": "ConfirmSubscriptionRenewalDateChange",
+      "service": "customer_portal"
+    },
+    "GET /v2/events": {
+      "sdkMethod": "ListIntegrationEvents",
+      "service": "events"
+    },
+    "GET /v2/orders/{order}/events": {
+      "sdkMethod": "ListOrderEvents",
+      "service": "events"
+    },
+    "GET /v2/webhook-event-types": {
+      "sdkMethod": "ListEventTypes",
+      "service": "webhook_platform"
+    },
+    "GET /v2/webhook-deliveries": {
+      "sdkMethod": "ListDeliveries",
+      "service": "webhook_platform"
+    },
+    "GET /v2/webhook-deliveries/{delivery}": {
+      "sdkMethod": "GetDelivery",
+      "service": "webhook_platform"
+    },
+    "POST /v2/webhook-deliveries/{delivery}/replay": {
+      "sdkMethod": "ReplayDelivery",
+      "service": "webhook_platform"
+    },
+    "GET /v2/me": {
+      "sdkMethod": "Get",
+      "service": "account"
+    },
+    "GET /v2/stores": {
+      "sdkMethod": "ListStores",
+      "service": "account"
+    },
+    "POST /v2/stores": {
+      "sdkMethod": "CreateStore",
+      "service": "account"
+    },
+    "GET /v2/stores/{store}": {
+      "sdkMethod": "GetStore",
+      "service": "account"
+    },
+    "GET /v2/permissions": {
+      "sdkMethod": "GetStorePermissions",
+      "service": "account"
+    },
+    "GET /v2/oauth/installation": {
+      "sdkMethod": "GetInstallation",
+      "service": "oauth_management"
+    },
+    "DELETE /v2/oauth/installation": {
+      "sdkMethod": "DeleteInstallation",
+      "service": "oauth_management"
+    },
+    "GET /v1/blacklists": {
+      "sdkMethod": "List",
+      "service": "blacklists"
+    },
+    "POST /v1/blacklists": {
+      "sdkMethod": "Create",
+      "service": "blacklists"
+    },
+    "GET /v1/blacklists/{blacklist}": {
+      "sdkMethod": "Get",
+      "service": "blacklists"
+    },
+    "PATCH /v1/blacklists/{blacklist}": {
+      "sdkMethod": "Update",
+      "service": "blacklists"
+    },
+    "DELETE /v1/blacklists/{blacklist}": {
+      "sdkMethod": "Delete",
+      "service": "blacklists"
+    },
+    "GET /v1/coupons": {
+      "sdkMethod": "List",
+      "service": "coupons"
+    },
+    "POST /v1/coupons": {
+      "sdkMethod": "Create",
+      "service": "coupons"
+    },
+    "GET /v1/coupons/{coupon}": {
+      "sdkMethod": "Get",
+      "service": "coupons"
+    },
+    "PUT /v1/coupons/{coupon}": {
+      "sdkMethod": "Replace",
+      "service": "coupons"
+    },
+    "PATCH /v1/coupons/{coupon}": {
+      "sdkMethod": "Update",
+      "service": "coupons"
+    },
+    "DELETE /v1/coupons/{coupon}": {
+      "sdkMethod": "Delete",
+      "service": "coupons"
+    },
+    "POST /v1/coupons/search": {
+      "sdkMethod": "Search",
+      "service": "coupons"
+    },
+    "POST /v1/coupons/batch": {
+      "sdkMethod": "BatchCreate",
+      "service": "coupons"
+    },
+    "PATCH /v1/coupons/batch": {
+      "sdkMethod": "BatchUpdate",
+      "service": "coupons"
+    },
+    "DELETE /v1/coupons/batch": {
+      "sdkMethod": "BatchDelete",
+      "service": "coupons"
+    },
+    "GET /v1/feedback": {
+      "sdkMethod": "List",
+      "service": "feedback"
+    },
+    "GET /v1/feedback/{feedback}": {
+      "sdkMethod": "Get",
+      "service": "feedback"
+    },
+    "PATCH /v1/feedback/{feedback}": {
+      "sdkMethod": "Reply",
+      "service": "feedback"
+    },
+    "POST /v1/feedback/search": {
+      "sdkMethod": "Search",
+      "service": "feedback"
+    },
+    "GET /v1/sections": {
+      "sdkMethod": "List",
+      "service": "sections"
+    },
+    "POST /v1/sections": {
+      "sdkMethod": "Create",
+      "service": "sections"
+    },
+    "GET /v1/sections/{section}": {
+      "sdkMethod": "Get",
+      "service": "sections"
+    },
+    "PUT /v1/sections/{section}": {
+      "sdkMethod": "Replace",
+      "service": "sections"
+    },
+    "PATCH /v1/sections/{section}": {
+      "sdkMethod": "Update",
+      "service": "sections"
+    },
+    "DELETE /v1/sections/{section}": {
+      "sdkMethod": "Delete",
+      "service": "sections"
+    },
+    "PUT /v1/sections/order": {
+      "sdkMethod": "ReplaceOrder",
+      "service": "sections"
+    },
+    "PUT /v1/sections/{section}/products": {
+      "sdkMethod": "ReplaceProducts",
+      "service": "sections"
+    },
+    "PUT /v1/sections/{section}/groups": {
+      "sdkMethod": "ReplaceGroups",
+      "service": "sections"
+    },
+    "POST /v1/sections/search": {
+      "sdkMethod": "Search",
+      "service": "sections"
+    },
+    "POST /v1/sections/batch": {
+      "sdkMethod": "BatchCreate",
+      "service": "sections"
+    },
+    "PATCH /v1/sections/batch": {
+      "sdkMethod": "BatchUpdate",
+      "service": "sections"
+    },
+    "DELETE /v1/sections/batch": {
+      "sdkMethod": "BatchDelete",
+      "service": "sections"
+    },
+    "GET /v1/tickets": {
+      "sdkMethod": "List",
+      "service": "tickets"
+    },
+    "GET /v1/tickets/{ticket}": {
+      "sdkMethod": "Get",
+      "service": "tickets"
+    },
+    "GET /v1/tickets/{ticket}/messages": {
+      "sdkMethod": "List",
+      "service": "tickets_messages"
+    },
+    "POST /v1/tickets/{ticket}/messages": {
+      "sdkMethod": "Reply",
+      "service": "tickets_messages"
+    },
+    "GET /v1/tickets/{ticket}/messages/{message}": {
+      "sdkMethod": "Get",
+      "service": "tickets_messages"
+    },
+    "POST /v1/tickets/search": {
+      "sdkMethod": "Search",
+      "service": "tickets"
+    },
+    "POST /v1/tickets/{ticket}/messages/search": {
+      "sdkMethod": "Search",
+      "service": "tickets_messages"
+    },
+    "GET /v2/blacklists": {
+      "sdkMethod": "V2ListBlacklists",
+      "service": "blacklists"
+    },
+    "POST /v2/blacklists": {
+      "sdkMethod": "V2CreateBlacklist",
+      "service": "blacklists"
+    },
+    "GET /v2/blacklists/{blacklist}": {
+      "sdkMethod": "V2GetBlacklist",
+      "service": "blacklists"
+    },
+    "PUT /v2/blacklists/{blacklist}": {
+      "sdkMethod": "V2ReplaceBlacklist",
+      "service": "blacklists"
+    },
+    "PATCH /v2/blacklists/{blacklist}": {
+      "sdkMethod": "V2UpdateBlacklist",
+      "service": "blacklists"
+    },
+    "DELETE /v2/blacklists/{blacklist}": {
+      "sdkMethod": "V2DeleteBlacklist",
+      "service": "blacklists"
+    },
+    "GET /v2/coupons": {
+      "sdkMethod": "V2ListCoupons",
+      "service": "coupons"
+    },
+    "POST /v2/coupons": {
+      "sdkMethod": "V2CreateCoupon",
+      "service": "coupons"
+    },
+    "POST /v2/coupons/search": {
+      "sdkMethod": "V2SearchCoupons",
+      "service": "coupons"
+    },
+    "GET /v2/coupons/{coupon}": {
+      "sdkMethod": "V2GetCoupon",
+      "service": "coupons"
+    },
+    "PUT /v2/coupons/{coupon}": {
+      "sdkMethod": "V2ReplaceCoupon",
+      "service": "coupons"
+    },
+    "PATCH /v2/coupons/{coupon}": {
+      "sdkMethod": "V2UpdateCoupon",
+      "service": "coupons"
+    },
+    "DELETE /v2/coupons/{coupon}": {
+      "sdkMethod": "V2DeleteCoupon",
+      "service": "coupons"
+    },
+    "POST /v2/coupons/batch": {
+      "sdkMethod": "V2BatchCreateCoupons",
+      "service": "coupons"
+    },
+    "PATCH /v2/coupons/batch": {
+      "sdkMethod": "V2BatchUpdateCoupons",
+      "service": "coupons"
+    },
+    "DELETE /v2/coupons/batch": {
+      "sdkMethod": "V2BatchDeleteCoupons",
+      "service": "coupons"
+    },
+    "GET /v2/feedback": {
+      "sdkMethod": "V2ListFeedback",
+      "service": "feedback"
+    },
+    "POST /v2/feedback/search": {
+      "sdkMethod": "V2SearchFeedback",
+      "service": "feedback"
+    },
+    "GET /v2/feedback/{feedback}": {
+      "sdkMethod": "V2GetFeedback",
+      "service": "feedback"
+    },
+    "PUT /v2/feedback/{feedback}": {
+      "sdkMethod": "V2ReplaceFeedback",
+      "service": "feedback"
+    },
+    "PATCH /v2/feedback/{feedback}": {
+      "sdkMethod": "V2ReplyToFeedback",
+      "service": "feedback"
+    },
+    "GET /v2/sections": {
+      "sdkMethod": "V2ListSections",
+      "service": "sections"
+    },
+    "POST /v2/sections": {
+      "sdkMethod": "V2CreateSection",
+      "service": "sections"
+    },
+    "POST /v2/sections/search": {
+      "sdkMethod": "V2SearchSections",
+      "service": "sections"
+    },
+    "GET /v2/sections/{section}": {
+      "sdkMethod": "V2GetSection",
+      "service": "sections"
+    },
+    "PUT /v2/sections/{section}": {
+      "sdkMethod": "V2ReplaceSection",
+      "service": "sections"
+    },
+    "PATCH /v2/sections/{section}": {
+      "sdkMethod": "V2UpdateSection",
+      "service": "sections"
+    },
+    "DELETE /v2/sections/{section}": {
+      "sdkMethod": "V2DeleteSection",
+      "service": "sections"
+    },
+    "POST /v2/sections/batch": {
+      "sdkMethod": "V2BatchCreateSections",
+      "service": "sections"
+    },
+    "PATCH /v2/sections/batch": {
+      "sdkMethod": "V2BatchUpdateSections",
+      "service": "sections"
+    },
+    "DELETE /v2/sections/batch": {
+      "sdkMethod": "V2BatchDeleteSections",
+      "service": "sections"
+    },
+    "PUT /v2/sections/order": {
+      "sdkMethod": "V2ReplaceSectionOrder",
+      "service": "sections"
+    },
+    "PUT /v2/sections/{section}/products": {
+      "sdkMethod": "V2ReplaceSectionProducts",
+      "service": "sections"
+    },
+    "PUT /v2/sections/{section}/groups": {
+      "sdkMethod": "V2ReplaceSectionGroups",
+      "service": "sections"
+    },
+    "GET /v2/tickets": {
+      "sdkMethod": "V2ListTickets",
+      "service": "tickets"
+    },
+    "POST /v2/tickets/search": {
+      "sdkMethod": "V2SearchTickets",
+      "service": "tickets"
+    },
+    "GET /v2/tickets/{ticket}": {
+      "sdkMethod": "V2GetTicket",
+      "service": "tickets"
+    },
+    "PATCH /v2/tickets/{ticket}": {
+      "sdkMethod": "Update",
+      "service": "tickets"
+    },
+    "GET /v2/tickets/{ticket}/messages": {
+      "sdkMethod": "V2ListTicketMessages",
+      "service": "tickets_messages"
+    },
+    "POST /v2/tickets/{ticket}/messages": {
+      "sdkMethod": "V2ReplyToTicket",
+      "service": "tickets_messages"
+    },
+    "POST /v2/tickets/{ticket}/messages/search": {
+      "sdkMethod": "V2SearchTicketMessages",
+      "service": "tickets_messages"
+    },
+    "GET /v2/tickets/{ticket}/messages/{message}": {
+      "sdkMethod": "V2GetTicketMessage",
+      "service": "tickets_messages"
+    },
+    "GET /.well-known/oauth-authorization-server": {
+      "sdkMethod": "GetAuthorizationServerMetadata",
+      "service": "oauth"
+    },
+    "GET /oauth/authorize": {
+      "sdkMethod": "GetAuthorizationRequest",
+      "service": "oauth"
+    },
+    "POST /oauth/authorize": {
+      "sdkMethod": "ApproveAuthorization",
+      "service": "oauth"
+    },
+    "DELETE /oauth/authorize": {
+      "sdkMethod": "DenyAuthorization",
+      "service": "oauth"
+    },
+    "POST /oauth/token": {
+      "sdkMethod": "ExchangeToken",
+      "service": "oauth"
+    },
+    "POST /oauth/revoke": {
+      "sdkMethod": "RevokeToken",
+      "service": "oauth"
+    }
+  }
+}

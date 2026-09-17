@@ -1,0 +1,1123 @@
+{
+  "schemaVersion": 1,
+  "language": "cli",
+  "repository": "sellapp/sellapp-cli",
+  "sourceSha": "0e11b4d1f1287af93e9572e35511e13f040c5ef6",
+  "specSha256": "02043ebfc36589e78743f00a0f4a2f3ac9ac14914b9cf2910f04fc34ad2d0924",
+  "runId": "0",
+  "runAttempt": "1",
+  "treeDigest": "83d5367cf8457834884b0b27bc3e8db3ad173b78384ea111fc010da8808efb6d",
+  "contentDigest": "a09927d1e9993b4646554e8532db50238b204e0483f855bbb861d268210b92e0",
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "mode": "100644",
+      "sha256": "36cc65c92ddf0f865d4d0a628acc53e515c3e55686b9ad2efcac07fee126653a"
+    },
+    {
+      "path": ".oagen-manifest.json",
+      "mode": "100644",
+      "sha256": "255868115a9e62abefa236ed29f5e264123221cc056ff1f54c6a6cbc424844c2"
+    },
+    {
+      "path": "LICENSE.txt",
+      "mode": "100644",
+      "sha256": "2f6bdbec7820959196caf5e619cb2b40788f98ec0973128aa1c17ea330d636e4"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "sha256": "bbec69c3a3e0519fe1682e756cc34d8a21de7767d6a561868dcdb025394c05ed"
+    },
+    {
+      "path": "cmd/sellapp/main.go",
+      "mode": "100644",
+      "sha256": "060d13dc277d6b82e0e5dfe2b2433fcf46ebf4874b76bea42322f3e85b171244"
+    },
+    {
+      "path": "docs/agent-skill.md",
+      "mode": "100644",
+      "sha256": "5171f2a55ba835e8ea63813c573267223aea3e5123254014714de366fce4f51e"
+    },
+    {
+      "path": "docs/commands.md",
+      "mode": "100644",
+      "sha256": "d7f5f36637ad3c6b1c8cf0ea3796b7d605727c4086f852a72537960533c87d0d"
+    },
+    {
+      "path": "docs/contributing.md",
+      "mode": "100644",
+      "sha256": "a941382351dec680807512ad587100f7c75cfabfcadf99651c5b15022ad33db5"
+    },
+    {
+      "path": "docs/payments.md",
+      "mode": "100644",
+      "sha256": "e11b69bf5d93d39faa9e55066d9b619fa6b1de19476d1e404012d4a19f48a342"
+    },
+    {
+      "path": "docs/resources/account.md",
+      "mode": "100644",
+      "sha256": "b424115e27b215a9368cb25ebc1dbd9a4735b39b725bbc7313bb0d2aea0f476c"
+    },
+    {
+      "path": "docs/resources/add-ons.md",
+      "mode": "100644",
+      "sha256": "9da2e097b7a503de529bacba4a337fd5cfeae945699748762fe6ea6bca9b178b"
+    },
+    {
+      "path": "docs/resources/affiliate-payouts.md",
+      "mode": "100644",
+      "sha256": "4604a4178604e9d2e99669628a35ec628cfe46b567f12c01cce9571459552e4c"
+    },
+    {
+      "path": "docs/resources/affiliate-program.md",
+      "mode": "100644",
+      "sha256": "579d1483f0e1c53e2ddddfd0570a29095380c0996e6083b861b7ee785b8fabff"
+    },
+    {
+      "path": "docs/resources/affiliate-referral-sessions.md",
+      "mode": "100644",
+      "sha256": "ef20553c0b01e5aac141eda83207297141b37bbfcd082d25ac604e20b6530913"
+    },
+    {
+      "path": "docs/resources/affiliate-referrals.md",
+      "mode": "100644",
+      "sha256": "a0610ad4e63a9b1742c37195b1305d2cd38ab21124ddaea0bb44f77a5e8fab1c"
+    },
+    {
+      "path": "docs/resources/affiliates.md",
+      "mode": "100644",
+      "sha256": "dc845922e5e1d51532fbbed7bab305f6af0fd4cefbc0a53e4aa3caf7190366d2"
+    },
+    {
+      "path": "docs/resources/blacklists.md",
+      "mode": "100644",
+      "sha256": "f7986649e3cfa21bce2865f59b485d1af9248b66ee0c185503d9ceaffc9c9cc4"
+    },
+    {
+      "path": "docs/resources/bookings.md",
+      "mode": "100644",
+      "sha256": "a7e073744aec888f296d336646dfba930603e63f70c25f3db8689383aa61db87"
+    },
+    {
+      "path": "docs/resources/bundle-items.md",
+      "mode": "100644",
+      "sha256": "0b9c1e04f6d6442830bb8fe78301ed834510f26cbe8a8c37f5df0c4b7fa07e02"
+    },
+    {
+      "path": "docs/resources/cashback-rules.md",
+      "mode": "100644",
+      "sha256": "dfca887c97f39ecd3741b6a64532bddeabc408838ad35a5fb776f61cc50f2d1a"
+    },
+    {
+      "path": "docs/resources/charges.md",
+      "mode": "100644",
+      "sha256": "93e0c4328b4f82760e7bc8cc6d3be680323114817e250e52ede355f1cc17b435"
+    },
+    {
+      "path": "docs/resources/community-connections.md",
+      "mode": "100644",
+      "sha256": "12a5b2e44d43e0e1e7d59a3b1f2791c42739ab3b6d74f748833f69acca9d1488"
+    },
+    {
+      "path": "docs/resources/coupons.md",
+      "mode": "100644",
+      "sha256": "0b6bc689655374e5c17b198e4093db44c799dc4d1692dfd8afcb70ace11b7c50"
+    },
+    {
+      "path": "docs/resources/courses.md",
+      "mode": "100644",
+      "sha256": "6de7e5e51641d35d1cdc199caafa805d75a7f2220608d6e72b50d287c0569822"
+    },
+    {
+      "path": "docs/resources/credits.md",
+      "mode": "100644",
+      "sha256": "1f2c8edc5978288afb8c94eb05acd60e26a0c9e16c5cbaf955c120baa57b69a9"
+    },
+    {
+      "path": "docs/resources/customer-portal.md",
+      "mode": "100644",
+      "sha256": "f44f7753ab9fde979e364503da7de2ee19a5ace9876c4e872e6d94a51d0b9090"
+    },
+    {
+      "path": "docs/resources/customer-sessions.md",
+      "mode": "100644",
+      "sha256": "9d54e9af4428155e0380224d0915608e8d1c1710e6f9b71a37001704c3da6f61"
+    },
+    {
+      "path": "docs/resources/customers.md",
+      "mode": "100644",
+      "sha256": "0cb5809b00262bae968c55e2cc26dc1e36cd26a3d81f2935130f5df63177f604"
+    },
+    {
+      "path": "docs/resources/disputes.md",
+      "mode": "100644",
+      "sha256": "f0bb35ba637759cf7b7660f5f866985960a967e6b87c1f2a88e80451516daf21"
+    },
+    {
+      "path": "docs/resources/entitlements.md",
+      "mode": "100644",
+      "sha256": "cb905a0ca120d353a8e9013ca3c6034a7bf0ee431f80a526868b9591a8665b10"
+    },
+    {
+      "path": "docs/resources/events.md",
+      "mode": "100644",
+      "sha256": "b39eb6823ed7f6b3062447af070404884e7c114a0f4cc3eca79ec3fb5cb47f31"
+    },
+    {
+      "path": "docs/resources/exports.md",
+      "mode": "100644",
+      "sha256": "7e9a9c934b14d9c4efedc8d3b10594087fa2e6c7269436250ae942f329494c2f"
+    },
+    {
+      "path": "docs/resources/feedback.md",
+      "mode": "100644",
+      "sha256": "5559259336eab7ac66b0f250e74ab3df82381a41d9ac7d7af714be68c9beeece"
+    },
+    {
+      "path": "docs/resources/groups.md",
+      "mode": "100644",
+      "sha256": "3dcf797cc5dae4ffb57b01cdc0d6b1f82eda93c24f31fbde47d7ed18c6d7e13e"
+    },
+    {
+      "path": "docs/resources/highlights.md",
+      "mode": "100644",
+      "sha256": "1eff72ce357fd9b9d7bd56118c197f77447b50a579227227a1d152cd0b20f271"
+    },
+    {
+      "path": "docs/resources/invoices.md",
+      "mode": "100644",
+      "sha256": "91a46e8bf6f50fb8dff94b2541dc86e96b4ab8316f1f68d11a28c309d1e0be9e"
+    },
+    {
+      "path": "docs/resources/license-instances.md",
+      "mode": "100644",
+      "sha256": "922cb2a15959691a3eed8e99adf3fa02d81eea16cd51dc1d69c25ab62c5c916d"
+    },
+    {
+      "path": "docs/resources/licenses.md",
+      "mode": "100644",
+      "sha256": "f8c9df2d1897c7dc84170505660b95180256853785ce1b5236e0d9edda238f14"
+    },
+    {
+      "path": "docs/resources/line-items.md",
+      "mode": "100644",
+      "sha256": "1086b9c7021649d0f9e6015628b2f25c69e802d1fd7e7d2f3eb2f0d561363624"
+    },
+    {
+      "path": "docs/resources/oauth-management.md",
+      "mode": "100644",
+      "sha256": "abecbd0e3f2374dfaf122da67e5e27353fb2b0f8adad20046c0de3f81a008e71"
+    },
+    {
+      "path": "docs/resources/oauth.md",
+      "mode": "100644",
+      "sha256": "ce7b25795d08c7f351e8aee17b50a3c9d872dab1f541ce1f91393d617e8ea60f"
+    },
+    {
+      "path": "docs/resources/orders.md",
+      "mode": "100644",
+      "sha256": "18536393a36c361c4fe51d457d955cde60903a80e75dc1c18904e6d77b04a9e6"
+    },
+    {
+      "path": "docs/resources/payment-methods.md",
+      "mode": "100644",
+      "sha256": "5ef8734c635a23932debdc1a74a12f6a39ed8201dfcb0f9382d985c3a4869a78"
+    },
+    {
+      "path": "docs/resources/product-variants.md",
+      "mode": "100644",
+      "sha256": "cae59828a888a10d15db662e69fba8044d2bbdad43d5dfe0e56d20d711830db6"
+    },
+    {
+      "path": "docs/resources/products.md",
+      "mode": "100644",
+      "sha256": "0d9cc858463ba1df4de0a7307b6ca88ccad96d1b6a0aae54ac595737f3752d4f"
+    },
+    {
+      "path": "docs/resources/promotions.md",
+      "mode": "100644",
+      "sha256": "727fe90fbc4f64ebdff2530727ab50c9443480381d1fabb9e81bb7f5ae7c2b41"
+    },
+    {
+      "path": "docs/resources/refunds.md",
+      "mode": "100644",
+      "sha256": "b36939907c255e319a9ccd8da505d152abdfb507d8385ce6b161276550adc4e2"
+    },
+    {
+      "path": "docs/resources/reward-coupon-templates.md",
+      "mode": "100644",
+      "sha256": "d7ef3b65493ae18c1055b361619eef7ba1e4469222ec172290a755038d84bcae"
+    },
+    {
+      "path": "docs/resources/reward-grants.md",
+      "mode": "100644",
+      "sha256": "2bb646a852252c3e224e391162e7d89016724908c57b8b226afc63eb14637b1e"
+    },
+    {
+      "path": "docs/resources/reward-rules.md",
+      "mode": "100644",
+      "sha256": "d47bbc9ef1cc3a4521993563c9c190fa6ddb6185ab11c1c315019cf852e5f129"
+    },
+    {
+      "path": "docs/resources/sections.md",
+      "mode": "100644",
+      "sha256": "756703614173f1f90030850279c0ebe5f2128f64c6e9acf5b5ed9a7fd544f852"
+    },
+    {
+      "path": "docs/resources/store.md",
+      "mode": "100644",
+      "sha256": "07aec15ce52dd854441c6be4835c8cce84d253a3c61fe014686380f6f244d994"
+    },
+    {
+      "path": "docs/resources/stores.md",
+      "mode": "100644",
+      "sha256": "031a373bb9ec3b3b5fd3b6ca781acca55b4a4752305cdd55c611e3b748748227"
+    },
+    {
+      "path": "docs/resources/subscriptions.md",
+      "mode": "100644",
+      "sha256": "f81da17f752a14d7a2bac5886c00422a9097f7a4e019bfb5c96f3c44d9de8d42"
+    },
+    {
+      "path": "docs/resources/tickets.md",
+      "mode": "100644",
+      "sha256": "51873ab89874b985d7dbdeb272bc0e9ad4013e85829db5e48904b1f5b6e95188"
+    },
+    {
+      "path": "docs/resources/upsell-offers.md",
+      "mode": "100644",
+      "sha256": "a39fe99fc91535d35ba4f1fee6104702a58843580ffe4e539b3d4d673c25b3c6"
+    },
+    {
+      "path": "docs/resources/variant-deliverable-files.md",
+      "mode": "100644",
+      "sha256": "3a0b60c34188bd89ac89dba8c5fd1c416d01a00f1aeb1958a4c523ca87cfe5ca"
+    },
+    {
+      "path": "docs/resources/variant-deliverable-folders.md",
+      "mode": "100644",
+      "sha256": "a6227099e4ab1a8d05948a89c077a45cb5acc92615617675b2da16859ff4ca61"
+    },
+    {
+      "path": "docs/resources/variant-deliverables.md",
+      "mode": "100644",
+      "sha256": "bc86c8068b3d66655f8ded3d301433e49a0038495b28751aa869f502138e885a"
+    },
+    {
+      "path": "docs/resources/variant-serials.md",
+      "mode": "100644",
+      "sha256": "63008ac4da88b3c2a09dcfd20919748e948037cdd136284b893e52a85e3953a7"
+    },
+    {
+      "path": "docs/resources/wallet-bonus-tiers.md",
+      "mode": "100644",
+      "sha256": "f0da5e712d6fdbc1d6f3f6551717be80bd682756c07c99078618b66d24db463d"
+    },
+    {
+      "path": "docs/resources/wallet.md",
+      "mode": "100644",
+      "sha256": "6126bb9facc1ef87af9c732a62bc3447c02df0b7f96f83ae129b6be49c250d8d"
+    },
+    {
+      "path": "docs/resources/webhook-channels.md",
+      "mode": "100644",
+      "sha256": "3db2f0a3a452551a836825a7418ce0d1370bfc44fd8645d25121eb8e04fa15eb"
+    },
+    {
+      "path": "docs/resources/webhook-platform.md",
+      "mode": "100644",
+      "sha256": "416d1b2c7afa80a9675c9e16764b9dc22d33bcba01f45726ba4759d4f8444632"
+    },
+    {
+      "path": "docs/usage.md",
+      "mode": "100644",
+      "sha256": "33a88c076c2e7c49c47009d5eebd5edd957d94108635e2ac54f60c5408968b90"
+    },
+    {
+      "path": "examples/README.md",
+      "mode": "100644",
+      "sha256": "0daf56e9f14f1a12a8f63ca238167486bec4b1809383d3df33fadc6b7ce9e49e"
+    },
+    {
+      "path": "examples/dry-run-write.sh",
+      "mode": "100644",
+      "sha256": "2d57c33e0adf1d848b704be0e58fec8cb6ff68fe5a3b38951fc53a654440cd77"
+    },
+    {
+      "path": "examples/first-profile-store.sh",
+      "mode": "100644",
+      "sha256": "b0bbb95e56e044e75cd67e1fd4b2e7b2249d2967b5aea94418b728b5c337baa9"
+    },
+    {
+      "path": "examples/first-read.sh",
+      "mode": "100644",
+      "sha256": "acfccbcc43478f2151c4132e2936fc28bfde783063758c162c2fc4d3044502ef"
+    },
+    {
+      "path": "examples/mcp-readonly.sh",
+      "mode": "100644",
+      "sha256": "39633cbd058a9e1103c7b170ee4643ec88798a2bf9e3ffc94c74593af8a15311"
+    },
+    {
+      "path": "examples/pagination-jsonl.sh",
+      "mode": "100644",
+      "sha256": "dc0a406104dd0661796944800573b774313a8b757bdc3427fa434d98b4bf0ae1"
+    },
+    {
+      "path": "examples/read-workflow.sh",
+      "mode": "100644",
+      "sha256": "41a13341351bcc9171cc443de56cc2994fbe86c8b1fcf73452d3317ea25ca653"
+    },
+    {
+      "path": "examples/structured-error.sh",
+      "mode": "100644",
+      "sha256": "cf8fcfd5bb97c62b017b4e53a53f20af73009a6b09fc641fb4d047c25ccfdc9e"
+    },
+    {
+      "path": "generation-manifest.json",
+      "mode": "100644",
+      "sha256": "86270ed76940117488915eefd2e73a099d501016178ab9295343458f42bca5b7"
+    },
+    {
+      "path": "go.mod",
+      "mode": "100644",
+      "sha256": "fb2c63f39a395a43fcff1270a8788313fffdd57794642d44c787ecc7d58b230d"
+    },
+    {
+      "path": "go.sum",
+      "mode": "100644",
+      "sha256": "c9b0274b14a80a963ed0416750bf43f94331541206bb5341c4840655001584aa"
+    },
+    {
+      "path": "install.sh",
+      "mode": "100644",
+      "sha256": "8a1e099c495d7e5c9924832b174aed57b1c806827dddf5767218baa3da14a48a"
+    },
+    {
+      "path": "internal/catalog/commands.json",
+      "mode": "100644",
+      "sha256": "54c9355a5b134d7d0869f2ffbf40291444224d0fff03e03a425e070eea4311bf"
+    },
+    {
+      "path": "internal/catalog/embedding.json",
+      "mode": "100644",
+      "sha256": "8fe9deae5457e2b255073e2f439ab220309e63a17e98003434521bf2eeb3e37d"
+    },
+    {
+      "path": "internal/cli/adapters.go",
+      "mode": "100644",
+      "sha256": "1528ac8c947691658b57f0e0244d082cf3c8b213fac012664bb5f9d355a23f9f"
+    },
+    {
+      "path": "internal/cli/agent_assets.go",
+      "mode": "100644",
+      "sha256": "c210acbafbb790f91bc487744ebdafcfecc08990c1b4cf09649c381277faadea"
+    },
+    {
+      "path": "internal/cli/agent_safety_unix.go",
+      "mode": "100644",
+      "sha256": "2014c72670a8b5f51e1720bda99cf54c55623d98d216b64a1afdd653f7580a04"
+    },
+    {
+      "path": "internal/cli/agent_safety_windows.go",
+      "mode": "100644",
+      "sha256": "ea19b762c1905128f376278e0bfe8eeef6d8eeddc126a150482becc713b76282"
+    },
+    {
+      "path": "internal/cli/agent_setup.go",
+      "mode": "100644",
+      "sha256": "89aab774bd1ffbaae6cc8b1a1811011cd5188c74b1bbe3568df517c7334cde36"
+    },
+    {
+      "path": "internal/cli/agent_setup_test.go",
+      "mode": "100644",
+      "sha256": "0de851a4b1f76808f6dd936a2d079b4618a8b1278f52f8ad5bde3416ee1c7904"
+    },
+    {
+      "path": "internal/cli/catalog.go",
+      "mode": "100644",
+      "sha256": "01bc6e99bce645a4bf6adb5f5ddbdab9d165c04d7b269bce6e7cdb252648f4de"
+    },
+    {
+      "path": "internal/cli/commerce.go",
+      "mode": "100644",
+      "sha256": "32e3e1f8ff19361c5c816ff79243f1e3919285c52647658bdd0f5413feb094f0"
+    },
+    {
+      "path": "internal/cli/commerce_test.go",
+      "mode": "100644",
+      "sha256": "3ba8ac8f07f55cd5e9ee39289bdf171129b9dc0e82799db3ab493aaf28bf87d4"
+    },
+    {
+      "path": "internal/cli/config.go",
+      "mode": "100644",
+      "sha256": "af0052facda662ff32e256b1fb49ef7b59c5b60861597b790cc00a8e9649aee4"
+    },
+    {
+      "path": "internal/cli/convenience_test.go",
+      "mode": "100644",
+      "sha256": "edbfe9d33a96f9207015f3330785d34796f799608d539c58a9a5afb11356e9f0"
+    },
+    {
+      "path": "internal/cli/credential_storage.go",
+      "mode": "100644",
+      "sha256": "ac7f58e00b3202780733940aca2f2e5b9260e5e2568d66cd703f435e549d0b7d"
+    },
+    {
+      "path": "internal/cli/credential_storage_test.go",
+      "mode": "100644",
+      "sha256": "e5e0a6e802c55c2174af222cf32f1bd55ac0845cc8913580daa4d1bacb7f41ee"
+    },
+    {
+      "path": "internal/cli/credential_unix.go",
+      "mode": "100644",
+      "sha256": "a8f00b9a885c0769a40b5091950ee0f253edc9649f1eca3c589368af627f24a5"
+    },
+    {
+      "path": "internal/cli/credential_windows.go",
+      "mode": "100644",
+      "sha256": "58d6f64e27aad4c3b8e586f57993af23677c93f3550d12718690832ce5307089"
+    },
+    {
+      "path": "internal/cli/credential_windows_test.go",
+      "mode": "100644",
+      "sha256": "a48db3f880111276978e4e61775133f1f3f629650ee6fd4d2c37e10ba68cc9fe"
+    },
+    {
+      "path": "internal/cli/help.go",
+      "mode": "100644",
+      "sha256": "20313e7017c2b887db464d9c8789c80dd8c7ef751ac0c9924715f3e27ba5136b"
+    },
+    {
+      "path": "internal/cli/inputs.go",
+      "mode": "100644",
+      "sha256": "9e9df7bbd309f863624372df548475194ae827462802bb0346e3b21a64b5dc83"
+    },
+    {
+      "path": "internal/cli/inputs_test.go",
+      "mode": "100644",
+      "sha256": "41f51298a1bf7c7cb5f0a9061e40b77341e73fe9a512481c3d55a5c1b02271e2"
+    },
+    {
+      "path": "internal/cli/integration_workflows.go",
+      "mode": "100644",
+      "sha256": "ad53386bbee1898bca00879413802f961785599d20cc61077fce2e03f303df83"
+    },
+    {
+      "path": "internal/cli/integration_workflows_test.go",
+      "mode": "100644",
+      "sha256": "0a7fa8e0d0e1bff1425e58fddf2297a7a81e8976d073daf3c37aeed112fa24f0"
+    },
+    {
+      "path": "internal/cli/mcp_bridge.go",
+      "mode": "100644",
+      "sha256": "51f6bed9eb47c05bf009642451e119b8a21fbc892410adba0606cdb89a92c4d6"
+    },
+    {
+      "path": "internal/cli/mcp_bridge_test.go",
+      "mode": "100644",
+      "sha256": "c5a5ea2ed532cfb79193b07626cc33cd427b01d4d81cf2c624f828c734490435"
+    },
+    {
+      "path": "internal/cli/oauth.go",
+      "mode": "100644",
+      "sha256": "180e9b2b70eec57747748e18e7e563026a5921929149859178bb665d41a51a92"
+    },
+    {
+      "path": "internal/cli/oauth_test.go",
+      "mode": "100644",
+      "sha256": "a0ebffddcab8af8174adba88967f1083b9d8dbcbbcf8fc5de1eb636f7508c0dc"
+    },
+    {
+      "path": "internal/cli/product_test.go",
+      "mode": "100644",
+      "sha256": "2c110206f626213a62819d2461e8603c98d4dbb71a8d387267d18493a355490d"
+    },
+    {
+      "path": "internal/cli/profiles.go",
+      "mode": "100644",
+      "sha256": "36021deab0a38148c0626a4201e8cac93da383579e560602780cce0fbe122d56"
+    },
+    {
+      "path": "internal/cli/prompt_secret_unix.go",
+      "mode": "100644",
+      "sha256": "54ea90a92194d089c730ff3863273e1935cb8a609ebef1953862d042d98a92cd"
+    },
+    {
+      "path": "internal/cli/prompt_secret_windows.go",
+      "mode": "100644",
+      "sha256": "5368bd0c07c99655bb358f0d9df7356270d176268a062e6d1e302d03da0fba80"
+    },
+    {
+      "path": "internal/cli/root.go",
+      "mode": "100644",
+      "sha256": "7e2205ff059e609f83a5bdff57013b133ef7b07c4734bee9c1795eb8b270d13d"
+    },
+    {
+      "path": "internal/cli/root_test.go",
+      "mode": "100644",
+      "sha256": "576144b11021da9107c2dafa4016282ea1df918322d53c63a092fff32637d9f2"
+    },
+    {
+      "path": "internal/cli/setup.go",
+      "mode": "100644",
+      "sha256": "2e56ef0ddbf8fb82df14dbce571d3baf877b735e83927d1beb8f510706c92341"
+    },
+    {
+      "path": "internal/cli/setup_test.go",
+      "mode": "100644",
+      "sha256": "d619fb67b749245c4932d24b5f5f54e8f1bdae94f3d4a4c75293f5a828df1bf9"
+    },
+    {
+      "path": "internal/cli/terminal_unix.go",
+      "mode": "100644",
+      "sha256": "4e8b848181e3711eaf982012b354ec74b2930063985a999f3ed1d9b2c9414fba"
+    },
+    {
+      "path": "internal/cli/terminal_windows.go",
+      "mode": "100644",
+      "sha256": "9e62c40f179e46f911ce808df2d41e99c0be070e7ba4e35112c41c2047ca24eb"
+    },
+    {
+      "path": "internal/cli/ux.go",
+      "mode": "100644",
+      "sha256": "b5c152fb8c0eda489c242fc9cc1a2f6eac50d7b0fbbc9ebb47695d2d2b23563c"
+    },
+    {
+      "path": "internal/cli/vault_native.go",
+      "mode": "100644",
+      "sha256": "dbc1474e35ee83628c29647ab60729705e902374841ae2dd3934b9bbc2de3810"
+    },
+    {
+      "path": "internal/cli/vault_native_darwin.go",
+      "mode": "100644",
+      "sha256": "0a368db87be885a2f03b52f4baa4623e96944d4074914b2dd9245faec342c942"
+    },
+    {
+      "path": "internal/cli/vault_native_other.go",
+      "mode": "100644",
+      "sha256": "199d6bda796657509071c3bdb94ef87119e8e4d221ec4e309974d70689f38cd1"
+    },
+    {
+      "path": "internal/cli/vault_native_test.go",
+      "mode": "100644",
+      "sha256": "8c8cab1984bccfaf70f632dd98865e301887d11f475242e706412e59b44703df"
+    },
+    {
+      "path": "internal/cli/vault_roundtrip_windows_test.go",
+      "mode": "100644",
+      "sha256": "5e24b89fd8c046379ab3d388862151856433f198f47bacea1279b52a70b0fba5"
+    },
+    {
+      "path": "internal/cli/version.go",
+      "mode": "100644",
+      "sha256": "00a6ce5a0cd78c37364322dc99e017a2dc0c81696571702029807ae1f3667094"
+    },
+    {
+      "path": "internal/cli/workflow_guides.go",
+      "mode": "100644",
+      "sha256": "78ffcb2a44403dde2d7f28d5b349bb570b0c25298c3bc08cca4b1f5ffacaca58"
+    },
+    {
+      "path": "internal/cli/workflows.go",
+      "mode": "100644",
+      "sha256": "2dfb5aa50b6295c991f6f8648808f64ffd9b7b3ab19b3eeca12da131c15cee3a"
+    },
+    {
+      "path": "internal/sdk/account.go",
+      "mode": "100644",
+      "sha256": "929390fa1356ff0d7ff1a671269bc3f00126f662a5331d111e7a200faf3046c3"
+    },
+    {
+      "path": "internal/sdk/add_ons.go",
+      "mode": "100644",
+      "sha256": "5ef5bc5bead235c5f535c8b9be18396d2e84ef6f5dc5938285648dfa87b38925"
+    },
+    {
+      "path": "internal/sdk/add_ons_parent_products.go",
+      "mode": "100644",
+      "sha256": "67dc866020d4b25aa0132990d52a6f47f0ee670b3f1ac67f60a2754b8da43e95"
+    },
+    {
+      "path": "internal/sdk/affiliate_payouts.go",
+      "mode": "100644",
+      "sha256": "16be9e3f7c18f4ac5c99481ddb8efc7472dabe1f5d15db3ac19078c80c754f77"
+    },
+    {
+      "path": "internal/sdk/affiliate_program.go",
+      "mode": "100644",
+      "sha256": "f38c2e3d890a0859a313572c15ca879f4b4f273f55156f2ca6da61a1415d7bae"
+    },
+    {
+      "path": "internal/sdk/affiliate_referral_sessions.go",
+      "mode": "100644",
+      "sha256": "2390bc21e9d1deec75737c315fd99d1a1830d1a932586569e4f4eaa58f26df21"
+    },
+    {
+      "path": "internal/sdk/affiliate_referrals.go",
+      "mode": "100644",
+      "sha256": "91b1d799aad4908c79943047254d701c0d02fee3ae7b3732a47a7835da098b28"
+    },
+    {
+      "path": "internal/sdk/affiliates.go",
+      "mode": "100644",
+      "sha256": "fda68c4eb5a1ff36b22aa996025bd12d807707165016121feb24b72e204591d8"
+    },
+    {
+      "path": "internal/sdk/blacklists.go",
+      "mode": "100644",
+      "sha256": "f010bad183d90abcaea5f9da27d041a2fa25d9181ac7ef0e95693915d60b3c5b"
+    },
+    {
+      "path": "internal/sdk/bookings.go",
+      "mode": "100644",
+      "sha256": "5d939635411d292532e331e8cbfea15158ab658e21b28858304f1b5445114489"
+    },
+    {
+      "path": "internal/sdk/bookings_calendar_events.go",
+      "mode": "100644",
+      "sha256": "73642d49af397c6b0a55cfa6660ecf5ff6fe528c6e538e41b22ab989fba5fb49"
+    },
+    {
+      "path": "internal/sdk/bundle_items.go",
+      "mode": "100644",
+      "sha256": "04bc42ad7e8e95b4292f8ded71af33bc517d72579145d2cc1b001d15f1aa3753"
+    },
+    {
+      "path": "internal/sdk/cashback_rules.go",
+      "mode": "100644",
+      "sha256": "14dfb236208866e4d48691210ec597a7c5dfd5cb0454c01d15a26fdbfadf40d4"
+    },
+    {
+      "path": "internal/sdk/charges.go",
+      "mode": "100644",
+      "sha256": "03c70f75dbd29372c87c30ae95160c262aedaebadf17a6181ade6759bcf9dcc8"
+    },
+    {
+      "path": "internal/sdk/cli_bridge.go",
+      "mode": "100644",
+      "sha256": "0a6ea5e5cf800510cceabbe5ca183532504edb5c800c958bdf44741aa67f8078"
+    },
+    {
+      "path": "internal/sdk/community_connections.go",
+      "mode": "100644",
+      "sha256": "35df88f372aeb7f28f6d37ba748a8824598bed146938aeb03d1ef927986ebee0"
+    },
+    {
+      "path": "internal/sdk/coupons.go",
+      "mode": "100644",
+      "sha256": "1e71f04c2459f19e44b255b7b6f4b6140e3224ba49845adfc710b3d536f7967b"
+    },
+    {
+      "path": "internal/sdk/courses.go",
+      "mode": "100644",
+      "sha256": "1dae647a61206fe647894744b4597eb24daecc997b1af83fc05ca0f97b7af540"
+    },
+    {
+      "path": "internal/sdk/courses_lessons.go",
+      "mode": "100644",
+      "sha256": "293af8c20739f3af9592e02c1affcde19fe6efe1123b3d05bb63c3e39809f9d0"
+    },
+    {
+      "path": "internal/sdk/courses_sections.go",
+      "mode": "100644",
+      "sha256": "57863331967394a5959b6aa765a5b9ccd54911271f4b7537a3a144f7e59f6551"
+    },
+    {
+      "path": "internal/sdk/credits.go",
+      "mode": "100644",
+      "sha256": "c63c3553353be74f1e53f455af2d7410683f5cc36cd57c0361efa0c6273b1142"
+    },
+    {
+      "path": "internal/sdk/credits_balances.go",
+      "mode": "100644",
+      "sha256": "2d2ed630b999048dcf7061d5d51fbbd48001ff3169bef7e0598ec2dcc98fb939"
+    },
+    {
+      "path": "internal/sdk/credits_balances_transactions.go",
+      "mode": "100644",
+      "sha256": "ecc1698375447f8f176e647ea5ad4e2b9386fd5cb89e690d4f0e9ef3ae202dc1"
+    },
+    {
+      "path": "internal/sdk/credits_products.go",
+      "mode": "100644",
+      "sha256": "41a88373fe83a21239f68bcd513927e56cac124d640da68226e427a44b8e55ae"
+    },
+    {
+      "path": "internal/sdk/customer_portal.go",
+      "mode": "100644",
+      "sha256": "0ad59f2e48e2594f3327c6147cbcdd517284f327725f7b5fc635792fa19cbb53"
+    },
+    {
+      "path": "internal/sdk/customer_sessions.go",
+      "mode": "100644",
+      "sha256": "9ad8491b17f79f5d8f52ca02490c8d3460b3d24aae3abdfd632cfd135937c660"
+    },
+    {
+      "path": "internal/sdk/customers.go",
+      "mode": "100644",
+      "sha256": "d2367629c70f1653b2e4a169a044e4d74310ce769a42c3069b7a74801a01bf10"
+    },
+    {
+      "path": "internal/sdk/disputes.go",
+      "mode": "100644",
+      "sha256": "a95449b8c232e436cd5bb2b2951a31634d6caab4396dcec0c3a9f80aa12f27fd"
+    },
+    {
+      "path": "internal/sdk/entitlements.go",
+      "mode": "100644",
+      "sha256": "da1f77508ddab9925614b6cc5574a0989dfaf0e5bebb103f276132da0a1372ba"
+    },
+    {
+      "path": "internal/sdk/enums.go",
+      "mode": "100644",
+      "sha256": "2bf0e7ba0b5311b41b529d2f78597bad25c4bacfd53161934972c6c6c630116a"
+    },
+    {
+      "path": "internal/sdk/errors.go",
+      "mode": "100644",
+      "sha256": "367cc23dc330bd962f16a5e338808ed7277d2c2d8a4524fad266137a0a4bf7aa"
+    },
+    {
+      "path": "internal/sdk/events.go",
+      "mode": "100644",
+      "sha256": "56ad5fbccd3dbf0a091c02134653bad69cef8d410a3b331fee7742227601810b"
+    },
+    {
+      "path": "internal/sdk/exports.go",
+      "mode": "100644",
+      "sha256": "7a36f8dc2662633ee63855b23a08d4bfe47aadbfbd349533788674ecfd514288"
+    },
+    {
+      "path": "internal/sdk/feedback.go",
+      "mode": "100644",
+      "sha256": "c51020222a2a86f819e344e00451dcb8016171aab214de5244adfed5b822b0f5"
+    },
+    {
+      "path": "internal/sdk/groups.go",
+      "mode": "100644",
+      "sha256": "293fcead6f62bd78b2f57994d24e80438597836178d1f8a084d500c9de88c396"
+    },
+    {
+      "path": "internal/sdk/groups_products.go",
+      "mode": "100644",
+      "sha256": "368e7c60a02d95ae9c9e4f7401c833b32ea22fd5480fe2e2f7dfa66293a99db1"
+    },
+    {
+      "path": "internal/sdk/highlights.go",
+      "mode": "100644",
+      "sha256": "2c1117d1d664ccbff6dc9023b67bd0ddd08ef2052422810a71e401d2280ee642"
+    },
+    {
+      "path": "internal/sdk/highlights_media.go",
+      "mode": "100644",
+      "sha256": "9af70de5a27c44186ca24bf08a41512018a33e40616dbec1ca7b68ce34b3c31a"
+    },
+    {
+      "path": "internal/sdk/invoices.go",
+      "mode": "100644",
+      "sha256": "3fee235ec73da3fa3bce4e96e6876bd473bd116c375b372c3cad00978c361f9d"
+    },
+    {
+      "path": "internal/sdk/license_instances.go",
+      "mode": "100644",
+      "sha256": "23fd1fd775248f0345a0faf0e89ce31d172f2992040df04867683fddc3e19016"
+    },
+    {
+      "path": "internal/sdk/licenses.go",
+      "mode": "100644",
+      "sha256": "1381f7766db03ad0629f24cb0340c881146df61487b36ccdec35407788e91501"
+    },
+    {
+      "path": "internal/sdk/licenses_instances.go",
+      "mode": "100644",
+      "sha256": "c1ba2f95e0ef1ec7572cd9933a58db70ba5045337856a2567d4e36351f570b0a"
+    },
+    {
+      "path": "internal/sdk/line_items.go",
+      "mode": "100644",
+      "sha256": "91b16a4cb82d4d03159c907e0915b2406b24323323008f79fbd872ea3facaa7a"
+    },
+    {
+      "path": "internal/sdk/models.go",
+      "mode": "100644",
+      "sha256": "c424cf49ead0b5e37f131f2879094f039129fb77d3b0f3cf605a64d70f7d9014"
+    },
+    {
+      "path": "internal/sdk/oauth.go",
+      "mode": "100644",
+      "sha256": "5e4db216d4c779ad3d992a136573880cfb990fb85c215f553792b7887724b43a"
+    },
+    {
+      "path": "internal/sdk/oauth_management.go",
+      "mode": "100644",
+      "sha256": "f1e654659e3b985c5aa24f4c0808eb5d037b8db1a02c23d156e5d5c95980e567"
+    },
+    {
+      "path": "internal/sdk/options.go",
+      "mode": "100644",
+      "sha256": "bcc4113c49fb471469110c471c68be2aa24809aff3d5b76d55e6b8ffea6deb9b"
+    },
+    {
+      "path": "internal/sdk/orders.go",
+      "mode": "100644",
+      "sha256": "2e9c558a6a646feb3a0e53a88a7e24b4e1fbf82912b06ad58ecc2cd32e29b0f2"
+    },
+    {
+      "path": "internal/sdk/orders_line_items.go",
+      "mode": "100644",
+      "sha256": "d89e955c869f59db3324977ab778c0ca3a9cbf350290f02b053c81f06bf21eea"
+    },
+    {
+      "path": "internal/sdk/pagination.go",
+      "mode": "100644",
+      "sha256": "e5c208eab9370b84fc9ddc2c0de7838792d4c1548fc6fb0341e9c4466e9b960c"
+    },
+    {
+      "path": "internal/sdk/payment_methods.go",
+      "mode": "100644",
+      "sha256": "eea9727756dc08e37224ac54c895b7c449b5cab0fb263c8b5196514c7493eae0"
+    },
+    {
+      "path": "internal/sdk/payment_methods_custom.go",
+      "mode": "100644",
+      "sha256": "e908ff13b0b1977f2f764d0dab7bcb7aeea8c51a0c79670fe5a8d37e6fbe6ebf"
+    },
+    {
+      "path": "internal/sdk/pkg/events/events.go",
+      "mode": "100644",
+      "sha256": "a19016b352946d183dc3d91f02dec0a1cc9f5fab11663dd426572036441b5cb3"
+    },
+    {
+      "path": "internal/sdk/product_variants.go",
+      "mode": "100644",
+      "sha256": "c38c6084405480259dce4f51343a05011bb25db86cd4c263f3354c35a8142e3c"
+    },
+    {
+      "path": "internal/sdk/product_variants_booking.go",
+      "mode": "100644",
+      "sha256": "49ad099ac03df52c23306509aadbb9494c5d4b376f9a3a6c43085d05e68348d8"
+    },
+    {
+      "path": "internal/sdk/product_variants_pricing.go",
+      "mode": "100644",
+      "sha256": "671ab65c592fbc8928b54007cde03258f1ffdbaf5fc453d15b870bfaa73e4465"
+    },
+    {
+      "path": "internal/sdk/products.go",
+      "mode": "100644",
+      "sha256": "4858d6d67f9c4adce1999f1368cc24002a93485c11028ca04da867514de89b02"
+    },
+    {
+      "path": "internal/sdk/products_addons.go",
+      "mode": "100644",
+      "sha256": "5450ab6c34b902b0d54c703fe5a9724ee792226fc2ccc6a46cf7fd2880dac709"
+    },
+    {
+      "path": "internal/sdk/promotions.go",
+      "mode": "100644",
+      "sha256": "69a44005b5672d0edae90f5d1f3704211f7e489ff1db6697681c6e145765461b"
+    },
+    {
+      "path": "internal/sdk/promotions_phases.go",
+      "mode": "100644",
+      "sha256": "cd19f73b8716bc9915b4ea1d2abcd35dd4e835d832e3749e9e957caa5c7ec70b"
+    },
+    {
+      "path": "internal/sdk/refunds.go",
+      "mode": "100644",
+      "sha256": "226b7be4682c5df454cebb16725970aee34d1858376085d3e236e2be64308ecb"
+    },
+    {
+      "path": "internal/sdk/reward_coupon_templates.go",
+      "mode": "100644",
+      "sha256": "70bbb1b164a19a49f7740826d204a399cc556d74fbdf54ab81f27307754a9dbc"
+    },
+    {
+      "path": "internal/sdk/reward_grants.go",
+      "mode": "100644",
+      "sha256": "46615ab089bdb68b337a424b17734607df4caef7ed08b4ecaef52461fc653895"
+    },
+    {
+      "path": "internal/sdk/reward_rules.go",
+      "mode": "100644",
+      "sha256": "3ee385561a4438a8700b9e580759660138c480783b1a9c15bb8e3757ba796a5c"
+    },
+    {
+      "path": "internal/sdk/runtime.go",
+      "mode": "100644",
+      "sha256": "f85dd4946ebeebce5be7ca31595b295ceac08d587a275510db4d24a81798020d"
+    },
+    {
+      "path": "internal/sdk/sections.go",
+      "mode": "100644",
+      "sha256": "1cc5397716bf2581b4ce8c42283e80dffb4240f0c43ba789d55f33507756f2ee"
+    },
+    {
+      "path": "internal/sdk/sellapp.go",
+      "mode": "100644",
+      "sha256": "3b253b04c33c91aaed175fe5c4f1a4f7f877f584bff6a902f59f72645a7bca16"
+    },
+    {
+      "path": "internal/sdk/store_custom_domains.go",
+      "mode": "100644",
+      "sha256": "b7a6a0f1cd6110fb86371518e5e96ef0bb96a47cf2ace963286367e68fdff51a"
+    },
+    {
+      "path": "internal/sdk/store_notification_channels.go",
+      "mode": "100644",
+      "sha256": "d6673a759c59d3938eb9abd44cf41e9190bed810d66dda0dd08743f44fb1602f"
+    },
+    {
+      "path": "internal/sdk/store_settings.go",
+      "mode": "100644",
+      "sha256": "c9ec54b28c50ccb1294c5776cb75cddb3b9e0076adb535767084b34cbc4fdf35"
+    },
+    {
+      "path": "internal/sdk/subscriptions.go",
+      "mode": "100644",
+      "sha256": "4da610ceec588a1379c436bd4e4cea63dc155f5095e1f7e56e917f0c39a40b35"
+    },
+    {
+      "path": "internal/sdk/tickets.go",
+      "mode": "100644",
+      "sha256": "daee74a2d3d2b8c16c3ea9886fab97356635106d3e2c1ea49e521ffa9f93cda3"
+    },
+    {
+      "path": "internal/sdk/tickets_messages.go",
+      "mode": "100644",
+      "sha256": "806adbdc93a34f82016c0aafd520060580bb54c13796b718a17bc07ef12fcd28"
+    },
+    {
+      "path": "internal/sdk/upsell_offers.go",
+      "mode": "100644",
+      "sha256": "2fb1a0c687e0da54fd533d4e738875fcb720dbd249d33d79dcda487e746cd6ba"
+    },
+    {
+      "path": "internal/sdk/variant_deliverable_files.go",
+      "mode": "100644",
+      "sha256": "659d4100ca181b3474f1635416eb8436137bb142a3fd6f43bfb95aaf5ea25dee"
+    },
+    {
+      "path": "internal/sdk/variant_deliverable_folders.go",
+      "mode": "100644",
+      "sha256": "709dc583b267f26f349671cbfab26051f9cf8c6db6696fc7bf2f7fb0a2bf79ef"
+    },
+    {
+      "path": "internal/sdk/variant_deliverables.go",
+      "mode": "100644",
+      "sha256": "babcebb62529636a508ea9916fea9c79347a5a32453e34452c32c314e1d5a7e5"
+    },
+    {
+      "path": "internal/sdk/variant_serials.go",
+      "mode": "100644",
+      "sha256": "3e287ef2728b589674bdc7eb9c8a9abc5adeb7552addde3fa8ac44bfd4c923c0"
+    },
+    {
+      "path": "internal/sdk/wallet.go",
+      "mode": "100644",
+      "sha256": "be6082d6c6a91999e9b245f26b94b0f125040b156e5284ea9aea6014d59f9378"
+    },
+    {
+      "path": "internal/sdk/wallet_bonus_tiers.go",
+      "mode": "100644",
+      "sha256": "640f3d343626b140613a04a2ca1900c2da3dcdb8e6ce00d3157422dfc186dbdc"
+    },
+    {
+      "path": "internal/sdk/wallet_settings.go",
+      "mode": "100644",
+      "sha256": "8b3de11655370bd463f278b26b0ec5e6cf1c1e8b22a5f4048383473e1a9b58ec"
+    },
+    {
+      "path": "internal/sdk/wallet_topups.go",
+      "mode": "100644",
+      "sha256": "a8cd51af2b5c06f6d2afeeaf68ec955b5efdbf080112e41f23691da2b23b96f2"
+    },
+    {
+      "path": "internal/sdk/wallet_transactions.go",
+      "mode": "100644",
+      "sha256": "0992f28fcd08c82caf005b9700859963041a9efb5ee8a9961a8bf4d568425d2e"
+    },
+    {
+      "path": "internal/sdk/webhook_channels.go",
+      "mode": "100644",
+      "sha256": "282e76daef3dc41d5c0bee1f89728b45e3d2ecbdc9ea15200a3e2b3047bd51ca"
+    },
+    {
+      "path": "internal/sdk/webhook_platform.go",
+      "mode": "100644",
+      "sha256": "3ac64368e7d374afdf57909b573380c5e22740f88f247cd788cd0a3a479973f9"
+    },
+    {
+      "path": "npm/launcher.cjs",
+      "mode": "100644",
+      "sha256": "d81cfb9bea8ea6eb133f0550cc1f212f3746fe39909d4ab8d86654604e93a6a2"
+    },
+    {
+      "path": "npm/package.json",
+      "mode": "100644",
+      "sha256": "fa6e1c75ce7ab983083cdd86ea0c444d8f937209108e54cf2dfb65c7f84e6ca3"
+    },
+    {
+      "path": "skills/sellapp/SKILL.md",
+      "mode": "100644",
+      "sha256": "07732e3591049fd97dbe7d1ee2608c824e488197dfa57f95d4f394d9e6ec0587"
+    },
+    {
+      "path": "skills/sellapp/references/checkout.md",
+      "mode": "100644",
+      "sha256": "4113a79231ccc07cdae8e6b9aa168017bf490f697889a05eca5232d4f77404eb"
+    },
+    {
+      "path": "skills/sellapp/references/connect-store.md",
+      "mode": "100644",
+      "sha256": "8c24393ee467621fcddf792fed9453686208ae324da71413de3dc48fa776b276"
+    },
+    {
+      "path": "skills/sellapp/references/customer-support.md",
+      "mode": "100644",
+      "sha256": "aa5cae3c3d86fab25c363bd9bb049b3bef5c8cdc287df8274e1970d82b3df9aa"
+    },
+    {
+      "path": "skills/sellapp/references/exports.md",
+      "mode": "100644",
+      "sha256": "148012c2327b3bc28193c8b47e7f92ebe3b3fe41d16d9be091a4246827014de9"
+    },
+    {
+      "path": "skills/sellapp/references/orders-fulfillment-refunds.md",
+      "mode": "100644",
+      "sha256": "59e759c05d7237046d6204191fd05703060ecc3919d87abbefddff83d81426c7"
+    },
+    {
+      "path": "skills/sellapp/references/product-variant.md",
+      "mode": "100644",
+      "sha256": "51c266131288fb6a6435107ae2404d35d130c07dd73b52eb8952b55b655e3096"
+    },
+    {
+      "path": "skills/sellapp/references/subscriptions.md",
+      "mode": "100644",
+      "sha256": "c9dd906e1bea9e213bfd561b90e9b2c90f01c18f17d7705fc1fc0d5a00901cfe"
+    },
+    {
+      "path": "skills/sellapp/references/webhooks.md",
+      "mode": "100644",
+      "sha256": "1ded07b3ebcd53fd42f531d4b78666e92804d56f988647684f116f252423c5c7"
+    },
+    {
+      "path": "tools/release/main.go",
+      "mode": "100644",
+      "sha256": "3bf68f155e3ae9bce6cb95ffd53df8e7d131b14b99eb53be69c8b3ef102d6bab"
+    },
+    {
+      "path": "tools/release/main_test.go",
+      "mode": "100644",
+      "sha256": "9089366fcdf04d22124d0ff279f58656d6fe205e3a64dbef89de98bede51f233"
+    },
+    {
+      "path": "tools/test-distribution.mjs",
+      "mode": "100644",
+      "sha256": "2944347e4a4f096012959423cccd1095e46b4394215e31b54abce8e18ca77e95"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@sellapp/cli",
+  "version": "0.1.0",
+  "description": "The official SellApp command line interface",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sellapp/sellapp-cli.git"
+  },
+  "homepage": "https://sell.app/docs",
+  "bin": {
+    "sellapp": "bin/sellapp.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "bin",
+    "skills",
+    "docs",
+    "examples",
+    "licenses",
+    "LICENSE.txt",
+    "README.md",
+    "build-info.json"
+  ],
+  "optionalDependencies": {
+    "@sellapp/cli-linux-x64": "0.1.0",
+    "@sellapp/cli-linux-arm64": "0.1.0",
+    "@sellapp/cli-darwin-x64": "0.1.0",
+    "@sellapp/cli-darwin-arm64": "0.1.0",
+    "@sellapp/cli-win32-x64": "0.1.0",
+    "@sellapp/cli-win32-arm64": "0.1.0"
+  }
+}
