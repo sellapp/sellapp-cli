@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -30,14 +31,59 @@ type bridgeToken struct {
 	Scope       string `json:"scope"`
 }
 type bridgeAuthorization struct {
-	mu        sync.Mutex
-	cfg       Config
-	profile   string
-	record    profileRecord
-	origin    string
-	token     string
-	expires   time.Time
-	transport http.RoundTripper
+	mu              sync.Mutex
+	cfg             Config
+	profile         string
+	record          profileRecord
+	origin          string
+	token           string
+	expires         time.Time
+	transport       http.RoundTripper
+	lastHTTPFailure *bridgeHTTPFailure
+}
+
+type bridgeHTTPFailure struct {
+	endpoint   string
+	status     int
+	retryAfter int
+}
+
+func bridgeResponseFailure(endpoint string, response *http.Response) *bridgeHTTPFailure {
+	if response == nil || response.StatusCode < 400 {
+		return nil
+	}
+	seconds, _ := strconv.Atoi(response.Header.Get("Retry-After"))
+	if seconds < 0 || seconds > 86400 {
+		seconds = 0
+	}
+	return &bridgeHTTPFailure{endpoint: endpoint, status: response.StatusCode, retryAfter: seconds}
+}
+func (failure *bridgeHTTPFailure) Error() string {
+	message := fmt.Sprintf("%s returned HTTP %d", failure.endpoint, failure.status)
+	switch failure.status {
+	case http.StatusTooManyRequests:
+		if failure.retryAfter > 0 {
+			return fmt.Sprintf("%s; wait %d seconds before reconnecting. Your saved login was retained", message, failure.retryAfter)
+		}
+		return message + "; wait before reconnecting. Your saved login was retained"
+	case http.StatusUnauthorized:
+		return message + "; the credential was rejected. Check sellapp auth status and reconnect with sellapp login if the grant was revoked"
+	case http.StatusForbidden:
+		return message + "; access was denied. Check current permissions and server configuration"
+	default:
+		return message + "; check server availability and CLI/server configuration"
+	}
+}
+func bridgeInitializationFailure(httpClient *http.Client) error {
+	if auth, ok := httpClient.Transport.(*bridgeAuthorization); ok {
+		auth.mu.Lock()
+		failure := auth.lastHTTPFailure
+		auth.mu.Unlock()
+		if failure != nil {
+			return fmt.Errorf("Hosted MCP initialization failed: %w", failure)
+		}
+	}
+	return errors.New("Hosted MCP initialization failed; check sellapp mcp doctor")
 }
 
 func newBridgeAuthorization(cfg *Config) (*bridgeAuthorization, error) {
@@ -111,14 +157,15 @@ func (auth *bridgeAuthorization) credential(ctx context.Context) (string, error)
 		return "", errors.New("MCP credential request failed; check the hosted connection")
 	}
 	defer response.Body.Close()
+	auth.lastHTTPFailure = bridgeResponseFailure("MCP credential endpoint", response)
 	raw, err := io.ReadAll(io.LimitReader(response.Body, (1<<20)+1))
 	if err != nil || len(raw) > 1<<20 {
 		return "", errors.New("invalid MCP credential response")
 	}
+	if auth.lastHTTPFailure != nil {
+		return "", auth.lastHTTPFailure
+	}
 	if response.StatusCode != http.StatusOK {
-		if response.StatusCode == 401 {
-			return "", errors.New("CLI connection expired, was revoked, or does not match the official registration; check sellapp auth status")
-		}
 		return "", fmt.Errorf("MCP credential endpoint returned HTTP %d; check server availability and CLI/server configuration", response.StatusCode)
 	}
 	var token bridgeToken
@@ -145,6 +192,9 @@ func (auth *bridgeAuthorization) RoundTrip(req *http.Request) (*http.Response, e
 	copy.Header.Del("X-STORE")
 	// A failed request is never replayed here. In particular, a write may already have run.
 	response, err := auth.transport.RoundTrip(copy)
+	auth.mu.Lock()
+	auth.lastHTTPFailure = bridgeResponseFailure("Hosted MCP endpoint", response)
+	auth.mu.Unlock()
 	if response != nil && response.StatusCode == http.StatusUnauthorized {
 		// A different CLI process may have refreshed the parent. Renew on the next
 		// request through the locked profile machinery, without replaying this call.
@@ -213,7 +263,7 @@ func runMCPBridge(ctx context.Context, local mcp.Connection, endpoint string, ht
 	})
 	upstream, err := client.Connect(ctx, &mcp.StreamableClientTransport{Endpoint: endpoint, HTTPClient: httpClient, MaxRetries: -1}, nil)
 	if err != nil {
-		return errors.New("Hosted MCP initialization failed; check sellapp mcp doctor")
+		return bridgeInitializationFailure(httpClient)
 	}
 	defer upstream.Close()
 	info := upstream.InitializeResult()

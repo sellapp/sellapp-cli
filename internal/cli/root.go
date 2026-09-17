@@ -175,24 +175,7 @@ func addDiscoveryCommands(root *cobra.Command, cfg *Config) {
 		}
 		return &UsageError{Message: "unknown command; use sellapp search " + args[0]}
 	}})
-	root.AddCommand(&cobra.Command{Use: "search TERM", Short: "Search command paths and operation IDs", Args: cobra.ExactArgs(1), RunE: func(_ *cobra.Command, args []string) error {
-		needle := strings.ToLower(args[0])
-		matches := []any{}
-		for _, entry := range CommandCatalog {
-			haystack := strings.ToLower(strings.Join(entry.Path, " ") + " " + entry.OperationID + " " + entry.Description)
-			if strings.Contains(haystack, needle) {
-				if cfg.Output == "json" || cfg.Output == "jsonl" {
-					matches = append(matches, entry)
-				} else {
-					fmt.Fprintln(cfg.Stdout, strings.Join(entry.Path, " "))
-				}
-			}
-		}
-		if cfg.Output == "json" || cfg.Output == "jsonl" {
-			return writeMetadataResult(cfg, matches)
-		}
-		return nil
-	}})
+	root.AddCommand(searchCommand(cfg))
 }
 
 func addCompletionCommand(root *cobra.Command) {

@@ -5,6 +5,7 @@ package cli
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/spf13/cobra"
 	"strings"
 )
@@ -211,13 +212,98 @@ func setupCommand(cfg *Config) *cobra.Command {
 	cmd.Flags().Bool("no-browser", false, "print the login URL instead of opening a browser")
 	return cmd
 }
+func commandIndexEntry(entry CatalogEntry) map[string]any {
+	command := strings.Join(entry.Path, " ")
+	return map[string]any{"command": command, "operation_id": entry.OperationID, "effect": entry.Effect, "target": entry.Target, "schema": "sellapp " + command + " --schema"}
+}
 func commandManifest(cfg *Config, full bool) error {
 	if full {
 		return writeMetadataResult(cfg, CommandCatalog)
 	}
 	rows := []any{}
 	for _, entry := range CommandCatalog {
-		rows = append(rows, map[string]any{"command": strings.Join(entry.Path, " "), "operation_id": entry.OperationID, "effect": entry.Effect, "target": entry.Target, "retry": entry.Retry, "authentication": entry.Authentication, "paginated": entry.Paginated, "idempotency_key": entry.IdempotencyKey, "idempotency_key_required": entry.IdempotencyKeyRequired, "schema": "sellapp " + strings.Join(entry.Path, " ") + " --schema"})
+		rows = append(rows, commandIndexEntry(entry))
 	}
 	return writeMetadataResult(cfg, rows)
+}
+func searchCommand(cfg *Config) *cobra.Command {
+	var limit, offset int
+	cmd := &cobra.Command{Use: "search TERM", Short: "Find command summaries; inspect a result with --schema", Args: cobra.ExactArgs(1), RunE: func(_ *cobra.Command, args []string) error {
+		needle := strings.ToLower(strings.TrimSpace(args[0]))
+		if needle == "" {
+			return &UsageError{Message: "Search needs a non-empty term, such as products or createStore."}
+		}
+		if limit < 1 || limit > 25 {
+			return &UsageError{Message: "--limit must be between 1 and 25."}
+		}
+		if offset < 0 {
+			return &UsageError{Message: "--offset cannot be negative."}
+		}
+		var ranked [4][]CatalogEntry
+		for _, entry := range CommandCatalog {
+			path := strings.ToLower(strings.Join(entry.Path, " "))
+			operation := strings.ToLower(entry.OperationID)
+			rank := -1
+			switch {
+			case path == needle || operation == needle:
+				rank = 0
+			case strings.HasPrefix(path, needle) || strings.HasPrefix(operation, needle):
+				rank = 1
+			case strings.Contains(path, needle) || strings.Contains(operation, needle):
+				rank = 2
+			case strings.Contains(strings.ToLower(entry.Description), needle):
+				rank = 3
+			}
+			if rank >= 0 {
+				ranked[rank] = append(ranked[rank], entry)
+			}
+		}
+		matches := []CatalogEntry{}
+		for _, group := range ranked {
+			matches = append(matches, group...)
+		}
+		start := offset
+		if start > len(matches) {
+			start = len(matches)
+		}
+		end := start + min(limit, len(matches)-start)
+		rows := []any{}
+		for _, entry := range matches[start:end] {
+			row := commandIndexEntry(entry)
+			summary := []rune(strings.TrimSpace(strings.Split(entry.Description, "\n")[0]))
+			if len(summary) > 160 {
+				summary = append(summary[:157], '.', '.', '.')
+			}
+			row["summary"] = string(summary)
+			rows = append(rows, row)
+		}
+		var next any
+		if end < len(matches) {
+			next = end
+		}
+		if cfg.Output == "table" {
+			if len(rows) == 0 {
+				_, err := fmt.Fprintln(cfg.Stdout, "No commands on this page. Try another term or a smaller --offset.")
+				return err
+			}
+			for _, value := range rows {
+				row := value.(map[string]any)
+				if _, err := fmt.Fprintf(cfg.Stdout, "%s  %s\n  Inspect: %s\n", row["command"], row["summary"], row["schema"]); err != nil {
+					return err
+				}
+			}
+			_, err := fmt.Fprintf(cfg.Stdout, "Showing %d-%d of %d matches.\n", start+1, end, len(matches))
+			if err != nil {
+				return err
+			}
+			if next != nil {
+				_, err = fmt.Fprintf(cfg.Stdout, "Next page: repeat this search with --limit %d --offset %d\n", limit, end)
+			}
+			return err
+		}
+		return writeMetadataResult(cfg, map[string]any{"query": strings.TrimSpace(args[0]), "results": rows, "total": len(matches), "limit": limit, "offset": offset, "next_offset": next})
+	}}
+	cmd.Flags().IntVar(&limit, "limit", 10, "maximum summaries per page (1-25)")
+	cmd.Flags().IntVar(&offset, "offset", 0, "number of ranked matches to skip")
+	return cmd
 }

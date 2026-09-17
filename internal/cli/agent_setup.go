@@ -198,27 +198,50 @@ func scopeDirectory(scope string) (string, error) {
 	}
 	return "", &UsageError{Message: "scope must be user or project"}
 }
+func skillDirectory(client, scope string) (string, error) {
+	base, err := scopeDirectory(scope)
+	if err != nil {
+		return "", err
+	}
+	directory := ".agents"
+	switch client {
+	case "codex":
+	case "claude-code":
+		directory = ".claude"
+		if scope == "user" {
+			if custom := os.Getenv("CLAUDE_CONFIG_DIR"); custom != "" {
+				return filepath.Join(custom, "skills", "sellapp"), nil
+			}
+		}
+	case "cursor":
+		directory = ".cursor"
+	default:
+		return "", &UsageError{Message: "--client must be codex, claude-code, or cursor"}
+	}
+	return filepath.Join(base, directory, "skills", "sellapp"), nil
+}
 func skillsCommand(cfg *Config) *cobra.Command {
 	root := &cobra.Command{Use: "skills", Short: "Install the bundled SellApp agent skill"}
 	var global, project, force bool
-	add := &cobra.Command{Use: "add", Args: cobra.NoArgs, Short: "Install under .agents/skills/sellapp", RunE: func(cmd *cobra.Command, _ []string) error {
+	var client string
+	add := &cobra.Command{Use: "add", Args: cobra.NoArgs, Short: "Install the skill in your agent client's skill directory", RunE: func(cmd *cobra.Command, _ []string) error {
 		scope, err := setupScope(cmd, cfg, global, project)
 		if err != nil {
 			return err
 		}
-		base, err := scopeDirectory(scope)
+		target, err := skillDirectory(client, scope)
 		if err != nil {
 			return err
 		}
-		target := filepath.Join(base, ".agents", "skills", "sellapp")
 		if cfg.DryRun {
-			return writeFormattedResult(cfg, map[string]any{"directory": target, "scope": scope, "saved": false, "contacted_network": false})
+			return writeFormattedResult(cfg, map[string]any{"client": client, "directory": target, "scope": scope, "saved": false, "contacted_network": false})
 		}
 		if err = installSkillTree(target, embeddedSkillFiles, force); err != nil {
 			return err
 		}
-		return writeFormattedResult(cfg, map[string]any{"directory": target, "scope": scope, "saved": true, "files": len(embeddedSkillFiles)})
+		return writeFormattedResult(cfg, map[string]any{"client": client, "directory": target, "scope": scope, "saved": true, "files": len(embeddedSkillFiles), "next": "Start a new agent session and select the sellapp skill. If it is missing, check that the client uses the reported directory and trusts the project."})
 	}}
+	add.Flags().StringVar(&client, "client", "codex", "codex (.agents), claude-code (.claude), or cursor (.cursor)")
 	add.Flags().BoolVar(&global, "global", false, "install for your user")
 	add.Flags().BoolVar(&project, "project", false, "install in the current directory")
 	add.Flags().BoolVar(&force, "force", false, "replace modified generated skill files")
@@ -247,13 +270,13 @@ func mcpSetupCommand(cfg *Config) *cobra.Command {
 			return err
 		}
 		if cfg.DryRun {
-			return writeFormattedResult(cfg, map[string]any{"client": client, "scope": scope, "command": executable, "args": []string{"mcp", "--no-interactive"}, "saved": false, "writes_enabled": false})
+			return writeFormattedResult(cfg, map[string]any{"client": client, "scope": scope, "command": executable, "args": []string{"mcp", "--no-interactive"}, "saved": false, "permission_source": "hosted", "write_policy": "current permissions and consequential confirmation"})
 		}
 		changed, err := registerLocalMCP(cmd.Context(), client, scope, executable)
 		if err != nil {
 			return err
 		}
-		return writeFormattedResult(cfg, map[string]any{"client": client, "scope": scope, "registered": true, "changed": changed, "writes_enabled": false, "next": "Restart the client, then run sellapp mcp doctor with the same --client and scope flags. Project settings may require the client's trust approval."})
+		return writeFormattedResult(cfg, map[string]any{"client": client, "scope": scope, "registered": true, "changed": changed, "permission_source": "hosted", "write_policy": "current permissions and consequential confirmation", "next": "Restart the client, then run sellapp mcp doctor with the same --client and scope flags. Project settings may require the client's trust approval."})
 	}}
 	cmd.Flags().StringVar(&client, "client", "", "codex, claude-code, or cursor")
 	cmd.Flags().BoolVar(&global, "global", false, "register for your user")
@@ -582,7 +605,7 @@ func checkMCPStartup(ctx context.Context, cfg *Config) (map[string]any, error) {
 	client := mcp.NewClient(&mcp.Implementation{Name: "sellapp-doctor", Version: cliVersion}, nil)
 	session, err := client.Connect(timeout, &mcp.StreamableClientTransport{Endpoint: auth.origin + "/mcp?tool_mode=compact", HTTPClient: &http.Client{Transport: auth, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}, MaxRetries: -1}, nil)
 	if err != nil {
-		return nil, errors.New("hosted MCP initialization failed; check the OAuth profile, network and matching server configuration")
+		return nil, bridgeInitializationFailure(&http.Client{Transport: auth})
 	}
 	defer session.Close()
 	connection, err := session.CallTool(timeout, &mcp.CallToolParams{Name: "sellapp_get_connection", Arguments: map[string]any{}})

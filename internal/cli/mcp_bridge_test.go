@@ -528,3 +528,106 @@ func TestBridgeModernHeadersCatalogArgumentsAndAppResources(t *testing.T) {
 		t.Fatal("discovery or call was repeated")
 	}
 }
+
+func TestBridgeStartupReportsHTTPFailuresWithoutCredentials(t *testing.T) {
+	for _, stage := range []string{"credential", "hosted"} {
+		for _, status := range []int{401, 429, 503} {
+			t.Run(fmt.Sprintf("%s-%d", stage, status), func(t *testing.T) {
+				credentialTestHome(t)
+				oldRead := credentialVaultRead
+				defer func() { credentialVaultRead = oldRead }()
+				credentialVaultRead = func(string) (string, error) {
+					raw, _ := json.Marshal(oauthPair{AccessToken: "secret-parent-access", RefreshToken: "secret-refresh", ExpiresAt: time.Now().Add(time.Hour)})
+					return string(raw), nil
+				}
+				var calls atomic.Int32
+				var origin string
+				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					calls.Add(1)
+					if stage == "hosted" && status == 401 && r.URL.Path == "/oauth/mcp-token" {
+						json.NewEncoder(w).Encode(map[string]any{"access_token": "secret-child", "token_type": "Bearer", "scope": "admin", "resource": origin + "/mcp", "expires_in": 300})
+						return
+					}
+					expected := "/mcp"
+					if stage == "credential" {
+						expected = "/oauth/mcp-token"
+					}
+					if r.URL.Path != expected {
+						t.Errorf("unexpected request to %s", r.URL.Path)
+					}
+					w.Header().Set("Retry-After", "17")
+					w.WriteHeader(status)
+					fmt.Fprint(w, "secret-parent-access secret-refresh secret-child Authorization: Bearer secret-response")
+				}))
+				defer server.Close()
+				origin = server.URL
+				doc, _ := loadProfiles()
+				doc.Active = "oauth"
+				doc.Profiles["oauth"] = profileRecord{Method: "oauth", Origin: server.URL, VaultEntry: "fixture-parent", ClientID: "official"}
+				if err := saveProfiles(doc); err != nil {
+					t.Fatal(err)
+				}
+				auth, err := newBridgeAuthorization(&Config{})
+				if err != nil {
+					t.Fatal(err)
+				}
+				if stage == "hosted" {
+					auth.token = "secret-child"
+					auth.expires = time.Now().Add(time.Minute)
+				}
+				client := &http.Client{Transport: auth}
+				ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+				defer cancel()
+				var diagnostics bytes.Buffer
+				err = runMCPBridge(ctx, bridgeFailedConnection{io.EOF}, server.URL+"/mcp", client, &diagnostics)
+				endpoint := "Hosted MCP endpoint"
+				if stage == "credential" {
+					endpoint = "MCP credential endpoint"
+				}
+				if err == nil || !strings.Contains(err.Error(), fmt.Sprintf("%s returned HTTP %d", endpoint, status)) {
+					t.Fatalf("lost startup status: %v", err)
+				}
+				if status == 429 && (!strings.Contains(err.Error(), "wait 17 seconds") || strings.Contains(err.Error(), "sellapp login")) {
+					t.Fatalf("incorrect throttling recovery: %v", err)
+				}
+				var failure *bridgeHTTPFailure
+				if !errors.As(err, &failure) || failure.status != status {
+					t.Fatalf("lost typed HTTP failure: %v", err)
+				}
+				if doctor := bridgeInitializationFailure(client); doctor.Error() != err.Error() {
+					t.Fatal("doctor lost the startup diagnostic")
+				}
+				for _, secret := range []string{"secret-parent-access", "secret-refresh", "secret-child", "secret-response", "Authorization:"} {
+					if strings.Contains(err.Error()+diagnostics.String(), secret) {
+						t.Fatal("startup diagnostic leaked sensitive data")
+					}
+				}
+				if calls.Load() < 1 || calls.Load() > 3 {
+					t.Fatalf("unbounded startup retries: %d", calls.Load())
+				}
+				saved, err := loadProfiles()
+				if err != nil || saved.Profiles["oauth"].VaultEntry != "fixture-parent" {
+					t.Fatal("failed startup modified the saved profile", err)
+				}
+			})
+		}
+	}
+}
+func TestBridgeStartupIgnoresUnsafeRetryHeadersAndRawTransportErrors(t *testing.T) {
+	for _, value := range []string{"secret-response", "-1", "86401", "9999999999999999999999999999999"} {
+		response := &http.Response{StatusCode: 429, Header: make(http.Header)}
+		response.Header.Set("Retry-After", value)
+		failure := bridgeResponseFailure("Hosted MCP endpoint", response)
+		if failure.retryAfter != 0 || strings.Contains(failure.Error(), value) {
+			t.Fatal("untrusted retry header reached diagnostics")
+		}
+	}
+	auth := &bridgeAuthorization{origin: "https://sell.app", token: "secret-child", expires: time.Now().Add(time.Minute), transport: bridgeRoundTripFunc(func(*http.Request) (*http.Response, error) { return nil, errors.New("secret-transport-error") })}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	var diagnostics bytes.Buffer
+	err := runMCPBridge(ctx, bridgeFailedConnection{io.EOF}, "https://sell.app/mcp", &http.Client{Transport: auth}, &diagnostics)
+	if err == nil || strings.Contains(err.Error()+diagnostics.String(), "secret-") {
+		t.Fatal("raw transport diagnostic was exposed", err)
+	}
+}

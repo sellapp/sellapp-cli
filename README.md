@@ -85,11 +85,17 @@ sellapp skills add --project
 sellapp skills add --global
 ```
 
+The default installs under `.agents/skills/sellapp`. Choose another client with
+`sellapp skills add --client claude-code --project` (`.claude/skills`) or
+`sellapp skills add --client cursor --project` (`.cursor/skills`). Use
+`--global` instead of `--project` for your user. Start a new agent session
+after installation and select the `sellapp` skill.
+
 The skill teaches command discovery, store selection, bounded reads, dry runs,
 and safe retries. Installation preserves local edits; use `--force` only when
 you intend to replace them. See [agent guidance](docs/agent-skill.md).
 
-Register the local MCP server with a supported client:
+Register the hosted MCP bridge with a supported client:
 
 ```sh
 sellapp mcp add --client codex --global
@@ -97,8 +103,10 @@ sellapp mcp doctor --client codex --global
 ```
 
 Claude Code and Cursor are also supported. Use `--help` for their scope choices.
-MCP exposes reads by default. Setup does not save tokens in client configuration
-or enable writes. Bare `sellapp mcp` starts the stdio server.
+The bridge uses your saved CLI login without another browser consent. Hosted
+permissions apply to reads and writes; consequential actions require confirmation.
+Registration does not save tokens in client configuration. Bare `sellapp mcp`
+starts the stdio bridge.
 
 ## Preview the next change
 
@@ -158,6 +166,11 @@ With Go 1.25 or newer, run `go mod download` and
 `go build -o sellapp ./cmd/sellapp` in the source checkout. Use `-o sellapp.exe`
 on Windows. Add that executable to your PATH or use `./sellapp`.
 
+A plain source build supports offline command discovery, dry runs, and
+[API-key authentication](#api-keys-for-automation). It does not include the
+official browser-login registration. Use an official release for `sellapp login`
+and the MCP bridge.
+
 ## Reference
 
 - [Command reference](docs/commands.md): positional IDs, flags, examples, and scopes.
@@ -171,8 +184,13 @@ default; bound `--all` with `--max-items` and `--max-pages`.
 `sellapp mcp` and `sellapp --mcp` bridge to hosted MCP using the saved OAuth
 login. Hosted permissions and consequential confirmation apply. Compact mode is
 the default; select `--mode catalog`, `--mode full`, or `--mode retrieval` when needed.
-Use `sellapp --llms`, `--llms-full`, leaf `--schema`, and
-`sellapp workflow list` / `sellapp workflow show ID` for focused discovery.
+Search returns up to 10 summaries; use `--limit` (1–25) and `--offset` to page
+through matches. JSON includes `results`, `total`, and `next_offset` (null on the
+last page). Each result points to a leaf `--schema` with inputs, authentication,
+effects, pagination, and retry rules. `sellapp --llms` lists commands and schema
+lookups without repeating those details; `--llms-full` retains the full metadata.
+Discovery works without login. Use `sellapp workflow list` /
+`sellapp workflow show ID` for guided tasks.
 
 [API documentation](https://sell.app/docs/api) ·
 [Support](https://github.com/sellapp/sellapp-cli/issues) ·

@@ -118,6 +118,67 @@ func TestSkillsRequireScopeAndSupportDryRun(t *testing.T) {
 		t.Fatal("ambiguous scope")
 	}
 }
+func TestSkillInstallTargetsClientAndScope(t *testing.T) {
+	isolatedHome := credentialTestHome(t)
+	t.Setenv("USERPROFILE", isolatedHome)
+	project := t.TempDir()
+	agentTestChdir(t, project)
+	t.Setenv("CLAUDE_CONFIG_DIR", "")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, fixture := range []struct{ client, directory string }{{"codex", ".agents"}, {"claude-code", ".claude"}, {"cursor", ".cursor"}} {
+		for _, scope := range []string{"project", "global"} {
+			base := project
+			if scope == "global" {
+				base = home
+			}
+			target := filepath.Join(base, fixture.directory, "skills", "sellapp")
+			for _, dryRun := range []bool{true, false, false} {
+				var out bytes.Buffer
+				cfg := &Config{Output: "json", NoInteractive: true, DryRun: dryRun, Stdout: &out, Stderr: &out}
+				cmd := skillsCommand(cfg)
+				cmd.SetArgs([]string{"add", "--client", fixture.client, "--" + scope})
+				if err = cmd.Execute(); err != nil {
+					t.Fatal(err)
+				}
+				var result map[string]any
+				if err = json.Unmarshal(out.Bytes(), &result); err != nil {
+					t.Fatal(err)
+				}
+				if result["directory"] != target || result["client"] != fixture.client {
+					t.Fatal("wrong client destination", out.String())
+				}
+				if dryRun {
+					if _, err = os.Stat(target); !os.IsNotExist(err) {
+						t.Fatal("dry run wrote the skill", err)
+					}
+					continue
+				}
+				for name, want := range embeddedSkillFiles {
+					got, err := os.ReadFile(filepath.Join(target, filepath.FromSlash(name)))
+					if err != nil || string(got) != want {
+						t.Fatalf("missing or changed skill file %s: %v", name, err)
+					}
+				}
+			}
+		}
+	}
+	custom := filepath.Join(t.TempDir(), "custom claude")
+	t.Setenv("CLAUDE_CONFIG_DIR", custom)
+	target, err := skillDirectory("claude-code", "user")
+	if err != nil || target != filepath.Join(custom, "skills", "sellapp") {
+		t.Fatal("ignored Claude directory", target, err)
+	}
+	target, err = skillDirectory("claude-code", "project")
+	if err != nil || target != filepath.Join(project, ".claude", "skills", "sellapp") {
+		t.Fatal("user override changed project scope", target, err)
+	}
+	if _, err = skillDirectory("unknown", "project"); err == nil {
+		t.Fatal("unknown client accepted")
+	}
+}
 func TestEmbeddedSkillsMatchDistribution(t *testing.T) {
 	for name, content := range embeddedSkillFiles {
 		data, err := os.ReadFile(filepath.Join("..", "..", "skills", "sellapp", filepath.FromSlash(name)))
@@ -164,7 +225,7 @@ func TestCursorMCPRegistrationPreservesUnrelatedContent(t *testing.T) {
 		t.Fatal("lost another server")
 	}
 	if strings.Contains(string(servers["sellapp"]), "allow-writes") {
-		t.Fatal("enabled writes")
+		t.Fatal("unexpected local write flag")
 	}
 	before, _ := os.ReadFile(path)
 	if _, err = registerLocalMCP(context.Background(), "cursor", "project", executable+"different"); err == nil {
@@ -173,6 +234,28 @@ func TestCursorMCPRegistrationPreservesUnrelatedContent(t *testing.T) {
 	after, _ := os.ReadFile(path)
 	if !bytes.Equal(before, after) {
 		t.Fatal("conflict changed configuration")
+	}
+}
+func TestMCPSetupReportsHostedAuthorization(t *testing.T) {
+	agentTestChdir(t, t.TempDir())
+	for _, dryRun := range []bool{true, false} {
+		var out bytes.Buffer
+		cfg := &Config{Output: "json", NoInteractive: true, DryRun: dryRun, Stdout: &out, Stderr: &out}
+		cmd := mcpSetupCommand(cfg)
+		cmd.SetArgs([]string{"--client", "cursor", "--project"})
+		if err := cmd.Execute(); err != nil {
+			t.Fatal(err)
+		}
+		var result map[string]any
+		if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+			t.Fatal(err)
+		}
+		if result["permission_source"] != "hosted" || result["write_policy"] != "current permissions and consequential confirmation" {
+			t.Fatal("missing hosted authorization policy", out.String())
+		}
+		if _, ok := result["writes_enabled"]; ok {
+			t.Fatal("registration must not claim writes are disabled")
+		}
 	}
 }
 func TestMCPRegistrationRejectsInvalidConfiguration(t *testing.T) {
@@ -215,7 +298,7 @@ func TestAgentSetupRejectsHardlinks(t *testing.T) {
 		t.Fatal("source changed")
 	}
 }
-func TestMCPMatchingRejectsWritesAndCredentials(t *testing.T) {
+func TestMCPMatchingRejectsUnexpectedArgumentsAndCredentials(t *testing.T) {
 	wanted := localMCPEntry{"/local/sellapp", []string{"mcp", "--no-interactive"}}
 	for _, value := range []string{`{"command":"/local/sellapp","args":["mcp","--allow-writes","--yes"]}`, `{"command":"/local/sellapp","args":["mcp","--no-interactive"],"env":{"SELLAPP_API_KEY":"secret"}}`, `{"command":"/local/sellapp","args":["mcp","--no-interactive"],"url":"https://other.invalid"}`} {
 		if matchingMCPEntry(json.RawMessage(value), wanted) {

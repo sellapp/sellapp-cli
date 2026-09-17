@@ -1,6 +1,6 @@
 # Command index
 
-The machine catalog is `internal/catalog/commands.json`, generated from the same 434-operation manifest as the embedded SDK. Use `sellapp search TERM` or `sellapp commands --json` for exact schemas.
+The machine catalog is `internal/catalog/commands.json`, generated from the same 434-operation manifest as the embedded SDK. Use `sellapp search TERM` for bounded summaries, then run the returned schema command (for example, `sellapp products create --schema`) for exact inputs, effects, authentication, and retry rules.
 
 | Resource | Commands |
 | --- | ---: |

@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "language": "cli",
   "repository": "sellapp/sellapp-cli",
-  "sourceSha": "0e11b4d1f1287af93e9572e35511e13f040c5ef6",
+  "sourceSha": "95bbc2d7ced8293d25b91759b0badf51447b2e36",
   "specSha256": "02043ebfc36589e78743f00a0f4a2f3ac9ac14914b9cf2910f04fc34ad2d0924",
   "runId": "0",
   "runAttempt": "1",
-  "treeDigest": "83d5367cf8457834884b0b27bc3e8db3ad173b78384ea111fc010da8808efb6d",
-  "contentDigest": "a09927d1e9993b4646554e8532db50238b204e0483f855bbb861d268210b92e0",
+  "treeDigest": "348d326f25d707cd69f4267e73362e944fb79f95b81ddedbfcddcfd2d12461b2",
+  "contentDigest": "d7726ff94e4d9595c72623d1cbcb6328d26558e040c17815be0751908c2badee",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -17,7 +17,7 @@
     {
       "path": ".oagen-manifest.json",
       "mode": "100644",
-      "sha256": "255868115a9e62abefa236ed29f5e264123221cc056ff1f54c6a6cbc424844c2"
+      "sha256": "606ec4a93637147f8247fa269e99b2bfea6a3faafadccf4792f6750f82195ed4"
     },
     {
       "path": "LICENSE.txt",
@@ -27,7 +27,7 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "sha256": "bbec69c3a3e0519fe1682e756cc34d8a21de7767d6a561868dcdb025394c05ed"
+      "sha256": "0baa2e14fbe42f5b4795fd5f43b557a98dd02d719af54750360069081899e913"
     },
     {
       "path": "cmd/sellapp/main.go",
@@ -37,12 +37,12 @@
     {
       "path": "docs/agent-skill.md",
       "mode": "100644",
-      "sha256": "5171f2a55ba835e8ea63813c573267223aea3e5123254014714de366fce4f51e"
+      "sha256": "096c8c6f06e4c8ec683971ea1aba00dc1adbbd31f255afaa2c2e600ee8637351"
     },
     {
       "path": "docs/commands.md",
       "mode": "100644",
-      "sha256": "d7f5f36637ad3c6b1c8cf0ea3796b7d605727c4086f852a72537960533c87d0d"
+      "sha256": "546070d6176a2f79a0cf37f52638293ef4c4b666af11ada103e8cf37073c4ae3"
     },
     {
       "path": "docs/contributing.md",
@@ -355,7 +355,7 @@
       "sha256": "acfccbcc43478f2151c4132e2936fc28bfde783063758c162c2fc4d3044502ef"
     },
     {
-      "path": "examples/mcp-readonly.sh",
+      "path": "examples/mcp-bridge.sh",
       "mode": "100644",
       "sha256": "39633cbd058a9e1103c7b170ee4643ec88798a2bf9e3ffc94c74593af8a15311"
     },
@@ -377,7 +377,7 @@
     {
       "path": "generation-manifest.json",
       "mode": "100644",
-      "sha256": "86270ed76940117488915eefd2e73a099d501016178ab9295343458f42bca5b7"
+      "sha256": "b558bc4b784cf14e0e0cc738784f90aeaa1756e9820e80dfbf625bb703b304d7"
     },
     {
       "path": "go.mod",
@@ -412,7 +412,7 @@
     {
       "path": "internal/cli/agent_assets.go",
       "mode": "100644",
-      "sha256": "c210acbafbb790f91bc487744ebdafcfecc08990c1b4cf09649c381277faadea"
+      "sha256": "899fc59473c0389334a792fc249b369b13504fb22a6923f8b3d92e4e2f6d33a6"
     },
     {
       "path": "internal/cli/agent_safety_unix.go",
@@ -427,12 +427,12 @@
     {
       "path": "internal/cli/agent_setup.go",
       "mode": "100644",
-      "sha256": "89aab774bd1ffbaae6cc8b1a1811011cd5188c74b1bbe3568df517c7334cde36"
+      "sha256": "fe04000125e3b675a23d2879705f4de8bfbf1a667166cba5a1d1917f307489ff"
     },
     {
       "path": "internal/cli/agent_setup_test.go",
       "mode": "100644",
-      "sha256": "0de851a4b1f76808f6dd936a2d079b4618a8b1278f52f8ad5bde3416ee1c7904"
+      "sha256": "f73707f0ab4bea17499ae3e019d9a2805da08e9bd430168a73e71501355db87a"
     },
     {
       "path": "internal/cli/catalog.go",
@@ -512,12 +512,12 @@
     {
       "path": "internal/cli/mcp_bridge.go",
       "mode": "100644",
-      "sha256": "51f6bed9eb47c05bf009642451e119b8a21fbc892410adba0606cdb89a92c4d6"
+      "sha256": "aafd5fef8bb1863a4ddca8b83b26938cd5de94e078aeca0a5fcc9826efdd17eb"
     },
     {
       "path": "internal/cli/mcp_bridge_test.go",
       "mode": "100644",
-      "sha256": "c5a5ea2ed532cfb79193b07626cc33cd427b01d4d81cf2c624f828c734490435"
+      "sha256": "68f2a607fd173cd908c4bcaaad9ab07abf2ae5409500f653459455aee8c9ea15"
     },
     {
       "path": "internal/cli/oauth.go",
@@ -552,7 +552,7 @@
     {
       "path": "internal/cli/root.go",
       "mode": "100644",
-      "sha256": "7e2205ff059e609f83a5bdff57013b133ef7b07c4734bee9c1795eb8b270d13d"
+      "sha256": "fc2535ba0e0e4d870e86189f9952513fc953906a3ae591addce811e3e0cb8fe8"
     },
     {
       "path": "internal/cli/root_test.go",
@@ -562,12 +562,12 @@
     {
       "path": "internal/cli/setup.go",
       "mode": "100644",
-      "sha256": "2e56ef0ddbf8fb82df14dbce571d3baf877b735e83927d1beb8f510706c92341"
+      "sha256": "c3d27c2b1f21456dd72504f08f25358ff4fb440db726ae117684705704373990"
     },
     {
       "path": "internal/cli/setup_test.go",
       "mode": "100644",
-      "sha256": "d619fb67b749245c4932d24b5f5f54e8f1bdae94f3d4a4c75293f5a828df1bf9"
+      "sha256": "ba79bcced743c276d0df06835a0e4ad0da382072a13f123ccb4210e7da5a98dc"
     },
     {
       "path": "internal/cli/terminal_unix.go",
@@ -1062,7 +1062,7 @@
     {
       "path": "skills/sellapp/SKILL.md",
       "mode": "100644",
-      "sha256": "07732e3591049fd97dbe7d1ee2608c824e488197dfa57f95d4f394d9e6ec0587"
+      "sha256": "fb3fc336dac5c6bccea3351e8898b12fa2c35352d5c58e725ae08e83f2420225"
     },
     {
       "path": "skills/sellapp/references/checkout.md",

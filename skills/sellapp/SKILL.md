@@ -7,7 +7,7 @@ description: Complete SellApp commerce tasks through the official CLI or hosted 
 
 Inspect the current connection and intended store. For first use run `sellapp setup` or `sellapp login`; use `--no-browser` if needed. Browser consent grants admin across current and future accessible stores. Current membership and role permissions remain authoritative. Zero stores is successful authentication: choose or explicitly create a store next. Ordinary SDK integrations use user-owned API keys with explicit account abilities and optional store restrictions; never extract CLI tokens or ask users to register OAuth applications.
 
-Use `sellapp search TERM`, `sellapp --llms` and a leaf command's `--schema` to inspect exact inputs, effects and authentication. Read only the focused workflow needed for the task:
+Use `sellapp search TERM` for up to 10 summaries. JSON returns `results`, `total`, and `next_offset`; follow `--offset` while `next_offset` is not null, with `--limit` from 1 to 25. An empty `results` array is a successful search. `sellapp --llms` lists command paths and schema lookups. Before a request, inspect the result's `schema` command for exact inputs, authentication, effects and retry rules. These discovery commands work offline. Read only the focused workflow needed for the task:
 
 - [Connect and choose or create a store](references/connect-store.md): Establish a connection and an explicit target for commerce operations.
 - [Create a product and variant](references/product-variant.md): Create a catalog product with a purchasable variant and verify both records.

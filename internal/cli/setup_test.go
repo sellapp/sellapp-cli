@@ -3,11 +3,13 @@
 package cli
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -145,5 +147,174 @@ func TestDiscoveryAndWorkflowCommandsNeedNoCredentials(t *testing.T) {
 		if count == 0 {
 			t.Fatal("empty discovery", args)
 		}
+	}
+}
+func TestCompactIndexPreservesCoverageAndFullSchemaLookup(t *testing.T) {
+	credentialTestHome(t)
+	out, err := execute(t, "--llms", "--output", "json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(out) > 100*1024 {
+		t.Fatalf("compact index exceeded 100 KiB: %d bytes", len(out))
+	}
+	var rows []map[string]any
+	if err = json.Unmarshal([]byte(out), &rows); err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != len(CommandCatalog) {
+		t.Fatalf("index omitted commands: %d", len(rows))
+	}
+	for i, row := range rows {
+		entry := CommandCatalog[i]
+		command := strings.Join(entry.Path, " ")
+		if row["command"] != command || row["operation_id"] != entry.OperationID || row["effect"] != entry.Effect || row["target"] != entry.Target || row["schema"] != "sellapp "+command+" --schema" {
+			t.Fatalf("incorrect lookup: %v", row)
+		}
+		if _, ok := row["authentication"]; ok {
+			t.Fatal("index duplicated authentication")
+		}
+		if _, ok := row["retry"]; ok {
+			t.Fatal("index duplicated retry rules")
+		}
+	}
+	full, err := execute(t, "--llms-full", "--output", "json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fullRows []map[string]any
+	if err = json.Unmarshal([]byte(full), &fullRows); err != nil {
+		t.Fatal(err)
+	}
+	if len(fullRows) != len(rows) {
+		t.Fatal("full catalog lost operations")
+	}
+	for _, row := range fullRows {
+		if row["authentication"] == nil || row["retry"] == nil {
+			t.Fatal("full catalog lost metadata")
+		}
+	}
+	schema, err := execute(t, "products", "create", "--schema")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var entry map[string]any
+	if err = json.Unmarshal([]byte(schema), &entry); err != nil {
+		t.Fatal(err)
+	}
+	if entry["authentication"] == nil || entry["retry"] == nil {
+		t.Fatal("leaf schema lost metadata")
+	}
+}
+
+type searchTestPage struct {
+	Results []map[string]any `json:"results"`
+	Total   int              `json:"total"`
+	Limit   int              `json:"limit"`
+	Offset  int              `json:"offset"`
+	Next    *int             `json:"next_offset"`
+}
+
+func TestSearchPaginatesWithoutLosingMatches(t *testing.T) {
+	credentialTestHome(t)
+	seen := map[string]bool{}
+	offset, total := 0, -1
+	for {
+		out, err := execute(t, "search", "products", "--offset", strconv.Itoa(offset), "--output", "jsonl")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(out) > 12*1024 || strings.Count(out, "\n") != 1 {
+			t.Fatalf("search did not produce a bounded JSONL envelope: %d bytes", len(out))
+		}
+		var page searchTestPage
+		if err = json.Unmarshal([]byte(out), &page); err != nil {
+			t.Fatal(err)
+		}
+		if total < 0 {
+			total = page.Total
+			if total <= 10 {
+				t.Fatal("fixture needs more than one page")
+			}
+		}
+		if page.Total != total || page.Limit != 10 || page.Offset != offset || len(page.Results) > 10 {
+			t.Fatal("inconsistent pagination", out)
+		}
+		for _, row := range page.Results {
+			operation := row["operation_id"].(string)
+			if seen[operation] {
+				t.Fatal("duplicate search result", operation)
+			}
+			seen[operation] = true
+			if row["schema"] == nil || row["summary"] == nil || row["authentication"] != nil {
+				t.Fatal("search needs summaries and schema lookups", row)
+			}
+		}
+		if page.Next == nil {
+			break
+		}
+		if *page.Next <= offset {
+			t.Fatal("pagination made no progress")
+		}
+		offset = *page.Next
+	}
+	if len(seen) != total {
+		t.Fatalf("lost search results: got %d of %d", len(seen), total)
+	}
+	out, err := execute(t, "search", "LISTPRODUCTS", "--limit", "1", "--output", "json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var page searchTestPage
+	if err = json.Unmarshal([]byte(out), &page); err != nil {
+		t.Fatal(err)
+	}
+	if len(page.Results) != 1 || page.Results[0]["operation_id"] != "listProducts" {
+		t.Fatal("exact operation must rank first", out)
+	}
+}
+func TestSearchEmptyPagesBoundsAndReadableOutput(t *testing.T) {
+	credentialTestHome(t)
+	for _, args := range [][]string{{"search", "no-such-operation-xyz"}, {"search", "products", "--offset", "2147483647"}} {
+		out, err := execute(t, append(args, "--output", "json")...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var page searchTestPage
+		if err = json.Unmarshal([]byte(out), &page); err != nil {
+			t.Fatal(err)
+		}
+		if page.Results == nil || len(page.Results) != 0 || page.Next != nil {
+			t.Fatal("empty page contract", out)
+		}
+	}
+	for _, args := range [][]string{{"search", " "}, {"search", "products", "--limit", "0"}, {"search", "products", "--limit", "26"}, {"search", "products", "--offset", "-1"}} {
+		if _, err := execute(t, args...); err == nil {
+			t.Fatal("invalid search accepted", args)
+		}
+	}
+	out, err := execute(t, "search", "products", "--limit", "1", "--output", "table")
+	if err != nil || !strings.Contains(out, "Inspect: sellapp ") || !strings.Contains(out, "--offset 1") {
+		t.Fatal("missing inspection or next page guidance", out, err)
+	}
+}
+func TestSearchBoundsUnicodeSummaries(t *testing.T) {
+	before := CommandCatalog
+	defer func() { CommandCatalog = before }()
+	CommandCatalog = []CatalogEntry{{Path: []string{"example", "read"}, OperationID: "readExample", Description: strings.Repeat("界", 300) + "\nprivate detail", Effect: "read"}}
+	var out bytes.Buffer
+	cfg := &Config{Output: "json", Stdout: &out, Stderr: &out}
+	cmd := searchCommand(cfg)
+	cmd.SetArgs([]string{"example"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	var page searchTestPage
+	if err := json.Unmarshal(out.Bytes(), &page); err != nil {
+		t.Fatal(err)
+	}
+	summary := page.Results[0]["summary"].(string)
+	if len([]rune(summary)) != 160 || strings.Contains(summary, "�") || strings.Contains(summary, "private detail") {
+		t.Fatal("summary not bounded at a character boundary", summary)
 	}
 }

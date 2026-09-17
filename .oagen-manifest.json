@@ -70,7 +70,7 @@
     "examples/dry-run-write.sh",
     "examples/first-profile-store.sh",
     "examples/first-read.sh",
-    "examples/mcp-readonly.sh",
+    "examples/mcp-bridge.sh",
     "examples/pagination-jsonl.sh",
     "examples/read-workflow.sh",
     "examples/structured-error.sh",
