@@ -162,11 +162,11 @@ func TestVerifierRejectsCorruptionAndMissingArtifacts(t *testing.T) {
 		}
 		put("sellapp_"+version+"_"+target[0]+"_"+target[1]+extension, archive)
 		platform, cpu := npmTarget(target)
-		name := "@sellapp/cli-" + platform + "-" + cpu
+		name := "@sell.app/cli-" + platform + "-" + cpu
 		optional[name] = version
 		pack("sellapp-cli-"+platform+"-"+cpu+"-"+version+".tgz", []entry{{"package.json", encode(map[string]any{"name": name, "version": version, "os": []string{platform}, "cpu": []string{cpu}}), 0644}, {"bin/" + binaryName, binary, 0755}, {"build-info.json", metadata, 0644}, {"licenses/a/LICENSE", []byte("license"), 0644}})
 	}
-	pack("sellapp-cli-"+version+".tgz", append(append([]entry{}, guide...), entry{"package.json", encode(map[string]any{"name": "@sellapp/cli", "version": version, "engines": map[string]string{"node": ">=22"}, "bin": map[string]string{"sellapp": "bin/sellapp.cjs"}, "optionalDependencies": optional}), 0644}, entry{"bin/sellapp.cjs", []byte("launcher"), 0755}))
+	pack("sellapp-cli-"+version+".tgz", append(append([]entry{}, guide...), entry{"package.json", encode(map[string]any{"name": "@sell.app/cli", "version": version, "engines": map[string]string{"node": ">=22"}, "bin": map[string]string{"sellapp": "bin/sellapp.cjs"}, "optionalDependencies": optional}), 0644}, entry{"bin/sellapp.cjs", []byte("launcher"), 0755}))
 	put("install.sh", []byte("installer"))
 	put("release-manifest.json", encode(map[string]any{"version": version, "repository": repository, "releaseTag": "v" + version, "releaseURL": "https://github.com/" + repository + "/releases/tag/v" + version, "sourceTreeSha256": "source", "oauthOrigin": productionOrigin, "publicOAuthClientID": "release-test-client", "browserOnboardingConfigured": true, "unsigned": true, "artifacts": artifacts}))
 	writeSums := func(value string) {

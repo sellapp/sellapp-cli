@@ -44,7 +44,7 @@ try {
         ? join(prefix, ...(global ? [] : ['node_modules', '.bin']), 'sellapp.cmd')
         : join(prefix, ...(global ? ['bin'] : ['node_modules', '.bin']), 'sellapp');
       assert.ok(existsSync(launcher));
-      const packageRoot = join(prefix, ...(global && process.platform !== 'win32' ? ['lib'] : []), 'node_modules', '@sellapp', 'cli');
+      const packageRoot = join(prefix, ...(global && process.platform !== 'win32' ? ['lib'] : []), 'node_modules', '@sell.app', 'cli');
       const invoke = args => process.platform === 'win32' ? run(process.execPath, [join(packageRoot, 'bin/sellapp.cjs'), ...args]) : run(launcher, args);
       const result = invoke(['--version']);
       assert.equal(result.stdout.trim(), 'sellapp version ' + version);

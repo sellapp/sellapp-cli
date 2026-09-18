@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "language": "cli",
   "repository": "sellapp/sellapp-cli",
-  "sourceSha": "95bbc2d7ced8293d25b91759b0badf51447b2e36",
+  "sourceSha": "a61898a5654e63cc1c000e1111a0c1224c0c2d70",
   "specSha256": "02043ebfc36589e78743f00a0f4a2f3ac9ac14914b9cf2910f04fc34ad2d0924",
   "runId": "0",
   "runAttempt": "1",
-  "treeDigest": "348d326f25d707cd69f4267e73362e944fb79f95b81ddedbfcddcfd2d12461b2",
-  "contentDigest": "d7726ff94e4d9595c72623d1cbcb6328d26558e040c17815be0751908c2badee",
+  "treeDigest": "215f674b7cc83f1dcad993c8868ea6a0b2974cb3971c046518ebe5743c6c7202",
+  "contentDigest": "be44ce9e9700ce9212ed1336cce3c6b5c1cf9e60d19b11137c1464cd59a1def3",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -27,7 +27,7 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "sha256": "0baa2e14fbe42f5b4795fd5f43b557a98dd02d719af54750360069081899e913"
+      "sha256": "3787b598a4e0103d840492b263b768114c36f1f709a1571e998dfa54ffdcedcc"
     },
     {
       "path": "cmd/sellapp/main.go",
@@ -377,7 +377,7 @@
     {
       "path": "generation-manifest.json",
       "mode": "100644",
-      "sha256": "b558bc4b784cf14e0e0cc738784f90aeaa1756e9820e80dfbf625bb703b304d7"
+      "sha256": "083b3f72780669e96360cac9ea6c5dedc9399c123770622d87409ba0a0ac921e"
     },
     {
       "path": "go.mod",
@@ -1052,12 +1052,12 @@
     {
       "path": "npm/launcher.cjs",
       "mode": "100644",
-      "sha256": "d81cfb9bea8ea6eb133f0550cc1f212f3746fe39909d4ab8d86654604e93a6a2"
+      "sha256": "13f1e8ae1b8cb36e890bb17f3c1f95e8ea4de14a2aab8f398ba0f71e21b0d832"
     },
     {
       "path": "npm/package.json",
       "mode": "100644",
-      "sha256": "fa6e1c75ce7ab983083cdd86ea0c444d8f937209108e54cf2dfb65c7f84e6ca3"
+      "sha256": "369a36d58b615c00db957625b969203062a51bb409274d2cf2500718c2bffa0a"
     },
     {
       "path": "skills/sellapp/SKILL.md",
@@ -1107,17 +1107,17 @@
     {
       "path": "tools/release/main.go",
       "mode": "100644",
-      "sha256": "3bf68f155e3ae9bce6cb95ffd53df8e7d131b14b99eb53be69c8b3ef102d6bab"
+      "sha256": "0ba68a57f1d4163c01b3c9952b79f91aca681623765fbc8e0de3f3b6d97cf976"
     },
     {
       "path": "tools/release/main_test.go",
       "mode": "100644",
-      "sha256": "9089366fcdf04d22124d0ff279f58656d6fe205e3a64dbef89de98bede51f233"
+      "sha256": "ec343aefa14f11077b7f8835ba47f3084a52c6c98a13cce10e8077593a24b2ab"
     },
     {
       "path": "tools/test-distribution.mjs",
       "mode": "100644",
-      "sha256": "2944347e4a4f096012959423cccd1095e46b4394215e31b54abce8e18ca77e95"
+      "sha256": "e10587ba53b887fbd95244676b91ff40e2eadd97a77c675fed2937018f7f0ec1"
     }
   ]
 }

@@ -11,7 +11,7 @@ if (Number(process.versions.node.split('.')[0]) < 22) {
   if (!supported.includes(target)) {
     fail('Unsupported platform ' + target + '. Supported platforms: ' + supported.join(', ') + '.');
   } else {
-    const name = '@sellapp/cli-' + target;
+    const name = '@sell.app/cli-' + target;
     let executable;
     try {
       const manifestPath = require.resolve(name + '/package.json');
@@ -20,7 +20,7 @@ if (Number(process.versions.node.split('.')[0]) < 22) {
       executable = path.join(path.dirname(manifestPath), 'bin', process.platform === 'win32' ? 'sellapp.exe' : 'sellapp');
       require('node:fs').accessSync(executable, require('node:fs').constants.X_OK);
     } catch {
-      fail('Missing or incompatible ' + name + '@0.1.0. Reinstall with npm install -g @sellapp/cli@0.1.0 --include=optional (or omit -g for a local install). Optional dependencies must be enabled; the launcher does not download binaries.');
+      fail('Missing or incompatible ' + name + '@0.1.0. Reinstall with npm install -g @sell.app/cli@0.1.0 --include=optional (or omit -g for a local install). Optional dependencies must be enabled; the launcher does not download binaries.');
     }
     if (executable) {
       const child = spawn(executable, process.argv.slice(2), { stdio: 'inherit', windowsHide: true });
@@ -31,7 +31,7 @@ if (Number(process.versions.node.split('.')[0]) < 22) {
         process.on(signal, handler);
       }
       const cleanup = () => { for (const [signal, handler] of handlers) process.removeListener(signal, handler); };
-      child.on('error', (error) => { cleanup(); fail('Could not start ' + executable + ': ' + error.message + '. Reinstall @sellapp/cli.'); });
+      child.on('error', (error) => { cleanup(); fail('Could not start ' + executable + ': ' + error.message + '. Reinstall @sell.app/cli.'); });
       child.on('exit', (code, signal) => {
         cleanup();
         if (signal) { try { process.kill(process.pid, signal); } catch { process.exitCode = 1; } }

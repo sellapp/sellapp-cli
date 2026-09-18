@@ -271,7 +271,7 @@ func release(output string, production bool) error {
 		}
 		artifacts[name] = sum(archive)
 		platformOS, platformCPU := npmTarget(target)
-		manifest, err := jsonBytes(map[string]any{"name": "@sellapp/cli-" + platformOS + "-" + platformCPU, "version": version, "description": "SellApp CLI executable for " + platformOS + "/" + platformCPU, "license": "MIT", "repository": map[string]string{"type": "git", "url": "git+https://github.com/" + repository + ".git"}, "os": []string{platformOS}, "cpu": []string{platformCPU}, "files": []string{"bin", "licenses", "LICENSE.txt", "build-info.json"}})
+		manifest, err := jsonBytes(map[string]any{"name": "@sell.app/cli-" + platformOS + "-" + platformCPU, "version": version, "description": "SellApp CLI executable for " + platformOS + "/" + platformCPU, "license": "MIT", "repository": map[string]string{"type": "git", "url": "git+https://github.com/" + repository + ".git"}, "os": []string{platformOS}, "cpu": []string{platformCPU}, "files": []string{"bin", "licenses", "LICENSE.txt", "build-info.json"}})
 		if err != nil {
 			return err
 		}
@@ -536,7 +536,7 @@ func verifyDirectory(output string, production bool) error {
 	if err := json.Unmarshal(main["package/package.json"], &mainPackage); err != nil {
 		return err
 	}
-	if mainPackage.Name != "@sellapp/cli" || mainPackage.Version != version || mainPackage.Engines["node"] != ">=22" || mainPackage.Bin["sellapp"] != "bin/sellapp.cjs" || len(mainPackage.OptionalDependencies) != len(targets) || len(mainPackage.Scripts) != 0 {
+	if mainPackage.Name != "@sell.app/cli" || mainPackage.Version != version || mainPackage.Engines["node"] != ">=22" || mainPackage.Bin["sellapp"] != "bin/sellapp.cjs" || len(mainPackage.OptionalDependencies) != len(targets) || len(mainPackage.Scripts) != 0 {
 		return fmt.Errorf("invalid main npm package manifest")
 	}
 	requiredGuidance := []string{"README.md", "LICENSE.txt", "docs/usage.md", "docs/contributing.md", "skills/sellapp/SKILL.md", "skills/sellapp/references/connect-store.md", "skills/sellapp/references/product-variant.md", "skills/sellapp/references/checkout.md", "skills/sellapp/references/orders-fulfillment-refunds.md", "skills/sellapp/references/subscriptions.md", "skills/sellapp/references/customer-support.md", "skills/sellapp/references/webhooks.md", "skills/sellapp/references/exports.md"}
@@ -623,7 +623,7 @@ func verifyDirectory(output string, production bool) error {
 			return fmt.Errorf("dependency license notice count mismatch in %s", name)
 		}
 		platform, cpu := npmTarget(target)
-		packageName := "@sellapp/cli-" + platform + "-" + cpu
+		packageName := "@sell.app/cli-" + platform + "-" + cpu
 		if mainPackage.OptionalDependencies[packageName] != version {
 			return fmt.Errorf("missing exact optional dependency %s", packageName)
 		}

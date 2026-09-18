@@ -5,11 +5,10 @@ Discover exact command schemas for scripts and agents.
 
 ## Install
 
-npm packages and standalone releases are prepared for publication. They are not
-published yet. The npm installation command, once available, is:
+Install with Node.js 22 or newer:
 
 ```sh
-npm install -g @sellapp/cli
+npm install -g @sell.app/cli
 sellapp --version
 ```
 
@@ -18,10 +17,12 @@ executable; it does not download binaries during installation or first use.
 Linux, macOS, and Windows support x64 and arm64.
 
 Standalone archives require neither Node.js nor Go. Extract the matching archive
-and put `sellapp` (`sellapp.exe` on Windows) on your `PATH`. After release assets
-are available, macOS, Linux, and WSL can also run the downloaded `install.sh`:
+from [GitHub Releases](https://github.com/sellapp/sellapp-cli/releases/latest)
+and put `sellapp` (`sellapp.exe` on Windows) on your `PATH`. On macOS, Linux,
+and WSL, download and run the installer:
 
 ```sh
+curl -fsSL https://sell.app/docs/cli/install.sh -o install.sh
 sh install.sh
 ```
 
@@ -29,7 +30,6 @@ The installer checks the archive checksum and installs to `$XDG_BIN_HOME` or
 `~/.local/bin`, without `sudo`. Set `SELLAPP_INSTALL_DIR` to choose a directory,
 `SELLAPP_INSTALL_VERSION` to pin a version, or `SELLAPP_INSTALL_NO_MODIFY_PATH=1`
 to leave shell profiles alone. Follow its PATH message; a new shell may be needed.
-A first-party installer URL is not hosted yet.
 
 ## Make your first request
 
@@ -154,7 +154,7 @@ a key or paste it into a shared command or log.
 For an npm installation:
 
 ```sh
-npm install -g @sellapp/cli@latest
+npm install -g @sell.app/cli@latest
 ```
 
 For a standalone installation, rerun the installer or replace the executable
