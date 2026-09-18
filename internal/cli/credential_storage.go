@@ -509,25 +509,32 @@ func privateCreateMarker(path string) error {
 
 // Never automatically remove an existing credential lock: its process might
 // still be exchanging a rotating refresh token with the server.
+var credentialLockMkdir = platformPrivateMkdir
+var credentialLockCheck = privateDirectory
+
 func lockCredentialPath(path string, wait bool) (func(), error) {
 	if err := privateDirectory(filepath.Dir(path), false); err != nil {
 		return nil, err
 	}
 	deadline := time.Now().Add(5 * time.Second)
 	for {
-		if err := platformPrivateMkdir(path); err == nil {
+		err := credentialLockMkdir(path)
+		if err == nil {
 			return func() { _ = os.Remove(path) }, nil
-		} else if !os.IsExist(err) {
-			return nil, err
 		}
-		if err := privateDirectory(path, false); err != nil {
-			if os.IsNotExist(err) {
-				continue
+		if !os.IsExist(err) && !platformLockTransient(err) {
+			return nil, fmt.Errorf("create credential lock: %w", err)
+		}
+		if os.IsExist(err) {
+			if checkErr := credentialLockCheck(path, false); checkErr != nil && !os.IsNotExist(checkErr) && !platformLockTransient(checkErr) {
+				return nil, fmt.Errorf("inspect credential lock: %w", checkErr)
 			}
-			return nil, err
 		}
-		if !wait || time.Now().After(deadline) {
-			return nil, errors.New("credentials are locked by another process; wait for it to finish. After a crashed refresh, run sellapp login with a new profile")
+		// Windows may retain a deleted lock directory until its last inspection
+		// handle closes. Retry only acquiring the lock, never credential access.
+		// Successful private directory creation remains the sole ownership signal.
+		if !wait || !time.Now().Before(deadline) {
+			return nil, fmt.Errorf("credentials are locked by another process; wait for it to finish. After a crashed refresh, run sellapp login with a new profile: %w", err)
 		}
 		time.Sleep(10 * time.Millisecond)
 	}

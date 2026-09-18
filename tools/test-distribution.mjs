@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-const version = '0.1.0';
+const version = '0.1.1';
 assert.equal(process.argv[2], '--artifacts', 'Usage: node tools/test-distribution.mjs --artifacts DIRECTORY');
 assert.equal(process.argv.length, 4, 'Specify exactly one artifact directory');
 const artifacts = resolve(process.argv[3]);
@@ -28,8 +28,8 @@ let installerVerified = false;
 try {
   const main = join(artifacts, 'sellapp-cli-' + version + '.tgz');
   const platform = join(artifacts, 'sellapp-cli-' + process.platform + '-' + process.arch + '-' + version + '.tgz');
-  test('all seven npm tarballs exist', () => {
-    for (const target of ['linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64', 'win32-x64', 'win32-arm64']) assert.ok(existsSync(join(artifacts, 'sellapp-cli-' + target + '-' + version + '.tgz')));
+  test('all eight npm tarballs exist', () => {
+    for (const target of ['linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64', 'win32-ia32', 'win32-x64', 'win32-arm64']) assert.ok(existsSync(join(artifacts, 'sellapp-cli-' + target + '-' + version + '.tgz')));
     assert.ok(existsSync(main));
   });
   const npmCLI = [process.env.npm_execpath, join(dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js'), join(dirname(process.execPath), '../lib/node_modules/npm/bin/npm-cli.js')].find(file => file && existsSync(file));
@@ -66,7 +66,7 @@ try {
     const sums = join(root, 'SHA256SUMS');
     const log = join(root, 'downloads');
     writeFileSync(sums, readFileSync(join(artifacts, 'SHA256SUMS')));
-    executable(join(tools, 'curl'), '#!/bin/sh\nset -eu\nprintf "%s\\n" "$*" >> "$TEST_DOWNLOAD_LOG"\noutput=""\nwhile [ "$#" -gt 0 ]; do case "$1" in --output) output=$2; shift 2 ;; *) url=$1; shift ;; esac; done\ncase "$url" in */latest) printf "%s" "https://github.com/sellapp/sellapp-cli/releases/tag/v0.1.0" ;; */SHA256SUMS) cp "$TEST_CHECKSUMS" "$output" ;; */"$TEST_ASSET") cp "$TEST_ARCHIVE" "$output" ;; *) exit 64 ;; esac\n');
+    executable(join(tools, 'curl'), '#!/bin/sh\nset -eu\nprintf "%s\\n" "$*" >> "$TEST_DOWNLOAD_LOG"\noutput=""\nwhile [ "$#" -gt 0 ]; do case "$1" in --output) output=$2; shift 2 ;; *) url=$1; shift ;; esac; done\ncase "$url" in */latest) printf "%s" "https://github.com/sellapp/sellapp-cli/releases/tag/v0.1.1" ;; */SHA256SUMS) cp "$TEST_CHECKSUMS" "$output" ;; */"$TEST_ASSET") cp "$TEST_ARCHIVE" "$output" ;; *) exit 64 ;; esac\n');
     const destination = join(home, "bin with space's");
     const shellProfile = process.platform === 'darwin' ? '.bash_profile' : '.bashrc';
     const installEnv = { ...env, PATH: tools + ':' + process.env.PATH, SHELL: '/bin/bash', SELLAPP_INSTALL_DIR: destination, SELLAPP_INSTALL_VERSION: version, TEST_DOWNLOAD_LOG: log, TEST_CHECKSUMS: sums, TEST_ARCHIVE: archive, TEST_ASSET: asset };
@@ -106,5 +106,5 @@ try {
     });
     installerVerified = true;
   } else skippedChecks.push('POSIX installer is not supported on this host');
-  process.stdout.write(JSON.stringify({ npmPackages: 7, npmInstallValidated: true, installerVerified, passedTests, nativePlatform: process.platform, nativeArchitecture: process.arch, skippedChecks }) + '\n');
+  process.stdout.write(JSON.stringify({ npmPackages: 8, npmInstallValidated: true, installerVerified, passedTests, nativePlatform: process.platform, nativeArchitecture: process.arch, skippedChecks }) + '\n');
 } finally { rmSync(root, { recursive: true, force: true }); }

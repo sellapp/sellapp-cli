@@ -14,7 +14,9 @@ sellapp --version
 
 npm installation needs Node.js 22 or newer. The package launches the included Go
 executable; it does not download binaries during installation or first use.
-Linux, macOS, and Windows support x64 and arm64.
+Linux and macOS support x64 and arm64. Windows supports x64, arm64, and
+32-bit x86 (ia32), including 32-bit Node.js on 64-bit Windows. npm selects
+the executable that matches your Node.js architecture.
 
 Standalone archives require neither Node.js nor Go. Extract the matching archive
 from [GitHub Releases](https://github.com/sellapp/sellapp-cli/releases/latest)

@@ -35,6 +35,7 @@ func platformPrivateCheck(_ string, info os.FileInfo) error {
 	}
 	return nil
 }
+func platformLockTransient(error) bool       { return false }
 func platformPrivateMkdir(path string) error { return os.Mkdir(path, 0700) }
 func platformPrivateCreate(path string) (*os.File, error) {
 	return os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)

@@ -1,6 +1,6 @@
 {
   "name": "@sell.app/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The official SellApp command line interface",
   "license": "MIT",
   "repository": {
@@ -25,11 +25,12 @@
     "build-info.json"
   ],
   "optionalDependencies": {
-    "@sell.app/cli-linux-x64": "0.1.0",
-    "@sell.app/cli-linux-arm64": "0.1.0",
-    "@sell.app/cli-darwin-x64": "0.1.0",
-    "@sell.app/cli-darwin-arm64": "0.1.0",
-    "@sell.app/cli-win32-x64": "0.1.0",
-    "@sell.app/cli-win32-arm64": "0.1.0"
+    "@sell.app/cli-linux-x64": "0.1.1",
+    "@sell.app/cli-linux-arm64": "0.1.1",
+    "@sell.app/cli-darwin-x64": "0.1.1",
+    "@sell.app/cli-darwin-arm64": "0.1.1",
+    "@sell.app/cli-win32-ia32": "0.1.1",
+    "@sell.app/cli-win32-x64": "0.1.1",
+    "@sell.app/cli-win32-arm64": "0.1.1"
   }
 }

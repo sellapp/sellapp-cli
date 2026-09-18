@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "language": "cli",
   "repository": "sellapp/sellapp-cli",
-  "sourceSha": "a61898a5654e63cc1c000e1111a0c1224c0c2d70",
+  "sourceSha": "676ec96ae55c7eba41c241d3a78d9951052efd74",
   "specSha256": "02043ebfc36589e78743f00a0f4a2f3ac9ac14914b9cf2910f04fc34ad2d0924",
   "runId": "0",
   "runAttempt": "1",
-  "treeDigest": "215f674b7cc83f1dcad993c8868ea6a0b2974cb3971c046518ebe5743c6c7202",
-  "contentDigest": "be44ce9e9700ce9212ed1336cce3c6b5c1cf9e60d19b11137c1464cd59a1def3",
+  "treeDigest": "03feeaeebf40459230cf6edfd720f259311a1fc7f34258c6205a9bd30f0efcf8",
+  "contentDigest": "c0d621795fa6fae9de0b9006180812f368bd29a4d912a4498a4d0c356796122d",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -27,7 +27,7 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "sha256": "3787b598a4e0103d840492b263b768114c36f1f709a1571e998dfa54ffdcedcc"
+      "sha256": "369e27846e086eac23d6421b153912c1c1805ba5dee6724c290533beaa4542db"
     },
     {
       "path": "cmd/sellapp/main.go",
@@ -47,7 +47,7 @@
     {
       "path": "docs/contributing.md",
       "mode": "100644",
-      "sha256": "a941382351dec680807512ad587100f7c75cfabfcadf99651c5b15022ad33db5"
+      "sha256": "17b309060ad08e7b2f6b192d60a4cc74da88cbcd56a1e0c601d14af4d0f139d4"
     },
     {
       "path": "docs/payments.md",
@@ -377,7 +377,7 @@
     {
       "path": "generation-manifest.json",
       "mode": "100644",
-      "sha256": "083b3f72780669e96360cac9ea6c5dedc9399c123770622d87409ba0a0ac921e"
+      "sha256": "852280be5b495bd556b3b3339899385cecfde979f60d0d5304cd95c27022bad8"
     },
     {
       "path": "go.mod",
@@ -462,7 +462,7 @@
     {
       "path": "internal/cli/credential_storage.go",
       "mode": "100644",
-      "sha256": "ac7f58e00b3202780733940aca2f2e5b9260e5e2568d66cd703f435e549d0b7d"
+      "sha256": "1dcc34e57cdc3a63ca58da21c7ebdaa629e9c2b2a3494f97429f9c7cd5ec786c"
     },
     {
       "path": "internal/cli/credential_storage_test.go",
@@ -472,17 +472,17 @@
     {
       "path": "internal/cli/credential_unix.go",
       "mode": "100644",
-      "sha256": "a8f00b9a885c0769a40b5091950ee0f253edc9649f1eca3c589368af627f24a5"
+      "sha256": "64f4dac2c0292043583387f581a0437fa2fdbf64f92e086d897fdc9eb2203787"
     },
     {
       "path": "internal/cli/credential_windows.go",
       "mode": "100644",
-      "sha256": "58d6f64e27aad4c3b8e586f57993af23677c93f3550d12718690832ce5307089"
+      "sha256": "0f4b2fac57b0854eea8f1b275d0b1c20d0b1be8810bf027fe1873bd32f807836"
     },
     {
       "path": "internal/cli/credential_windows_test.go",
       "mode": "100644",
-      "sha256": "a48db3f880111276978e4e61775133f1f3f629650ee6fd4d2c37e10ba68cc9fe"
+      "sha256": "30965d7ade895f6ce4d10759deddc1311f467e92d58932ac31b5e531c44b0b38"
     },
     {
       "path": "internal/cli/help.go",
@@ -612,7 +612,7 @@
     {
       "path": "internal/cli/version.go",
       "mode": "100644",
-      "sha256": "00a6ce5a0cd78c37364322dc99e017a2dc0c81696571702029807ae1f3667094"
+      "sha256": "b00157bebab69dcfa21aa0985c7b01b352e5aba35848bd7f8062bb92c5848e8c"
     },
     {
       "path": "internal/cli/workflow_guides.go",
@@ -1052,12 +1052,12 @@
     {
       "path": "npm/launcher.cjs",
       "mode": "100644",
-      "sha256": "13f1e8ae1b8cb36e890bb17f3c1f95e8ea4de14a2aab8f398ba0f71e21b0d832"
+      "sha256": "a888dc4335c28bb37a168d81162bbfca5169156395c59b4988586b858a0694a8"
     },
     {
       "path": "npm/package.json",
       "mode": "100644",
-      "sha256": "369a36d58b615c00db957625b969203062a51bb409274d2cf2500718c2bffa0a"
+      "sha256": "ab06ea056d94ab0365172661df950ae5fd8f0d368d3d54fcdf57f3760fcd3ad4"
     },
     {
       "path": "skills/sellapp/SKILL.md",
@@ -1107,17 +1107,17 @@
     {
       "path": "tools/release/main.go",
       "mode": "100644",
-      "sha256": "0ba68a57f1d4163c01b3c9952b79f91aca681623765fbc8e0de3f3b6d97cf976"
+      "sha256": "d6cfa0d65bf27c7d1c97eadc09377d6436cc2610a2a125a07c41cb29968fab2e"
     },
     {
       "path": "tools/release/main_test.go",
       "mode": "100644",
-      "sha256": "ec343aefa14f11077b7f8835ba47f3084a52c6c98a13cce10e8077593a24b2ab"
+      "sha256": "4593d86b90519eb0636ecabe709f7b3b2d8ddd8d3324f07d5fa52f4c3d92072e"
     },
     {
       "path": "tools/test-distribution.mjs",
       "mode": "100644",
-      "sha256": "e10587ba53b887fbd95244676b91ff40e2eadd97a77c675fed2937018f7f0ec1"
+      "sha256": "f0f9031fd3487b3af3e640071fe75b3c685d96d6a4b90d0b8dd0e8122045137f"
     }
   ]
 }

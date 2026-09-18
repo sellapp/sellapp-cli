@@ -153,6 +153,9 @@ func platformPrivateCheck(path string, info os.FileInfo) error {
 	}
 	return nil
 }
+func platformLockTransient(err error) bool {
+	return errors.Is(err, syscall.ERROR_ACCESS_DENIED) || errors.Is(err, syscall.Errno(32))
+}
 func platformPrivateMkdir(path string) error {
 	p, err := syscall.UTF16PtrFromString(path)
 	if err != nil {

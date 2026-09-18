@@ -24,9 +24,9 @@ import (
 	"time"
 )
 
-var targets = [][2]string{{"linux", "amd64"}, {"linux", "arm64"}, {"darwin", "amd64"}, {"darwin", "arm64"}, {"windows", "amd64"}, {"windows", "arm64"}}
+var targets = [][2]string{{"linux", "amd64"}, {"linux", "arm64"}, {"darwin", "amd64"}, {"darwin", "arm64"}, {"windows", "386"}, {"windows", "amd64"}, {"windows", "arm64"}}
 
-const version = "0.1.0"
+const version = "0.1.1"
 const repository = "sellapp/sellapp-cli"
 const productionOrigin = "https://sell.app"
 
@@ -66,7 +66,7 @@ func fail(err error) { fmt.Fprintln(os.Stderr, err); os.Exit(1) }
 func command(env []string, args ...string) ([]byte, error) {
 	cmd := exec.Command("go", args...)
 	// Fix build-affecting user environment to make the declared settings truthful.
-	cmd.Env = append(os.Environ(), "CGO_ENABLED=0", "GOFLAGS=", "GOWORK=off", "GOEXPERIMENT=", "GOAMD64=v1", "GOARM64=v8.0")
+	cmd.Env = append(os.Environ(), "CGO_ENABLED=0", "GOFLAGS=", "GOWORK=off", "GOEXPERIMENT=", "GOAMD64=v1", "GOARM64=v8.0", "GO386=sse2")
 	cmd.Env = append(cmd.Env, env...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -330,7 +330,7 @@ func release(output string, production bool) error {
 	if err := verifyDirectory(output, production); err != nil {
 		return fmt.Errorf("verify newly built release: %w", err)
 	}
-	fmt.Printf("Built and verified %d unsigned release archives, 7 npm tarballs, and install.sh in %s (source %s)\n", len(targets), output, sourceDigest)
+	fmt.Printf("Built and verified %d unsigned release archives, %d npm tarballs, and install.sh in %s (source %s)\n", len(targets), len(targets)+1, output, sourceDigest)
 	return nil
 }
 func distributable(name string) bool {
@@ -343,6 +343,9 @@ func npmTarget(target [2]string) (string, string) {
 	}
 	if architecture == "amd64" {
 		architecture = "x64"
+	}
+	if architecture == "386" {
+		architecture = "ia32"
 	}
 	return platform, architecture
 }

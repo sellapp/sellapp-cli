@@ -257,7 +257,10 @@ func TestArchiveReaderRefusesUnsafeAndDuplicatePaths(t *testing.T) {
 	}
 }
 func TestNpmTargetMatrix(t *testing.T) {
-	expected := map[[2]string][2]string{{"linux", "amd64"}: {"linux", "x64"}, {"linux", "arm64"}: {"linux", "arm64"}, {"darwin", "amd64"}: {"darwin", "x64"}, {"darwin", "arm64"}: {"darwin", "arm64"}, {"windows", "amd64"}: {"win32", "x64"}, {"windows", "arm64"}: {"win32", "arm64"}}
+	expected := map[[2]string][2]string{{"linux", "amd64"}: {"linux", "x64"}, {"linux", "arm64"}: {"linux", "arm64"}, {"darwin", "amd64"}: {"darwin", "x64"}, {"darwin", "arm64"}: {"darwin", "arm64"}, {"windows", "386"}: {"win32", "ia32"}, {"windows", "amd64"}: {"win32", "x64"}, {"windows", "arm64"}: {"win32", "arm64"}}
+	if len(targets) != len(expected) {
+		t.Fatal("incorrect target count", len(targets))
+	}
 	for _, target := range targets {
 		platform, cpu := npmTarget(target)
 		if expected[target] != [2]string{platform, cpu} {

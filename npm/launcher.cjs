@@ -7,7 +7,7 @@ if (Number(process.versions.node.split('.')[0]) < 22) {
   fail('The npm launcher requires Node.js 22 or newer. Upgrade Node.js or use the standalone installer.');
 } else {
   const target = process.platform + '-' + process.arch;
-  const supported = ["linux-x64","linux-arm64","darwin-x64","darwin-arm64","win32-x64","win32-arm64"];
+  const supported = ["linux-x64","linux-arm64","darwin-x64","darwin-arm64","win32-ia32","win32-x64","win32-arm64"];
   if (!supported.includes(target)) {
     fail('Unsupported platform ' + target + '. Supported platforms: ' + supported.join(', ') + '.');
   } else {
@@ -16,11 +16,11 @@ if (Number(process.versions.node.split('.')[0]) < 22) {
     try {
       const manifestPath = require.resolve(name + '/package.json');
       const manifest = require(manifestPath);
-      if (manifest.version !== '0.1.0') throw new Error('platform package version does not match');
+      if (manifest.version !== '0.1.1') throw new Error('platform package version does not match');
       executable = path.join(path.dirname(manifestPath), 'bin', process.platform === 'win32' ? 'sellapp.exe' : 'sellapp');
       require('node:fs').accessSync(executable, require('node:fs').constants.X_OK);
     } catch {
-      fail('Missing or incompatible ' + name + '@0.1.0. Reinstall with npm install -g @sell.app/cli@0.1.0 --include=optional (or omit -g for a local install). Optional dependencies must be enabled; the launcher does not download binaries.');
+      fail('Missing or incompatible ' + name + '@0.1.1. Reinstall with npm install -g @sell.app/cli@0.1.1 --include=optional (or omit -g for a local install). Optional dependencies must be enabled; the launcher does not download binaries.');
     }
     if (executable) {
       const child = spawn(executable, process.argv.slice(2), { stdio: 'inherit', windowsHide: true });
