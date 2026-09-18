@@ -645,7 +645,7 @@ func (c *Client) request(ctx context.Context, method, path string, query, body, 
 			cancel()
 			return nil, &TransportError{Err: err}
 		}
-		req.Header.Set("User-Agent", "SellApp Go/0.1.0")
+		req.Header.Set("User-Agent", "SellApp Go/0.1.1")
 		if contentType != "" {
 			req.Header.Set("Content-Type", contentType)
 		}

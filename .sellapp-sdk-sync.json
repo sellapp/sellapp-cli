@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "language": "cli",
   "repository": "sellapp/sellapp-cli",
-  "sourceSha": "676ec96ae55c7eba41c241d3a78d9951052efd74",
+  "sourceSha": "e4051383c6618a31c201c050d55d7bdacd157f0c",
   "specSha256": "02043ebfc36589e78743f00a0f4a2f3ac9ac14914b9cf2910f04fc34ad2d0924",
   "runId": "0",
   "runAttempt": "1",
-  "treeDigest": "03feeaeebf40459230cf6edfd720f259311a1fc7f34258c6205a9bd30f0efcf8",
-  "contentDigest": "c0d621795fa6fae9de0b9006180812f368bd29a4d912a4498a4d0c356796122d",
+  "treeDigest": "9dc92e633b25f7f290a92fd565199ddd6be4fcce470c17dce3b6b65ccbabb5c5",
+  "contentDigest": "ee923dee38ba954af115c7d2273f0738890f77afb28eafc9fbc8e750a56d70a3",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -377,7 +377,7 @@
     {
       "path": "generation-manifest.json",
       "mode": "100644",
-      "sha256": "852280be5b495bd556b3b3339899385cecfde979f60d0d5304cd95c27022bad8"
+      "sha256": "d00956408e5c361c6a8ca87756da7968a6099ac00883cfa082ca8f32157181d6"
     },
     {
       "path": "go.mod",
@@ -402,7 +402,7 @@
     {
       "path": "internal/catalog/embedding.json",
       "mode": "100644",
-      "sha256": "8fe9deae5457e2b255073e2f439ab220309e63a17e98003434521bf2eeb3e37d"
+      "sha256": "a09e2a68f96e503904573ad3296d9ab9cf3ac391eacf14355c376b9ba039babd"
     },
     {
       "path": "internal/cli/adapters.go",
@@ -947,7 +947,7 @@
     {
       "path": "internal/sdk/runtime.go",
       "mode": "100644",
-      "sha256": "f85dd4946ebeebce5be7ca31595b295ceac08d587a275510db4d24a81798020d"
+      "sha256": "c88ab00f6526cb25d7a931673878227057d9965b532a4c1858e8dd54330f759b"
     },
     {
       "path": "internal/sdk/sections.go",
