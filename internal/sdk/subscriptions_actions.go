@@ -68,7 +68,9 @@ func (s *SubscriptionsActionService) GetWithResponse(ctx context.Context, produc
 
 // SubscriptionsActionsDismissParams contains the parameters for Dismiss.
 type SubscriptionsActionsDismissParams struct {
-	// IdempotencyKey is optional idempotency key. You may also send this as the Idempotency-Key header.
+	// IdempotencyKey is accepted for compatibility but ignored by this operation. Retrieve the action after an uncertain response; repeating a completed dismissal returns 422.
+	//
+	// Deprecated: this field is deprecated.
 	IdempotencyKey *string `json:"idempotency_key,omitempty" url:"-"`
 	// Note is why the action is being dismissed. The note is kept on the dismissed action as its error.
 	Note string `json:"note" url:"-"`
@@ -104,9 +106,9 @@ func (p SubscriptionsActionsDismissParams) MarshalJSON() ([]byte, error) {
 }
 
 // Dismiss a subscription action
-// Dismiss a pending lifecycle action that the provider left unresolved, which frees the subscription for its next change. Only a pending action can be dismissed, and the required `note` is stored on the action as its `error` so the decision stays on the record. An action in any other state returns `422` with the refusal sentence under `errors.subscription`, while a missing or over-long `note` returns an ordinary field error. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Dismiss a pending lifecycle action that the provider left unresolved, which frees the subscription for its next change. Only a pending action can be dismissed, and the required `note` is stored on the action as its `error` so the decision stays on the record. An action in any other state returns `422` with the refusal sentence under `errors.subscription`, while a missing or over-long `note` returns an ordinary field error. This operation does not replay completed dismissals: idempotency keys are ignored. After a lost response, retrieve the action before repeating the request; an already-dismissed action returns `422`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *SubscriptionsActionService) Dismiss(ctx context.Context, productSubscription int, action int, params *SubscriptionsActionsDismissParams, opts ...RequestOption) (*SdkDismissSubscriptionActionResponseValue200ApplicationJSON, error) {
-	opts = append([]RequestOption{withOperation("dismissSubscriptionAction", true)}, opts...)
+	opts = append([]RequestOption{withOperation("dismissSubscriptionAction", false)}, opts...)
 	var result SdkDismissSubscriptionActionResponseValue200ApplicationJSON
 	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/subscriptions/%s/actions/%s/dismiss", url.PathEscape(fmt.Sprint(productSubscription)), url.PathEscape(fmt.Sprint(action))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkDismissSubscriptionActionRequestApplicationJson\",\"properties\":{\"idempotency_key\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}}},\"note\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"required\":[\"note\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {

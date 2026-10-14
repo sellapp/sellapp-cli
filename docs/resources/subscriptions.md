@@ -6,7 +6,7 @@
 
 Dismiss a subscription action
 
-Dismiss a pending lifecycle action that the provider left unresolved, which frees the subscription for its next change. Only a pending action can be dismissed, and the required `note` is stored on the action as its `error` so the decision stays on the record. An action in any other state returns `422` with the refusal sentence under `errors.subscription`, while a missing or over-long `note` returns an ordinary field error. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Dismiss a pending lifecycle action that the provider left unresolved, which frees the subscription for its next change. Only a pending action can be dismissed, and the required `note` is stored on the action as its `error` so the decision stays on the record. An action in any other state returns `422` with the refusal sentence under `errors.subscription`, while a missing or over-long `note` returns an ordinary field error. This operation does not replay completed dismissals: idempotency keys are ignored. After a lost response, retrieve the action before repeating the request; an already-dismissed action returns `422`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/subscriptions/dismiss-a-subscription-action) · Effect: **consequential**
 
@@ -19,7 +19,7 @@ sellapp subscriptions actions dismiss --product-subscription 124 4207 --note 'Co
 | --product-subscription | Yes | The productSubscription path parameter. |
 | action (positional) | Yes | The action path parameter. |
 | --note | Yes | Why the action is being dismissed. The note is kept on the dismissed action as its error. |
-| --body-idempotency-key | No | Optional idempotency key. You may also send this as the Idempotency-Key header. |
+| --body-idempotency-key | No | Accepted for compatibility but ignored by this operation. Retrieve the action after an uncertain response; repeating a completed dismissal returns 422. |
 
 The request body is required.
 

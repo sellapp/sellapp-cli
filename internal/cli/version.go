@@ -2,4 +2,4 @@
 
 package cli
 
-const cliVersion = "0.2.0"
+const cliVersion = "0.2.1"

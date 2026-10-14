@@ -115,7 +115,7 @@ var operationContracts = []operationContract{{method: "GET", pattern: regexp.Mus
 	{method: "POST", pattern: regexp.MustCompile("^/v2/subscriptions/[^/]+/actions/change-renewal-date/confirm$"), anonymous: false, apiKey: true, accessToken: true, customerSession: false, browserSession: false, clientBasic: false, apiKeyStore: false, apiKeyUsesStore: true, accessTokenStore: true, server: "", textResponse: false, neverRetry: false, declaredIdempotency: true, form: false},
 	{method: "GET", pattern: regexp.MustCompile("^/v2/subscriptions/[^/]+/actions$"), anonymous: false, apiKey: true, accessToken: true, customerSession: false, browserSession: false, clientBasic: false, apiKeyStore: false, apiKeyUsesStore: true, accessTokenStore: true, server: "", textResponse: false, neverRetry: false, declaredIdempotency: false, form: false},
 	{method: "GET", pattern: regexp.MustCompile("^/v2/subscriptions/[^/]+/actions/[^/]+$"), anonymous: false, apiKey: true, accessToken: true, customerSession: false, browserSession: false, clientBasic: false, apiKeyStore: false, apiKeyUsesStore: true, accessTokenStore: true, server: "", textResponse: false, neverRetry: false, declaredIdempotency: false, form: false},
-	{method: "POST", pattern: regexp.MustCompile("^/v2/subscriptions/[^/]+/actions/[^/]+/dismiss$"), anonymous: false, apiKey: true, accessToken: true, customerSession: false, browserSession: false, clientBasic: false, apiKeyStore: false, apiKeyUsesStore: true, accessTokenStore: true, server: "", textResponse: false, neverRetry: false, declaredIdempotency: true, form: false},
+	{method: "POST", pattern: regexp.MustCompile("^/v2/subscriptions/[^/]+/actions/[^/]+/dismiss$"), anonymous: false, apiKey: true, accessToken: true, customerSession: false, browserSession: false, clientBasic: false, apiKeyStore: false, apiKeyUsesStore: true, accessTokenStore: true, server: "", textResponse: false, neverRetry: false, declaredIdempotency: false, form: false},
 	{method: "GET", pattern: regexp.MustCompile("^/v2/bookings$"), anonymous: false, apiKey: true, accessToken: true, customerSession: false, browserSession: false, clientBasic: false, apiKeyStore: false, apiKeyUsesStore: true, accessTokenStore: true, server: "", textResponse: false, neverRetry: false, declaredIdempotency: false, form: false},
 	{method: "POST", pattern: regexp.MustCompile("^/v2/bookings/search$"), anonymous: false, apiKey: true, accessToken: true, customerSession: false, browserSession: false, clientBasic: false, apiKeyStore: false, apiKeyUsesStore: true, accessTokenStore: true, server: "", textResponse: false, neverRetry: false, declaredIdempotency: false, form: false},
 	{method: "GET", pattern: regexp.MustCompile("^/v2/bookings/[^/]+$"), anonymous: false, apiKey: true, accessToken: true, customerSession: false, browserSession: false, clientBasic: false, apiKeyStore: false, apiKeyUsesStore: true, accessTokenStore: true, server: "", textResponse: false, neverRetry: false, declaredIdempotency: false, form: false},
@@ -649,7 +649,7 @@ func (c *Client) request(ctx context.Context, method, path string, query, body, 
 			cancel()
 			return nil, &TransportError{Err: err}
 		}
-		req.Header.Set("User-Agent", "SellApp Go/0.2.0")
+		req.Header.Set("User-Agent", "SellApp Go/0.2.1")
 		if contentType != "" {
 			req.Header.Set("Content-Type", contentType)
 		}

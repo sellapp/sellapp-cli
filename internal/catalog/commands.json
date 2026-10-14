@@ -44139,7 +44139,7 @@
     {
       "operationId": "dismissSubscriptionAction",
       "target": "store",
-      "retry": "Reuse the same Idempotency-Key and exact request for one intended action, within the operation retention period. Inspect conflicts and uncertain outcomes.",
+      "retry": "No documented idempotency key. Inspect current state before repeating an uncertain write.",
       "authentication": {
         "alternatives": [
           [
@@ -44179,7 +44179,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/subscriptions/{productSubscription}/actions/{action}/dismiss",
-      "description": "Dismiss a subscription action\n\nDismiss a pending lifecycle action that the provider left unresolved, which frees the subscription for its next change. Only a pending action can be dismissed, and the required `note` is stored on the action as its `error` so the decision stays on the record. An action in any other state returns `422` with the refusal sentence under `errors.subscription`, while a missing or over-long `note` returns an ordinary field error. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Dismiss a subscription action\n\nDismiss a pending lifecycle action that the provider left unresolved, which frees the subscription for its next change. Only a pending action can be dismissed, and the required `note` is stored on the action as its `error` so the decision stays on the record. An action in any other state returns `422` with the refusal sentence under `errors.subscription`, while a missing or over-long `note` returns an ordinary field error. This operation does not replay completed dismissals: idempotency keys are ignored. After a lost response, retrieve the action before repeating the request; an already-dismissed action returns `422`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/dismiss-a-subscription-action",
       "effect": "consequential",
       "example": "sellapp subscriptions actions dismiss --product-subscription 124 4207 --note 'Confirmed with the customer that they no longer want the upgrade.' --yes",
@@ -44212,7 +44212,7 @@
         {
           "name": "idempotency_key",
           "flag": "body-idempotency-key",
-          "description": "Optional idempotency key. You may also send this as the Idempotency-Key header.",
+          "description": "Accepted for compatibility but ignored by this operation. Retrieve the action after an uncertain response; repeating a completed dismissal returns 422.",
           "required": false,
           "nullable": true,
           "binary": false,
@@ -44241,7 +44241,7 @@
           }
         }
       ],
-      "idempotencyKey": true,
+      "idempotencyKey": false,
       "idempotencyKeyRequired": false,
       "paginated": false,
       "executable": true,
