@@ -26,7 +26,7 @@ import (
 
 var targets = [][2]string{{"linux", "amd64"}, {"linux", "arm64"}, {"darwin", "amd64"}, {"darwin", "arm64"}, {"windows", "386"}, {"windows", "amd64"}, {"windows", "arm64"}}
 
-const version = "0.1.1"
+const version = "0.2.0"
 const repository = "sellapp/sellapp-cli"
 const productionOrigin = "https://sell.app"
 

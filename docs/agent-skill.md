@@ -29,7 +29,7 @@ Use structured JSON/JSONL output in scripts, finite pagination and polling limit
 
 Establish a connection and an explicit target for commerce operations.
 
-Contract: `fe25fd396af7918889c08bfa13e4285af1bb53f0e9b2a0cadba604cdf7f33547`; workflow: `20a92459d3c39dddcce05c1f6de46904ccb042b126c5a3408bbaa16009409ef1`. Source: `content/docs/api/(guides)/oauth-authorization.mdx`.
+Contract: `b9eb7046aa1e9bcd12c19188a0f2f4f4377ee48aa813bddaf984c3c58ea4e92e`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/oauth-authorization.mdx`.
 
 ## Prerequisites
 
@@ -104,7 +104,7 @@ New store creation is limited to one per user every 60 seconds across credential
 
 Create a catalog product with a purchasable variant and verify both records.
 
-Contract: `fe25fd396af7918889c08bfa13e4285af1bb53f0e9b2a0cadba604cdf7f33547`; workflow: `20a92459d3c39dddcce05c1f6de46904ccb042b126c5a3408bbaa16009409ef1`. Source: `content/docs/api/(guides)/sell-a-product.mdx`.
+Contract: `b9eb7046aa1e9bcd12c19188a0f2f4f4377ee48aa813bddaf984c3c58ea4e92e`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/sell-a-product.mdx`.
 
 ## Prerequisites
 
@@ -242,7 +242,7 @@ When a non-idempotent creation has an uncertain response, inspect existing recor
 
 Create an order and distinguish its checkout URL from confirmed payment.
 
-Contract: `fe25fd396af7918889c08bfa13e4285af1bb53f0e9b2a0cadba604cdf7f33547`; workflow: `20a92459d3c39dddcce05c1f6de46904ccb042b126c5a3408bbaa16009409ef1`. Source: `content/docs/api/(guides)/create-a-checkout.mdx`.
+Contract: `b9eb7046aa1e9bcd12c19188a0f2f4f4377ee48aa813bddaf984c3c58ea4e92e`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/create-a-checkout.mdx`.
 
 ## Prerequisites
 
@@ -324,7 +324,7 @@ Handle duplicate and out-of-order webhooks, and reconcile by reading current ord
 
 Inspect a sale and perform an explicitly intended recovery or refund.
 
-Contract: `fe25fd396af7918889c08bfa13e4285af1bb53f0e9b2a0cadba604cdf7f33547`; workflow: `20a92459d3c39dddcce05c1f6de46904ccb042b126c5a3408bbaa16009409ef1`. Source: `content/docs/api/(guides)/fulfil-an-order.mdx`.
+Contract: `b9eb7046aa1e9bcd12c19188a0f2f4f4377ee48aa813bddaf984c3c58ea4e92e`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/fulfil-an-order.mdx`.
 
 ## Prerequisites
 
@@ -420,7 +420,7 @@ Do not blindly repeat consequential writes after an uncertain result; inspect th
 
 Apply only the subscription action currently supported for its provider.
 
-Contract: `fe25fd396af7918889c08bfa13e4285af1bb53f0e9b2a0cadba604cdf7f33547`; workflow: `20a92459d3c39dddcce05c1f6de46904ccb042b126c5a3408bbaa16009409ef1`. Source: `content/docs/api/(guides)/handle-subscriptions.mdx`.
+Contract: `b9eb7046aa1e9bcd12c19188a0f2f4f4377ee48aa813bddaf984c3c58ea4e92e`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/handle-subscriptions.mdx`.
 
 ## Prerequisites
 
@@ -446,7 +446,7 @@ Recovery for this operation: Read again within finite pagination/polling bounds;
 
 ### 2. preparation
 
-Check the exact action. Stop for unsupported or customer_only; direct the customer to the documented path when applicable.
+Check the exact action. Stop for unsupported. A customer_only plan change or payment method update can still be requested on the customer's behalf; any other customer_only action goes to the customer through the documented path.
 
 Operation: `getSubscriptionCapabilities`. Effect: read. Target: store.
 
@@ -508,7 +508,7 @@ For an uncertain action, inspect current subscription state before attempting it
 
 Read the relevant ticket and messages, then send an authorized response.
 
-Contract: `fe25fd396af7918889c08bfa13e4285af1bb53f0e9b2a0cadba604cdf7f33547`; workflow: `20a92459d3c39dddcce05c1f6de46904ccb042b126c5a3408bbaa16009409ef1`. Source: `content/docs/api/(resources)/tickets/index.mdx`.
+Contract: `b9eb7046aa1e9bcd12c19188a0f2f4f4377ee48aa813bddaf984c3c58ea4e92e`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(resources)/tickets/index.mdx`.
 
 ## Prerequisites
 
@@ -608,7 +608,7 @@ Preserve valid credentials when a ticket-specific or store-specific permission f
 
 Create an event subscription and verify delivery and processing separately.
 
-Contract: `fe25fd396af7918889c08bfa13e4285af1bb53f0e9b2a0cadba604cdf7f33547`; workflow: `20a92459d3c39dddcce05c1f6de46904ccb042b126c5a3408bbaa16009409ef1`. Source: `content/docs/api/(guides)/webhooks.mdx`.
+Contract: `b9eb7046aa1e9bcd12c19188a0f2f4f4377ee48aa813bddaf984c3c58ea4e92e`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/webhooks.mdx`.
 
 ## Prerequisites
 
@@ -717,7 +717,7 @@ Do not log signing secrets, authorization headers or customer data unnecessarily
 
 Queue an export, poll within finite bounds and retrieve the completed file.
 
-Contract: `fe25fd396af7918889c08bfa13e4285af1bb53f0e9b2a0cadba604cdf7f33547`; workflow: `20a92459d3c39dddcce05c1f6de46904ccb042b126c5a3408bbaa16009409ef1`. Source: `content/docs/api/(resources)/exports/index.mdx`.
+Contract: `b9eb7046aa1e9bcd12c19188a0f2f4f4377ee48aa813bddaf984c3c58ea4e92e`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(resources)/exports/index.mdx`.
 
 ## Prerequisites
 
@@ -725,7 +725,7 @@ The selected store and permission for the requested export category.
 
 ## Preparation
 
-Use sales, tax, customers or affiliate_payouts with CSV or JSON. Date ranges are limited to 366 inclusive days; omitted dates cover today and the preceding 365 days. Only one export per store and two per account may be queued or running. On HTTP 429, respect Retry-After and poll the existing export. Reports over 10,000 source rows, 5 MiB of source data or 10 MiB of output fail without a partial download; use a smaller date range.
+Use sales, tax, customers or affiliate_payouts with CSV or JSON. Date ranges are limited to 366 inclusive days; omitted dates cover today and the preceding 365 days. Only one export per store and two per account may be queued or running. On HTTP 429, respect Retry-After and poll the existing export. Reports over 100,000 source rows, 50 MiB of source data or 100 MiB of output fail without a partial download; use a smaller date range.
 
 ### 1. execution
 

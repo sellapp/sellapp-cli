@@ -6,7 +6,7 @@
 
 Retrieve a webhook delivery
 
-Retrieve one redacted delivery. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Retrieve one redacted delivery. A disabled delivery with zero attempts was retained without contacting the endpoint. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/events) · Effect: **read**
 
@@ -145,7 +145,7 @@ Inspect the complete schema: `sellapp commands webhook-platform list-webhook-eve
 
 Replay a webhook delivery
 
-Accept no URL, payload, or query overrides. Resolve the current channel server-side, create a new delivery ID, retain the integration-event ID, and sign with a new timestamp. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Accept no URL, payload, or query overrides. Resolve the current channel server-side, create a new delivery ID, retain the integration-event ID, and sign with a new timestamp. A disabled channel returns 422: fix the endpoint and save the channel before replaying. A successful test alone does not re-enable delivery. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/events) · Effect: **consequential**
 

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "operationCount": 434,
-  "executableCount": 434,
+  "operationCount": 438,
+  "executableCount": 438,
   "commands": [
     {
       "operationId": "getAccount",
@@ -641,6 +641,12 @@
                     "SOL_USDT",
                     "SOL_USDC"
                   ]
+                }
+              },
+              "custom_payment_method_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
                 }
               },
               "other_settings": {
@@ -5944,7 +5950,7 @@
         {
           "name": "coupon_code",
           "flag": "coupon-code",
-          "description": "Value for coupon code.",
+          "description": "Optional coupon code. A charge takes a store-wide coupon for one-time purchases only: a coupon whose `applies_to` is `subscriptions` returns `422` with `Coupon code {code} only applies to subscriptions.`",
           "required": false,
           "nullable": true,
           "binary": false,
@@ -6826,6 +6832,23 @@
                       "type": "null"
                     }
                   ]
+                },
+                "applies_to": {
+                  "type": "string",
+                  "enum": [
+                    "one_time",
+                    "subscriptions"
+                  ]
+                },
+                "subscription_payments": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               },
               "required": [
@@ -7081,7 +7104,7 @@
         {
           "name": "discount",
           "flag": "discount",
-          "description": "A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit.",
+          "description": "A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead.",
           "required": true,
           "nullable": false,
           "binary": false,
@@ -7112,7 +7135,7 @@
         {
           "name": "products",
           "flag": "products",
-          "description": "Product IDs the coupon applies to when store_wide is false.",
+          "description": "Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -7127,7 +7150,7 @@
         {
           "name": "product_variants",
           "flag": "product-variants",
-          "description": "Optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants.",
+          "description": "Optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -7181,7 +7204,7 @@
         {
           "name": "minimum_amount",
           "flag": "minimum-amount",
-          "description": "A decimal minimum order amount in the store currency's major unit, or null for no minimum.",
+          "description": "A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum.",
           "required": false,
           "nullable": true,
           "binary": false,
@@ -7197,6 +7220,41 @@
                     "type": "string"
                   }
                 ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "applies_to",
+          "flag": "applies-to",
+          "description": "What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "subscriptions"
+            ]
+          }
+        },
+        {
+          "name": "subscription_payments",
+          "flag": "subscription-payments",
+          "description": "How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "integer"
               },
               {
                 "type": "null"
@@ -7546,7 +7604,7 @@
         {
           "name": "discount",
           "flag": "discount",
-          "description": "A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit.",
+          "description": "A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -7577,7 +7635,7 @@
         {
           "name": "products",
           "flag": "products",
-          "description": "Product IDs the coupon applies to when store_wide is false.",
+          "description": "Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -7592,7 +7650,7 @@
         {
           "name": "product_variants",
           "flag": "product-variants",
-          "description": "Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products.",
+          "description": "Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -7646,7 +7704,7 @@
         {
           "name": "minimum_amount",
           "flag": "minimum-amount",
-          "description": "A decimal minimum order amount in the store currency's major unit, or null for no minimum.",
+          "description": "A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum.",
           "required": false,
           "nullable": true,
           "binary": false,
@@ -7662,6 +7720,41 @@
                     "type": "string"
                   }
                 ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "applies_to",
+          "flag": "applies-to",
+          "description": "What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "subscriptions"
+            ]
+          }
+        },
+        {
+          "name": "subscription_payments",
+          "flag": "subscription-payments",
+          "description": "How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "integer"
               },
               {
                 "type": "null"
@@ -7967,7 +8060,7 @@
         {
           "name": "discount",
           "flag": "discount",
-          "description": "A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit.",
+          "description": "A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -7998,7 +8091,7 @@
         {
           "name": "products",
           "flag": "products",
-          "description": "Product IDs the coupon applies to when store_wide is false.",
+          "description": "Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -8013,7 +8106,7 @@
         {
           "name": "product_variants",
           "flag": "product-variants",
-          "description": "Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products.",
+          "description": "Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -8067,7 +8160,7 @@
         {
           "name": "minimum_amount",
           "flag": "minimum-amount",
-          "description": "A decimal minimum order amount in the store currency's major unit, or null for no minimum.",
+          "description": "A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum.",
           "required": false,
           "nullable": true,
           "binary": false,
@@ -8083,6 +8176,41 @@
                     "type": "string"
                   }
                 ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "applies_to",
+          "flag": "applies-to",
+          "description": "What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "subscriptions"
+            ]
+          }
+        },
+        {
+          "name": "subscription_payments",
+          "flag": "subscription-payments",
+          "description": "How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "integer"
               },
               {
                 "type": "null"
@@ -8229,6 +8357,23 @@
                           "type": "string"
                         }
                       ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "applies_to": {
+                  "type": "string",
+                  "enum": [
+                    "one_time",
+                    "subscriptions"
+                  ]
+                },
+                "subscription_payments": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
                     },
                     {
                       "type": "null"
@@ -8516,7 +8661,7 @@
         {
           "name": "discount",
           "flag": "discount",
-          "description": "A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit.",
+          "description": "A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead.",
           "required": true,
           "nullable": false,
           "binary": false,
@@ -8547,7 +8692,7 @@
         {
           "name": "products",
           "flag": "products",
-          "description": "Product IDs the coupon applies to when store_wide is false.",
+          "description": "Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -8562,7 +8707,7 @@
         {
           "name": "product_variants",
           "flag": "product-variants",
-          "description": "Optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants.",
+          "description": "Optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -8616,7 +8761,7 @@
         {
           "name": "minimum_amount",
           "flag": "minimum-amount",
-          "description": "A decimal minimum order amount in the store currency's major unit, or null for no minimum.",
+          "description": "A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum.",
           "required": false,
           "nullable": true,
           "binary": false,
@@ -8632,6 +8777,41 @@
                     "type": "string"
                   }
                 ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "applies_to",
+          "flag": "applies-to",
+          "description": "What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "subscriptions"
+            ]
+          }
+        },
+        {
+          "name": "subscription_payments",
+          "flag": "subscription-payments",
+          "description": "How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "integer"
               },
               {
                 "type": "null"
@@ -9017,7 +9197,7 @@
         {
           "name": "discount",
           "flag": "discount",
-          "description": "A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit.",
+          "description": "A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -9048,7 +9228,7 @@
         {
           "name": "products",
           "flag": "products",
-          "description": "Product IDs the coupon applies to when store_wide is false.",
+          "description": "Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -9063,7 +9243,7 @@
         {
           "name": "product_variants",
           "flag": "product-variants",
-          "description": "Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products.",
+          "description": "Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -9117,7 +9297,7 @@
         {
           "name": "minimum_amount",
           "flag": "minimum-amount",
-          "description": "A decimal minimum order amount in the store currency's major unit, or null for no minimum.",
+          "description": "A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum.",
           "required": false,
           "nullable": true,
           "binary": false,
@@ -9133,6 +9313,41 @@
                     "type": "string"
                   }
                 ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "applies_to",
+          "flag": "applies-to",
+          "description": "What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "subscriptions"
+            ]
+          }
+        },
+        {
+          "name": "subscription_payments",
+          "flag": "subscription-payments",
+          "description": "How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "integer"
               },
               {
                 "type": "null"
@@ -9456,7 +9671,7 @@
         {
           "name": "discount",
           "flag": "discount",
-          "description": "A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit.",
+          "description": "A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -9487,7 +9702,7 @@
         {
           "name": "products",
           "flag": "products",
-          "description": "Product IDs the coupon applies to when store_wide is false.",
+          "description": "Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -9502,7 +9717,7 @@
         {
           "name": "product_variants",
           "flag": "product-variants",
-          "description": "Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products.",
+          "description": "Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -9556,7 +9771,7 @@
         {
           "name": "minimum_amount",
           "flag": "minimum-amount",
-          "description": "A decimal minimum order amount in the store currency's major unit, or null for no minimum.",
+          "description": "A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum.",
           "required": false,
           "nullable": true,
           "binary": false,
@@ -9572,6 +9787,41 @@
                     "type": "string"
                   }
                 ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "applies_to",
+          "flag": "applies-to",
+          "description": "What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "subscriptions"
+            ]
+          }
+        },
+        {
+          "name": "subscription_payments",
+          "flag": "subscription-payments",
+          "description": "How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "integer"
               },
               {
                 "type": "null"
@@ -14126,10 +14376,10 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/customer-portal/subscriptions/{productSubscription}/actions/cancel-period-end",
-      "description": "Cancel at period end\n\nCancel at period end. Read capabilities first; state conflicts return 409.",
+      "description": "Cancel at period end\n\nSchedule the subscription to end when the current period ends. The customer keeps access until then. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.",
       "documentationUrl": "https://sell.app/docs/api/customer-portal",
       "effect": "consequential",
-      "example": "sellapp customer-portal cancel-customer-subscription-at-period-end 42 --reason 'Customer requested this change' --yes",
+      "example": "sellapp customer-portal cancel-customer-subscription-at-period-end 42 --reason 'Taking a break over the summer.' --yes",
       "bodyRequired": true,
       "sdkService": "CustomerPortal",
       "sdkMethod": "CancelSubscriptionAtPeriodEnd",
@@ -14148,70 +14398,27 @@
       ],
       "bodyFields": [
         {
-          "name": "preview_id",
-          "flag": "preview-id",
-          "description": "Value for preview id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "product_variant_id",
-          "flag": "product-variant-id",
-          "description": "Value for product variant id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "integer"
-          }
-        },
-        {
-          "name": "renewal_date",
-          "flag": "renewal-date",
-          "description": "Value for renewal date.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string",
-            "format": "date"
-          }
-        },
-        {
-          "name": "return_url",
-          "flag": "return-url",
-          "description": "Value for return url.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string",
-            "format": "uri"
-          }
-        },
-        {
           "name": "reason",
           "flag": "reason",
           "description": "Value for reason.",
           "required": false,
-          "nullable": false,
+          "nullable": true,
           "binary": false,
           "binaryArray": false,
           "schema": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       ],
       "idempotencyKey": true,
-      "idempotencyKeyRequired": true,
+      "idempotencyKeyRequired": false,
       "paginated": false,
       "executable": true,
       "adapter": "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/cancel-period-end"
@@ -14245,10 +14452,10 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/customer-portal/subscriptions/{productSubscription}/actions/cancel-immediately",
-      "description": "Cancel immediately\n\nCancel immediately. Read capabilities first; state conflicts return 409.",
+      "description": "Cancel immediately\n\nEnd the subscription now. A customer session cannot request a refund. It is the one action left on a Stripe or PayPal subscription with a payment still owed, and one of two left on a Razorpay one alongside a payment method update. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.",
       "documentationUrl": "https://sell.app/docs/api/customer-portal",
       "effect": "consequential",
-      "example": "sellapp customer-portal cancel-customer-subscription-immediately 42 --reason 'Customer requested this change' --yes",
+      "example": "sellapp customer-portal cancel-customer-subscription-immediately 42 --reason 'No longer needed.' --yes",
       "bodyRequired": true,
       "sdkService": "CustomerPortal",
       "sdkMethod": "CancelSubscriptionImmediately",
@@ -14267,70 +14474,27 @@
       ],
       "bodyFields": [
         {
-          "name": "preview_id",
-          "flag": "preview-id",
-          "description": "Value for preview id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "product_variant_id",
-          "flag": "product-variant-id",
-          "description": "Value for product variant id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "integer"
-          }
-        },
-        {
-          "name": "renewal_date",
-          "flag": "renewal-date",
-          "description": "Value for renewal date.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string",
-            "format": "date"
-          }
-        },
-        {
-          "name": "return_url",
-          "flag": "return-url",
-          "description": "Value for return url.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string",
-            "format": "uri"
-          }
-        },
-        {
           "name": "reason",
           "flag": "reason",
           "description": "Value for reason.",
           "required": false,
-          "nullable": false,
+          "nullable": true,
           "binary": false,
           "binaryArray": false,
           "schema": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       ],
       "idempotencyKey": true,
-      "idempotencyKeyRequired": true,
+      "idempotencyKeyRequired": false,
       "paginated": false,
       "executable": true,
       "adapter": "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/cancel-immediately"
@@ -14364,10 +14528,10 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/customer-portal/subscriptions/{productSubscription}/actions/change-plan/confirm",
-      "description": "Confirm a plan change\n\nConfirm a plan change. Read capabilities first; state conflicts return 409.",
+      "description": "Confirm a plan change\n\nConfirm a previewed plan change, sending back its `preview_token`. When the change still needs the customer to approve it with the provider or pay for it, the action is `pending` and `redirect_url` says where. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.",
       "documentationUrl": "https://sell.app/docs/api/customer-portal",
       "effect": "consequential",
-      "example": "sellapp customer-portal confirm-customer-subscription-plan-change 42 --preview-id preview_01K4 --yes",
+      "example": "sellapp customer-portal confirm-customer-subscription-plan-change 42 --target-variant-id 97 --preview-token subprev_portal_991 --yes",
       "bodyRequired": true,
       "sdkService": "CustomerPortal",
       "sdkMethod": "ConfirmSubscriptionPlanChange",
@@ -14386,22 +14550,10 @@
       ],
       "bodyFields": [
         {
-          "name": "preview_id",
-          "flag": "preview-id",
-          "description": "Value for preview id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "product_variant_id",
-          "flag": "product-variant-id",
-          "description": "Value for product variant id.",
-          "required": false,
+          "name": "target_variant_id",
+          "flag": "target-variant-id",
+          "description": "Value for target variant id.",
+          "required": true,
           "nullable": false,
           "binary": false,
           "binaryArray": false,
@@ -14410,46 +14562,68 @@
           }
         },
         {
-          "name": "renewal_date",
-          "flag": "renewal-date",
-          "description": "Value for renewal date.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string",
-            "format": "date"
-          }
-        },
-        {
-          "name": "return_url",
-          "flag": "return-url",
-          "description": "Value for return url.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string",
-            "format": "uri"
-          }
-        },
-        {
-          "name": "reason",
-          "flag": "reason",
-          "description": "Value for reason.",
-          "required": false,
+          "name": "preview_token",
+          "flag": "preview-token",
+          "description": "Value for preview token.",
+          "required": true,
           "nullable": false,
           "binary": false,
           "binaryArray": false,
           "schema": {
             "type": "string"
           }
+        },
+        {
+          "name": "effective_timing",
+          "flag": "effective-timing",
+          "description": "Value for effective timing.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "immediate",
+              "next_renewal"
+            ]
+          }
+        },
+        {
+          "name": "proration_behavior",
+          "flag": "proration-behavior",
+          "description": "Value for proration behavior.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "invoice_now",
+              "credit_next_invoice",
+              "none",
+              "provider_default"
+            ]
+          }
+        },
+        {
+          "name": "metadata",
+          "flag": "metadata",
+          "description": "Value for metadata.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
         }
       ],
       "idempotencyKey": true,
-      "idempotencyKeyRequired": true,
+      "idempotencyKeyRequired": false,
       "paginated": false,
       "executable": true,
       "adapter": "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/change-plan/confirm"
@@ -14483,10 +14657,10 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/customer-portal/subscriptions/{productSubscription}/actions/change-renewal-date/confirm",
-      "description": "Confirm a renewal-date change\n\nConfirm a renewal-date change. Read capabilities first; state conflicts return 409.",
+      "description": "Confirm a renewal-date change\n\nConfirm a renewal-date change, sending the `preview_token` when the plan requires a preview. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.",
       "documentationUrl": "https://sell.app/docs/api/customer-portal",
       "effect": "consequential",
-      "example": "sellapp customer-portal confirm-customer-subscription-renewal-date-change 42 --preview-id preview_01K4 --yes",
+      "example": "sellapp customer-portal confirm-customer-subscription-renewal-date-change 42 --renewal-date 2026-10-15T00:00:00Z --preview-token subprev_portal_renewal_991 --yes",
       "bodyRequired": true,
       "sdkService": "CustomerPortal",
       "sdkMethod": "ConfirmSubscriptionRenewalDateChange",
@@ -14505,53 +14679,35 @@
       ],
       "bodyFields": [
         {
-          "name": "preview_id",
-          "flag": "preview-id",
-          "description": "Value for preview id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "product_variant_id",
-          "flag": "product-variant-id",
-          "description": "Value for product variant id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "integer"
-          }
-        },
-        {
           "name": "renewal_date",
           "flag": "renewal-date",
           "description": "Value for renewal date.",
-          "required": false,
+          "required": true,
           "nullable": false,
           "binary": false,
           "binaryArray": false,
           "schema": {
             "type": "string",
-            "format": "date"
+            "format": "date-time"
           }
         },
         {
-          "name": "return_url",
-          "flag": "return-url",
-          "description": "Value for return url.",
+          "name": "preview_token",
+          "flag": "preview-token",
+          "description": "Value for preview token.",
           "required": false,
-          "nullable": false,
+          "nullable": true,
           "binary": false,
           "binaryArray": false,
           "schema": {
-            "type": "string",
-            "format": "uri"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -14559,16 +14715,37 @@
           "flag": "reason",
           "description": "Value for reason.",
           "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "metadata",
+          "flag": "metadata",
+          "description": "Value for metadata.",
+          "required": false,
           "nullable": false,
           "binary": false,
           "binaryArray": false,
           "schema": {
-            "type": "string"
+            "type": "object",
+            "properties": {},
+            "required": []
           }
         }
       ],
       "idempotencyKey": true,
-      "idempotencyKeyRequired": true,
+      "idempotencyKeyRequired": false,
       "paginated": false,
       "executable": true,
       "adapter": "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/change-renewal-date/confirm"
@@ -14759,7 +14936,7 @@
       ],
       "httpMethod": "GET",
       "apiPath": "/v2/customer-portal/subscriptions/{subscription}/capabilities",
-      "description": "Retrieve subscription capabilities\n\nRead immediately before displaying lifecycle controls.",
+      "description": "Retrieve subscription capabilities\n\nRead immediately before displaying lifecycle controls. Each of the nine actions (`pause`, `resume`, `cancel_at_period_end`, `cancel_immediately`, `keep_subscription`, `update_payment_method`, `change_plan`, `shift_billing_date`, and `set_auto_renew`) reports a status and the reason to show the customer when it is not available. While a Stripe, PayPal, or Razorpay subscription has a payment still owed, every action except `cancel_immediately` and, on Razorpay, `update_payment_method`, is `unsupported`. `resume` is `unsupported` on a subscription on hold for an unpaid renewal, which the customer pays and resumes on the store's customer portal page. The example is abbreviated to three of the actions.",
       "documentationUrl": "https://sell.app/docs/api/customer-portal",
       "effect": "read",
       "example": "sellapp customer-portal get-customer-portal-subscription-capabilities 42",
@@ -14905,7 +15082,7 @@
       ],
       "httpMethod": "GET",
       "apiPath": "/v2/customer-portal/subscriptions",
-      "description": "List customer subscriptions\n\nList subscriptions belonging to the customer session.",
+      "description": "List customer subscriptions\n\nList subscriptions belonging to the customer session, newest first, 15 per page. `trial_ends_at` is only set while a subscription is `TRIALING`.",
       "documentationUrl": "https://sell.app/docs/api/customer-portal",
       "effect": "read",
       "example": "sellapp customer-portal list-customer-portal-subscriptions",
@@ -14917,7 +15094,7 @@
       "bodyFields": [],
       "idempotencyKey": false,
       "idempotencyKeyRequired": false,
-      "paginated": false,
+      "paginated": true,
       "executable": true,
       "adapter": "GET /v2/customer-portal/subscriptions"
     },
@@ -14950,10 +15127,10 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/customer-portal/subscriptions/{productSubscription}/actions/pause",
-      "description": "Pause a subscription\n\nPause a subscription. Read capabilities first; state conflicts return 409.",
+      "description": "Pause a subscription\n\nPause billing, optionally until `resume_at`. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.",
       "documentationUrl": "https://sell.app/docs/api/customer-portal",
       "effect": "consequential",
-      "example": "sellapp customer-portal pause-customer-subscription 42 --reason 'Customer requested this change' --yes",
+      "example": "sellapp customer-portal pause-customer-subscription 42 --resume-at 2026-11-01T00:00:00Z --yes",
       "bodyRequired": true,
       "sdkService": "CustomerPortal",
       "sdkMethod": "PauseSubscription",
@@ -14972,53 +15149,23 @@
       ],
       "bodyFields": [
         {
-          "name": "preview_id",
-          "flag": "preview-id",
-          "description": "Value for preview id.",
+          "name": "resume_at",
+          "flag": "resume-at",
+          "description": "Value for resume at.",
           "required": false,
-          "nullable": false,
+          "nullable": true,
           "binary": false,
           "binaryArray": false,
           "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "product_variant_id",
-          "flag": "product-variant-id",
-          "description": "Value for product variant id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "integer"
-          }
-        },
-        {
-          "name": "renewal_date",
-          "flag": "renewal-date",
-          "description": "Value for renewal date.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string",
-            "format": "date"
-          }
-        },
-        {
-          "name": "return_url",
-          "flag": "return-url",
-          "description": "Value for return url.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string",
-            "format": "uri"
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -15026,23 +15173,30 @@
           "flag": "reason",
           "description": "Value for reason.",
           "required": false,
-          "nullable": false,
+          "nullable": true,
           "binary": false,
           "binaryArray": false,
           "schema": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       ],
       "idempotencyKey": true,
-      "idempotencyKeyRequired": true,
+      "idempotencyKeyRequired": false,
       "paginated": false,
       "executable": true,
       "adapter": "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/pause"
     },
     {
       "operationId": "previewCustomerSubscriptionPlanChange",
-      "retry": "Reuse the same Idempotency-Key and exact request for one intended action, within the operation retention period. Inspect conflicts and uncertain outcomes.",
+      "retry": "No documented idempotency key. Inspect current state before repeating an uncertain write.",
       "authentication": {
         "alternatives": [
           [
@@ -15069,10 +15223,10 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/customer-portal/subscriptions/{productSubscription}/actions/change-plan/preview",
-      "description": "Preview a plan change\n\nPreview a plan change. Read capabilities first; state conflicts return 409.",
+      "description": "Preview a plan change\n\nPreview a plan change before confirming it. On Stripe and in-house subscriptions, `preview.payment_required` says whether confirming charges `amount_due` today or leaves any amount to the next invoice, and `preview.renewal_date` says when the subscription renews next. A plan change during a trial never charges today. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.",
       "documentationUrl": "https://sell.app/docs/api/customer-portal",
       "effect": "consequential",
-      "example": "sellapp customer-portal preview-customer-subscription-plan-change 42 --product-variant-id 84 --yes",
+      "example": "sellapp customer-portal preview-customer-subscription-plan-change 42 --target-variant-id 97 --yes",
       "bodyRequired": true,
       "sdkService": "CustomerPortal",
       "sdkMethod": "PreviewSubscriptionPlanChange",
@@ -15091,22 +15245,10 @@
       ],
       "bodyFields": [
         {
-          "name": "preview_id",
-          "flag": "preview-id",
-          "description": "Value for preview id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "product_variant_id",
-          "flag": "product-variant-id",
-          "description": "Value for product variant id.",
-          "required": false,
+          "name": "target_variant_id",
+          "flag": "target-variant-id",
+          "description": "Value for target variant id.",
+          "required": true,
           "nullable": false,
           "binary": false,
           "binaryArray": false,
@@ -15115,53 +15257,63 @@
           }
         },
         {
-          "name": "renewal_date",
-          "flag": "renewal-date",
-          "description": "Value for renewal date.",
+          "name": "effective_timing",
+          "flag": "effective-timing",
+          "description": "Value for effective timing.",
           "required": false,
           "nullable": false,
           "binary": false,
           "binaryArray": false,
           "schema": {
             "type": "string",
-            "format": "date"
+            "enum": [
+              "immediate",
+              "next_renewal"
+            ]
           }
         },
         {
-          "name": "return_url",
-          "flag": "return-url",
-          "description": "Value for return url.",
+          "name": "proration_behavior",
+          "flag": "proration-behavior",
+          "description": "Value for proration behavior.",
           "required": false,
           "nullable": false,
           "binary": false,
           "binaryArray": false,
           "schema": {
             "type": "string",
-            "format": "uri"
+            "enum": [
+              "invoice_now",
+              "credit_next_invoice",
+              "none",
+              "provider_default"
+            ]
           }
         },
         {
-          "name": "reason",
-          "flag": "reason",
-          "description": "Value for reason.",
+          "name": "metadata",
+          "flag": "metadata",
+          "description": "Value for metadata.",
           "required": false,
           "nullable": false,
           "binary": false,
           "binaryArray": false,
           "schema": {
-            "type": "string"
+            "type": "object",
+            "properties": {},
+            "required": []
           }
         }
       ],
-      "idempotencyKey": true,
-      "idempotencyKeyRequired": true,
+      "idempotencyKey": false,
+      "idempotencyKeyRequired": false,
       "paginated": false,
       "executable": true,
       "adapter": "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/change-plan/preview"
     },
     {
       "operationId": "previewCustomerSubscriptionRenewalDateChange",
-      "retry": "Reuse the same Idempotency-Key and exact request for one intended action, within the operation retention period. Inspect conflicts and uncertain outcomes.",
+      "retry": "No documented idempotency key. Inspect current state before repeating an uncertain write.",
       "authentication": {
         "alternatives": [
           [
@@ -15188,10 +15340,10 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/customer-portal/subscriptions/{productSubscription}/actions/change-renewal-date/preview",
-      "description": "Preview a renewal-date change\n\nPreview a renewal-date change. Read capabilities first; state conflicts return 409.",
+      "description": "Preview a renewal-date change\n\nPreview moving the next renewal to `renewal_date`. `preview` is the provider's own preview, so its keys differ per provider. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.",
       "documentationUrl": "https://sell.app/docs/api/customer-portal",
       "effect": "consequential",
-      "example": "sellapp customer-portal preview-customer-subscription-renewal-date-change 42 --renewal-date 2026-10-15 --yes",
+      "example": "sellapp customer-portal preview-customer-subscription-renewal-date-change 42 --renewal-date 2026-10-15T00:00:00Z --yes",
       "bodyRequired": true,
       "sdkService": "CustomerPortal",
       "sdkMethod": "PreviewSubscriptionRenewalDateChange",
@@ -15210,53 +15362,16 @@
       ],
       "bodyFields": [
         {
-          "name": "preview_id",
-          "flag": "preview-id",
-          "description": "Value for preview id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "product_variant_id",
-          "flag": "product-variant-id",
-          "description": "Value for product variant id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "integer"
-          }
-        },
-        {
           "name": "renewal_date",
           "flag": "renewal-date",
           "description": "Value for renewal date.",
-          "required": false,
+          "required": true,
           "nullable": false,
           "binary": false,
           "binaryArray": false,
           "schema": {
             "type": "string",
-            "format": "date"
-          }
-        },
-        {
-          "name": "return_url",
-          "flag": "return-url",
-          "description": "Value for return url.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string",
-            "format": "uri"
+            "format": "date-time"
           }
         },
         {
@@ -15264,16 +15379,37 @@
           "flag": "reason",
           "description": "Value for reason.",
           "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "metadata",
+          "flag": "metadata",
+          "description": "Value for metadata.",
+          "required": false,
           "nullable": false,
           "binary": false,
           "binaryArray": false,
           "schema": {
-            "type": "string"
+            "type": "object",
+            "properties": {},
+            "required": []
           }
         }
       ],
-      "idempotencyKey": true,
-      "idempotencyKeyRequired": true,
+      "idempotencyKey": false,
+      "idempotencyKeyRequired": false,
       "paginated": false,
       "executable": true,
       "adapter": "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/change-renewal-date/preview"
@@ -15307,14 +15443,14 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/customer-portal/subscriptions/{productSubscription}/actions/resume",
-      "description": "Resume a subscription\n\nResume a subscription. Read capabilities first; state conflicts return 409.",
+      "description": "Resume a subscription\n\nResume a paused subscription. A subscription the store bills in house that is on hold for an unpaid renewal comes back only when the customer pays that renewal on the store's customer portal page, so it is refused. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.",
       "documentationUrl": "https://sell.app/docs/api/customer-portal",
       "effect": "consequential",
-      "example": "sellapp customer-portal resume-customer-subscription 42 --reason 'Customer requested this change' --yes",
-      "bodyRequired": true,
+      "example": "sellapp customer-portal resume-customer-subscription 42 --yes",
+      "bodyRequired": false,
       "sdkService": "CustomerPortal",
       "sdkMethod": "ResumeSubscription",
-      "requestBodyEncoding": "json",
+      "requestBodyEncoding": null,
       "parameters": [
         {
           "name": "productSubscription",
@@ -15327,72 +15463,9 @@
           "positional": true
         }
       ],
-      "bodyFields": [
-        {
-          "name": "preview_id",
-          "flag": "preview-id",
-          "description": "Value for preview id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "product_variant_id",
-          "flag": "product-variant-id",
-          "description": "Value for product variant id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "integer"
-          }
-        },
-        {
-          "name": "renewal_date",
-          "flag": "renewal-date",
-          "description": "Value for renewal date.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string",
-            "format": "date"
-          }
-        },
-        {
-          "name": "return_url",
-          "flag": "return-url",
-          "description": "Value for return url.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string",
-            "format": "uri"
-          }
-        },
-        {
-          "name": "reason",
-          "flag": "reason",
-          "description": "Value for reason.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string"
-          }
-        }
-      ],
+      "bodyFields": [],
       "idempotencyKey": true,
-      "idempotencyKeyRequired": true,
+      "idempotencyKeyRequired": false,
       "paginated": false,
       "executable": true,
       "adapter": "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/resume"
@@ -15537,10 +15610,10 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/customer-portal/subscriptions/{productSubscription}/actions/update-payment-method",
-      "description": "Update payment method\n\nUpdate payment method. Read capabilities first; state conflicts return 409.",
+      "description": "Update payment method\n\nStart a payment method update. Send the customer to `redirect_url` to finish it with the provider. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.",
       "documentationUrl": "https://sell.app/docs/api/customer-portal",
       "effect": "consequential",
-      "example": "sellapp customer-portal update-customer-subscription-payment-method 42 --reason 'Customer requested this change' --yes",
+      "example": "sellapp customer-portal update-customer-subscription-payment-method 42 --return-url https://acme.sell.app/customer-portal/subscriptions/991 --yes",
       "bodyRequired": true,
       "sdkService": "CustomerPortal",
       "sdkMethod": "UpdateSubscriptionPaymentMethod",
@@ -15559,70 +15632,28 @@
       ],
       "bodyFields": [
         {
-          "name": "preview_id",
-          "flag": "preview-id",
-          "description": "Value for preview id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "product_variant_id",
-          "flag": "product-variant-id",
-          "description": "Value for product variant id.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "integer"
-          }
-        },
-        {
-          "name": "renewal_date",
-          "flag": "renewal-date",
-          "description": "Value for renewal date.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string",
-            "format": "date"
-          }
-        },
-        {
           "name": "return_url",
           "flag": "return-url",
           "description": "Value for return url.",
           "required": false,
-          "nullable": false,
+          "nullable": true,
           "binary": false,
           "binaryArray": false,
           "schema": {
-            "type": "string",
-            "format": "uri"
-          }
-        },
-        {
-          "name": "reason",
-          "flag": "reason",
-          "description": "Value for reason.",
-          "required": false,
-          "nullable": false,
-          "binary": false,
-          "binaryArray": false,
-          "schema": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       ],
       "idempotencyKey": true,
-      "idempotencyKeyRequired": true,
+      "idempotencyKeyRequired": false,
       "paginated": false,
       "executable": true,
       "adapter": "POST /v2/customer-portal/subscriptions/{productSubscription}/actions/update-payment-method"
@@ -17291,7 +17322,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/exports",
-      "description": "Create an export\n\nCreate a queued sales, tax, customer or affiliate payout report. One export may be queued or running per store, and two per requesting account across all credentials and stores. When capacity is full, HTTP 429 includes Retry-After: 60; poll the existing export and wait before creating another. Date ranges include both end dates and may span at most 366 calendar days. Omitted or null to defaults to today; omitted or null from defaults to 365 days before to. Sales and tax use sale update dates; customers and affiliate payouts use creation dates. Reports are limited to 10,000 source rows, 5 MiB of serialized source data and a 10 MiB output file. Tax summaries count source sales toward these limits. A report that exceeds a limit fails without publishing a partial file; request a smaller date range. Jobs may wait up to 15 minutes to start and run for at most 60 seconds. The requesting actor is recorded but is not returned in this response. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request. Sales, tax and customer reports require invoice store permission. Affiliate payout reports require affiliate and affiliate:payout permissions. The category selects the applicable permission checks; listing returns only authorized categories.",
+      "description": "Create an export\n\nCreate a queued sales, tax, customer or affiliate payout report. One export may be queued or running per store, and two per requesting account across all credentials and stores. When capacity is full, HTTP 429 includes Retry-After: 60; poll the existing export and wait before creating another. Date ranges include both end dates and may span at most 366 calendar days. Omitted or null to defaults to today; omitted or null from defaults to 365 days before to. Sales and tax use sale update dates; customers and affiliate payouts use creation dates. Reports are limited to 100,000 source rows, 50 MiB of serialized source data and a 100 MiB output file. Tax summaries count source sales toward these limits. A report that exceeds a limit fails without publishing a partial file; request a smaller date range. Jobs may wait up to 15 minutes to start and run for at most 300 seconds, including up to 240 seconds of report generation. The requesting actor is recorded but is not returned in this response. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request. Sales, tax and customer reports require invoice store permission. Affiliate payout reports require affiliate and affiliate:payout permissions. The category selects the applicable permission checks; listing returns only authorized categories.",
       "documentationUrl": "https://sell.app/docs/api/exports",
       "effect": "consequential",
       "example": "sellapp exports create-export --body '{\"type\":\"sales\",\"format\":\"csv\",\"parameters\":{\"from\":\"2026-08-01\",\"to\":\"2026-08-31\"}}' --yes",
@@ -21299,7 +21330,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/invoices",
-      "description": "Create an invoice\n\nCreate an invoice for one or more product variants. Credit products are direct-only: send a credits variant by itself, use a quantity covered by its credit rate tiers, and respect the variant quantity increment rules. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Create an invoice\n\nCreate an invoice for one or more product variants. Credit products are direct-only: send a credits variant by itself, use a quantity covered by its credit rate tiers, and respect the variant quantity increment rules. A subscription plan that offers a trial is priced at the trial, nothing for a free trial and the trial price for a paid one, unless the customer already had a trial of that product; then it is priced at the plan price. Two requests racing for the same trial can be refused with a `422` on `invoice`. A cart carries at most one subscription plan and nothing else; a plan mixed with other products or with a second plan returns `422` on `product_variants.{variant_id}`, and a plan's `quantity` other than 1 returns `422` on `quantity`. A customer who already holds the plan, matched by `customer_email`, is refused with `422` on `invoice` while that subscription is active, trialing, past due, or unpaid, whichever payment method bills it. A subscription scheduled to end still blocks while it can be kept, and the message then tells the customer to keep it from the customer portal. One that can no longer be kept, such as a PayPal subscription cancelled at period end, does not block. For an in-house subscription on hold for an unpaid renewal, the message tells the customer to pay and resume it from the customer portal. A `coupon` discounts only the lines of its kind, set by the coupon's `applies_to`. A `subscriptions` coupon discounts the plan's first `subscription_payments` payments when the `payment_method` can carry the discount: Stripe, which carries more than one discounted payment only on a monthly or yearly plan, or a method the store bills in house. On PayPal, Razorpay, or a weekly or daily Stripe plan discounted for more than one payment, the plan sells at its full price and the coupon is left off the order without an error. A coupon for the other kind, a `subscriptions` coupon on a plan that starts with a trial, and a fixed amount that would make the plan free each return `422` on `coupon`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/invoices/create-an-invoice",
       "effect": "consequential",
       "example": "sellapp invoices create --body '{\"customer_email\":\"maya.chen@example.com\",\"payment_method\":\"STRIPE\",\"product_variants\":{\"4321\":{\"quantity\":1}}}' --yes",
@@ -21325,7 +21356,7 @@
         {
           "name": "customer_ip",
           "flag": "customer-ip",
-          "description": "Value for customer ip.",
+          "description": "The IP address the customer is buying from. Send it when you sell a plan with a trial: a trial of the same product taken from this address in the last 30 days counts as the customer's. Without it, only `customer_email` is checked, so a customer could take another trial with a new email address.",
           "required": false,
           "nullable": true,
           "binary": false,
@@ -21760,7 +21791,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/invoices/{invoice}/checkout",
-      "description": "Create a checkout session\n\nCreate or reuse a payment session for a pending invoice. Create the invoice first, then send the customer to the returned top-level `payment_url`. A zero-priced checkout can return a paid invoice without a URL; delivery may still be queued. Check for a URL before redirecting and verify payment through signed events or a fresh read. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Create a checkout session\n\nCreate or reuse a payment session for a pending invoice. Create the invoice first, then send the customer to the returned top-level `payment_url`. A new session answers `201`; if the invoice already has one, that session is returned with `200`. An invoice that costs nothing, or that the customer wallet covers in full, is marked as paid and answers `200` without a `payment_url`; delivery may still be queued. A free trial sold through Stripe, PayPal, or Razorpay is the exception: the customer still has to authorise the subscription with that provider, so it answers with a `payment_url` and the invoice stays pending until they do. An unpaid trial invoice stops being payable after 72 hours, or on those three providers once the trial it sold is about to end, and then answers `422` on `invoice.checkout`. Check for a URL before redirecting and verify payment through signed events or a fresh read. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/invoices/create-a-checkout-session",
       "effect": "consequential",
       "example": "sellapp invoices go-to-checkout 9001 --yes",
@@ -22034,16 +22065,16 @@
           "valueKind": "string"
         },
         {
-          "name": "status",
-          "description": "Filter by one or more invoice statuses.",
+          "name": "status[]",
+          "description": "Filter by one or more invoice statuses. Repeat the parameter to select several.",
           "flag": "status",
           "location": "query",
           "required": false,
           "valueKind": "json"
         },
         {
-          "name": "payment_methods",
-          "description": "Filter by one or more payment methods.",
+          "name": "payment_methods[]",
+          "description": "Filter by one or more payment methods. Repeat the parameter to select several.",
           "flag": "payment-methods",
           "location": "query",
           "required": false,
@@ -24797,7 +24828,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/orders",
-      "description": "Create an order\n\nCreate an order with one or more product-variant line items and start checkout. This can create provider payment sessions, reserve stock or wallet funds, and begin fulfillment for a free or fully wallet-funded order. Requires the invoice ability or orders:write OAuth scope and current store permission. Use the same Idempotency-Key and identical body after a lost response; inspect the order before creating a new key. The payment.checkout_url is a handoff, not proof of payment. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Create an order\n\nCreate an order with one or more product-variant line items and start checkout. This can create provider payment sessions, reserve stock or wallet funds, and begin fulfillment for a free or fully wallet-funded order. Requires the invoice ability or orders:write OAuth scope and current store permission. Use the same Idempotency-Key and identical body after a lost response; inspect the order before creating a new key. The payment.checkout_url is a handoff, not proof of payment. A subscription plan that offers a trial is priced at the trial, nothing for a free trial and the trial price for a paid one, unless the customer already had a trial of that product, matched by `customer_email` or a recent `customer_ip`; then it is priced at the plan price. Two requests racing for the same trial can be refused with a `422` on `invoice`. A cart carries at most one subscription plan and nothing else; a plan mixed with other products or with a second plan returns `422` on `product_variants.{variant_id}`, and a plan's `quantity` other than 1 returns `422` on `quantity`. A customer who already holds the plan, matched by `customer_email`, is refused with `422` on `invoice` while that subscription is active, trialing, past due, or unpaid, whichever payment method bills it. A subscription scheduled to end still blocks while it can be kept, and the message then tells the customer to keep it from the customer portal. One that can no longer be kept, such as a PayPal subscription cancelled at period end, does not block. For an in-house subscription on hold for an unpaid renewal, the message tells the customer to pay and resume it from the customer portal. A `coupon` discounts only the lines of its kind, set by the coupon's `applies_to`. A `subscriptions` coupon discounts the plan's first `subscription_payments` payments when the `payment_method` can carry the discount: Stripe, which carries more than one discounted payment only on a monthly or yearly plan, or a method the store bills in house. On PayPal, Razorpay, or a weekly or daily Stripe plan discounted for more than one payment, the plan sells at its full price and the coupon is left off the order without an error. A coupon for the other kind, a `subscriptions` coupon on a plan that starts with a trial, and a fixed amount that would make the plan free each return `422` on `coupon`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/orders/create-and-operate",
       "effect": "consequential",
       "example": "sellapp orders create --body '{\"customer_email\":\"maya@example.com\",\"payment_method\":\"STRIPE\",\"product_variants\":{\"4321\":{\"quantity\":1}}}' --yes",
@@ -24823,7 +24854,7 @@
         {
           "name": "customer_ip",
           "flag": "customer-ip",
-          "description": "Value for customer ip.",
+          "description": "The IP address the customer is buying from. Send it when you sell a plan with a trial: a trial of the same product taken from this address in the last 30 days counts as the customer's. Without it, only `customer_email` is checked, so a customer could take another trial with a new email address.",
           "required": false,
           "nullable": true,
           "binary": false,
@@ -25051,7 +25082,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/orders/{order}/checkout",
-      "description": "Create order checkout\n\nStart or reuse checkout for a PENDING order. A new nonfree checkout returns 201; an existing payment session or free order returns 200. Free or fully wallet-funded checkout can mark the order paid. Failures can mark the order FAILED and release wallet reservations. Do not infer payment from a checkout URL or browser return. The optional expected_status field is validated but is not a checkout concurrency precondition. Requires the invoice ability or orders:write OAuth scope and current store permission. Idempotency-Key is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns 409. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Create order checkout\n\nStart or reuse checkout for a PENDING order. A new payment session returns 201; if the order already has one, that session is returned with 200. An order that costs nothing, or that the customer wallet covers in full, is marked as paid and returns 200 with a null payment.checkout_url. A free trial sold through Stripe, PayPal, or Razorpay is the exception: the customer still has to authorise the subscription with that provider, so checkout returns its payment.checkout_url and the order stays PENDING until they do. An unpaid order that sold a trial stops being payable after 72 hours, or on those three providers once the trial it sold is about to end; checkout then returns 422 on order.checkout, the order stays PENDING, and the customer has to start a new checkout. An order that is no longer PENDING also returns 422 on order.checkout. Other failures can mark the order FAILED and release wallet reservations. Do not infer payment from a checkout URL or browser return. The optional expected_status field is validated but is not a checkout concurrency precondition. Requires the invoice ability or orders:write OAuth scope and current store permission. Idempotency-Key is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns 409. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/orders/create-and-operate",
       "effect": "consequential",
       "example": "sellapp orders create-checkout 9001 --yes",
@@ -25179,7 +25210,7 @@
         {
           "name": "customer_ip",
           "flag": "customer-ip",
-          "description": "Value for customer ip.",
+          "description": "The IP address the customer is buying from. Send it when you sell a plan with a trial: a trial of the same product taken from this address in the last 30 days counts as the customer's. Without it, only `customer_email` is checked, so a customer could take another trial with a new email address.",
           "required": false,
           "nullable": true,
           "binary": false,
@@ -28877,6 +28908,12 @@
                     ]
                   }
                 },
+                "custom_payment_method_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "other_settings": {
                   "type": "object",
                   "properties": {
@@ -30565,7 +30602,7 @@
         {
           "name": "payment_methods",
           "flag": "payment-methods",
-          "description": "Value for payment methods.",
+          "description": "Complete gateway selection for this variant. Selecting CUSTOM_PAYMENT_METHOD also requires at least one custom_payment_method_ids entry.",
           "required": true,
           "nullable": false,
           "binary": false,
@@ -30613,6 +30650,21 @@
                 "SOL_USDT",
                 "SOL_USDC"
               ]
+            }
+          }
+        },
+        {
+          "name": "custom_payment_method_ids",
+          "flag": "custom-payment-method-ids",
+          "description": "Enabled, usable custom payment method ULIDs belonging to the selected store. Supply at least one when payment_methods includes CUSTOM_PAYMENT_METHOD. Include CUSTOM_PAYMENT_METHOD in payment_methods whenever sending nonempty IDs. On updates, omitting both selections preserves the current methods. Nonempty IDs are rejected when custom payments are not selected.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         },
@@ -30696,14 +30748,14 @@
       ],
       "httpMethod": "DELETE",
       "apiPath": "/v2/products/{product}/variants/{variant}",
-      "description": "Delete a product variant\n\nDeletes a product variant. This will permanently delete the product variant and all of its details, including the sensitive deliverables, will no longer be retrievable. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Delete a product variant\n\nSoft-delete a variant in the authenticated store. Variants referenced by non-terminal subscriptions cannot be deleted. Send expected_updated_at from the latest variant response to reject a stale deletion with 422. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/product-variants/delete-a-product-variant",
       "effect": "consequential",
       "example": "sellapp product-variants delete --product 1 2 --yes",
       "bodyRequired": false,
       "sdkService": "ProductVariants",
       "sdkMethod": "Delete",
-      "requestBodyEncoding": null,
+      "requestBodyEncoding": "json",
       "parameters": [
         {
           "name": "product",
@@ -30725,7 +30777,21 @@
           "positional": true
         }
       ],
-      "bodyFields": [],
+      "bodyFields": [
+        {
+          "name": "expected_updated_at",
+          "flag": "expected-updated-at",
+          "description": "Optional optimistic-concurrency snapshot. Send the exact `updated_at` value from the product you last retrieved; the mutation is rejected if the product has changed.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      ],
       "idempotencyKey": false,
       "idempotencyKeyRequired": false,
       "paginated": false,
@@ -30970,7 +31036,7 @@
       ],
       "httpMethod": "PUT",
       "apiPath": "/v2/products/{product}/variants/{variant}/pricing",
-      "description": "Replace product variant pricing\n\nReplace a variant's pricing and payment-method selection. Omitted `compare_at_price` and `bulk_discount` values are cleared. An empty payment-method array is accepted only when the resulting published variant is genuinely free, including having no paid credit-rate tiers. Requires the `listing` Sanctum ability. Relationship IDs are scoped to the current store. Use the ISO 8601 string `expected_updated_at` to reject stale writes. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Replace product variant pricing\n\nReplace a variant's pricing and payment-method selection. Omitted `compare_at_price` and `bulk_discount` values are cleared. An omitted `trial` is kept. A `trial` is accepted only on `SUBSCRIPTION` pricing and is dropped when the pricing becomes `SINGLE_PAYMENT`. Send `trial: null` to remove it. An empty payment-method array is accepted only when the resulting published variant is genuinely free, including having no paid credit-rate tiers. Bundle products only support one-time pricing. A bundle variant whose resulting pricing type is `SUBSCRIPTION` is refused with a `422` carrying that sentence on `pricing.type`. Requires the `listing` Sanctum ability. Relationship IDs are scoped to the current store. Use the ISO 8601 string `expected_updated_at` to reject stale writes. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/product-variants",
       "effect": "write",
       "example": "sellapp product-variants pricing replace --product 120 4321 --body '{\"pricing\":{\"type\":\"SUBSCRIPTION\",\"humble\":false,\"price\":{\"price\":1999,\"currency\":\"USD\"},\"frequency\":{\"value\":1,\"interval\":\"MONTH\"}},\"payment_methods\":[\"STRIPE\"]}'",
@@ -31140,6 +31206,103 @@
                   "value",
                   "interval"
                 ]
+              },
+              "trial": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "free",
+                          "paid"
+                        ]
+                      },
+                      "length": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "integer"
+                          },
+                          "interval": {
+                            "type": "string",
+                            "enum": [
+                              "DAY",
+                              "WEEK",
+                              "MONTH",
+                              "YEAR"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "interval"
+                        ]
+                      },
+                      "price": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "price": {
+                                "type": "integer"
+                              },
+                              "currency": {
+                                "type": "string",
+                                "enum": [
+                                  "AUD",
+                                  "BRL",
+                                  "CAD",
+                                  "CNY",
+                                  "CZK",
+                                  "DKK",
+                                  "EUR",
+                                  "GHS",
+                                  "HKD",
+                                  "HUF",
+                                  "ILS",
+                                  "INR",
+                                  "JPY",
+                                  "MYR",
+                                  "MXN",
+                                  "NGN",
+                                  "TWD",
+                                  "NZD",
+                                  "NOK",
+                                  "PHP",
+                                  "PLN",
+                                  "GBP",
+                                  "RUB",
+                                  "SGD",
+                                  "SEK",
+                                  "CHF",
+                                  "THB",
+                                  "USD",
+                                  "ZAR"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "price",
+                              "currency"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "length"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "required": [
@@ -31308,7 +31471,7 @@
       ],
       "httpMethod": "PATCH",
       "apiPath": "/v2/products/{product}/variants/{variant}/pricing",
-      "description": "Partially update product variant pricing\n\nUpdate only the supplied pricing, subscription cadence, quantity pricing tier, or payment-method fields; omitted fields retain their current values. An empty payment-method array is accepted only when the resulting published variant is genuinely free, including having no paid credit-rate tiers. Requires the `listing` Sanctum ability. Relationship IDs are scoped to the current store. Use the ISO 8601 string `expected_updated_at` to reject stale writes. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Partially update product variant pricing\n\nUpdate only the supplied pricing, subscription cadence, quantity pricing tier, or payment-method fields; omitted fields retain their current values. A `trial` is accepted only on `SUBSCRIPTION` pricing and is dropped when the pricing becomes `SINGLE_PAYMENT`. Send `trial: null` to remove it. An empty payment-method array is accepted only when the resulting published variant is genuinely free, including having no paid credit-rate tiers. Bundle products only support one-time pricing. A bundle variant whose resulting pricing type is `SUBSCRIPTION` is refused with a `422` carrying that sentence on `pricing.type`. Requires the `listing` Sanctum ability. Relationship IDs are scoped to the current store. Use the ISO 8601 string `expected_updated_at` to reject stale writes. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/product-variants/update-product-variant-pricing",
       "effect": "write",
       "example": "sellapp product-variants pricing update --product 120 4321 --body '{\"pricing\":{\"price\":{\"price\":2499,\"currency\":\"USD\"}}}'",
@@ -31472,6 +31635,103 @@
                   }
                 },
                 "required": []
+              },
+              "trial": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "free",
+                          "paid"
+                        ]
+                      },
+                      "length": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "integer"
+                          },
+                          "interval": {
+                            "type": "string",
+                            "enum": [
+                              "DAY",
+                              "WEEK",
+                              "MONTH",
+                              "YEAR"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "interval"
+                        ]
+                      },
+                      "price": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "price": {
+                                "type": "integer"
+                              },
+                              "currency": {
+                                "type": "string",
+                                "enum": [
+                                  "AUD",
+                                  "BRL",
+                                  "CAD",
+                                  "CNY",
+                                  "CZK",
+                                  "DKK",
+                                  "EUR",
+                                  "GHS",
+                                  "HKD",
+                                  "HUF",
+                                  "ILS",
+                                  "INR",
+                                  "JPY",
+                                  "MYR",
+                                  "MXN",
+                                  "NGN",
+                                  "TWD",
+                                  "NZD",
+                                  "NOK",
+                                  "PHP",
+                                  "PLN",
+                                  "GBP",
+                                  "RUB",
+                                  "SGD",
+                                  "SEK",
+                                  "CHF",
+                                  "THB",
+                                  "USD",
+                                  "ZAR"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "price",
+                              "currency"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "length"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "required": []
@@ -31635,7 +31895,7 @@
       ],
       "httpMethod": "PUT",
       "apiPath": "/v2/products/{product}/variants/{variant}",
-      "description": "Update a product variant with PUT\n\nUpdate a product variant using the PUT compatibility method. Fields remain partial for backward compatibility. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Update a product variant with PUT\n\nUpdate a product variant using the PUT compatibility method. Fields remain partial for backward compatibility. Bundle products only support one-time pricing. Adding the bundle deliverable type to a subscription variant is refused with a `422` carrying that sentence on `deliverable.types`. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/product-variants",
       "effect": "write",
       "example": "sellapp product-variants replace --product 120 4321 --title 'Monthly membership plus' --description 'One annotated operating memo and a monthly founder discussion.'",
@@ -32001,7 +32261,7 @@
         {
           "name": "payment_methods",
           "flag": "payment-methods",
-          "description": "Value for payment methods.",
+          "description": "Complete gateway selection for this variant. Selecting CUSTOM_PAYMENT_METHOD also requires at least one custom_payment_method_ids entry.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -32053,6 +32313,21 @@
           }
         },
         {
+          "name": "custom_payment_method_ids",
+          "flag": "custom-payment-method-ids",
+          "description": "Enabled, usable custom payment method ULIDs belonging to the selected store. Supply at least one when payment_methods includes CUSTOM_PAYMENT_METHOD. Include CUSTOM_PAYMENT_METHOD in payment_methods whenever sending nonempty IDs. On updates, omitting both selections preserves the current methods. Nonempty IDs are rejected when custom payments are not selected.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        {
           "name": "other_settings",
           "flag": "other-settings",
           "description": "Value for other settings.",
@@ -32081,6 +32356,25 @@
           "schema": {
             "type": "string",
             "format": "date-time"
+          }
+        },
+        {
+          "name": "stock",
+          "flag": "stock",
+          "description": "Set an existing variant's stock count while preserving delivery instructions and uploaded files. Send 0 for out of stock or null for unlimited stock. Omit deliverable for a stock-only change. TEXT variants manage stock through their serial inventory and reject this field.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       ],
@@ -32325,7 +32619,7 @@
       ],
       "httpMethod": "PATCH",
       "apiPath": "/v2/products/{product}/variants/{variant}",
-      "description": "Update a product variant\n\nUpdates a product variant's details. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Update a product variant\n\nUpdates a product variant's details. Bundle products only support one-time pricing. Adding the bundle deliverable type to a subscription variant is refused with a `422` carrying that sentence on `deliverable.types`. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/product-variants/update-a-product-variant",
       "effect": "write",
       "example": "sellapp product-variants update --product 120 4321 --title 'Monthly membership plus' --description 'One annotated operating memo and a monthly founder discussion.'",
@@ -32691,7 +32985,7 @@
         {
           "name": "payment_methods",
           "flag": "payment-methods",
-          "description": "Value for payment methods.",
+          "description": "Complete gateway selection for this variant. Selecting CUSTOM_PAYMENT_METHOD also requires at least one custom_payment_method_ids entry.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -32743,6 +33037,21 @@
           }
         },
         {
+          "name": "custom_payment_method_ids",
+          "flag": "custom-payment-method-ids",
+          "description": "Enabled, usable custom payment method ULIDs belonging to the selected store. Supply at least one when payment_methods includes CUSTOM_PAYMENT_METHOD. Include CUSTOM_PAYMENT_METHOD in payment_methods whenever sending nonempty IDs. On updates, omitting both selections preserves the current methods. Nonempty IDs are rejected when custom payments are not selected.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        {
           "name": "other_settings",
           "flag": "other-settings",
           "description": "Value for other settings.",
@@ -32771,6 +33080,25 @@
           "schema": {
             "type": "string",
             "format": "date-time"
+          }
+        },
+        {
+          "name": "stock",
+          "flag": "stock",
+          "description": "Set an existing variant's stock count while preserving delivery instructions and uploaded files. Send 0 for out of stock or null for unlimited stock. Omit deliverable for a stock-only change. TEXT variants manage stock through their serial inventory and reject this field.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       ],
@@ -33912,6 +34240,12 @@
                     ]
                   }
                 },
+                "custom_payment_method_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "other_settings": {
                   "type": "object",
                   "properties": {
@@ -35020,7 +35354,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/promotions",
-      "description": "Create a promotion\n\nCreate a promotion and its initial ordered phase set. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Create a promotion\n\nCreate a promotion and its initial ordered phase set. `applies_to` chooses whether it discounts one-time purchases or the first `subscription_payments` payments of a subscription plan, and a subscription promotion can be limited to picked products and plans with `store_wide`, `products`, and `product_variants`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/promotions/create-promotion",
       "effect": "consequential",
       "example": "sellapp promotions create --body '{\"name\":\"Ship Week\",\"status\":\"active\",\"starts_at\":\"2026-08-01T00:00:00Z\",\"ends_at\":\"2026-08-08T00:00:00Z\",\"priority\":1,\"is_stackable\":false,\"max_redemptions\":500,\"phases\":[{\"discount_type\":\"percentage\",\"discount_value\":\"20\",\"ends_at\":\"2026-08-04T00:00:00Z\",\"max_redemptions\":200,\"minimum_amount\":\"10\"},{\"discount_type\":\"fixed\",\"discount_value\":\"5\",\"ends_at\":null,\"max_redemptions\":null,\"minimum_amount\":\"25\"}]}' --yes",
@@ -35139,6 +35473,83 @@
                 "type": "null"
               }
             ]
+          }
+        },
+        {
+          "name": "applies_to",
+          "flag": "applies-to",
+          "description": "What the promotion discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new promotion defaults to `one_time`, and an update that leaves this out keeps the current kind. The promotion only discounts order lines of its kind.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "subscriptions"
+            ]
+          }
+        },
+        {
+          "name": "subscription_payments",
+          "flag": "subscription-payments",
+          "description": "How many payments a `subscriptions` promotion discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` promotion needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` promotion, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` promotion always stores null here.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "store_wide",
+          "flag": "store-wide",
+          "description": "Send `false` with `products` to limit a `subscriptions` promotion to picked products and plans. Required whenever the request sends `products` or `product_variants`. A new promotion defaults to `true`, an update that leaves it out keeps the current scope, and switching a promotion to `one_time` makes it store-wide again. A `one_time` promotion with `false` returns `422` on `store_wide` with `A promotion for one-time purchases applies to the whole store.`",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "products",
+          "flag": "products",
+          "description": "Product IDs a narrowed subscription promotion reaches. Each one must sell a subscription, or the request returns `422` on `products` with `Pick only products that sell a subscription.` A narrowed promotion left with no products returns `422` with `Pick at least one subscription product for this promotion.` An update replaces the picks with this list, or keeps them when it is left out.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "name": "product_variants",
+          "flag": "product-variants",
+          "description": "Subscription plan IDs to limit the picked products to. Each one must be a subscription plan of a product in `products`, or the request returns `422` on `product_variants` with `Pick only subscription plans of the picked products.` A picked product with none of its plans listed takes every plan, including plans added later. An update that leaves this out keeps the listed plans of products that stay picked.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
           }
         },
         {
@@ -35834,6 +36245,83 @@
           }
         },
         {
+          "name": "applies_to",
+          "flag": "applies-to",
+          "description": "What the promotion discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new promotion defaults to `one_time`, and an update that leaves this out keeps the current kind. The promotion only discounts order lines of its kind.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "subscriptions"
+            ]
+          }
+        },
+        {
+          "name": "subscription_payments",
+          "flag": "subscription-payments",
+          "description": "How many payments a `subscriptions` promotion discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` promotion needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` promotion, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` promotion always stores null here.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "store_wide",
+          "flag": "store-wide",
+          "description": "Send `false` with `products` to limit a `subscriptions` promotion to picked products and plans. Required whenever the request sends `products` or `product_variants`. A new promotion defaults to `true`, an update that leaves it out keeps the current scope, and switching a promotion to `one_time` makes it store-wide again. A `one_time` promotion with `false` returns `422` on `store_wide` with `A promotion for one-time purchases applies to the whole store.`",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "products",
+          "flag": "products",
+          "description": "Product IDs a narrowed subscription promotion reaches. Each one must sell a subscription, or the request returns `422` on `products` with `Pick only products that sell a subscription.` A narrowed promotion left with no products returns `422` with `Pick at least one subscription product for this promotion.` An update replaces the picks with this list, or keeps them when it is left out.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "name": "product_variants",
+          "flag": "product-variants",
+          "description": "Subscription plan IDs to limit the picked products to. Each one must be a subscription plan of a product in `products`, or the request returns `422` on `product_variants` with `Pick only subscription plans of the picked products.` A picked product with none of its plans listed takes every plan, including plans added later. An update that leaves this out keeps the listed plans of products that stay picked.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        {
           "name": "phases",
           "flag": "phases",
           "description": "The complete ordered phase set. Array order becomes phase position.",
@@ -36087,6 +36575,83 @@
                 "type": "null"
               }
             ]
+          }
+        },
+        {
+          "name": "applies_to",
+          "flag": "applies-to",
+          "description": "What the promotion discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new promotion defaults to `one_time`, and an update that leaves this out keeps the current kind. The promotion only discounts order lines of its kind.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "subscriptions"
+            ]
+          }
+        },
+        {
+          "name": "subscription_payments",
+          "flag": "subscription-payments",
+          "description": "How many payments a `subscriptions` promotion discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` promotion needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` promotion, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` promotion always stores null here.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "store_wide",
+          "flag": "store-wide",
+          "description": "Send `false` with `products` to limit a `subscriptions` promotion to picked products and plans. Required whenever the request sends `products` or `product_variants`. A new promotion defaults to `true`, an update that leaves it out keeps the current scope, and switching a promotion to `one_time` makes it store-wide again. A `one_time` promotion with `false` returns `422` on `store_wide` with `A promotion for one-time purchases applies to the whole store.`",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "products",
+          "flag": "products",
+          "description": "Product IDs a narrowed subscription promotion reaches. Each one must sell a subscription, or the request returns `422` on `products` with `Pick only products that sell a subscription.` A narrowed promotion left with no products returns `422` with `Pick at least one subscription product for this promotion.` An update replaces the picks with this list, or keeps them when it is left out.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "name": "product_variants",
+          "flag": "product-variants",
+          "description": "Subscription plan IDs to limit the picked products to. Each one must be a subscription plan of a product in `products`, or the request returns `422` on `product_variants` with `Pick only subscription plans of the picked products.` A picked product with none of its plans listed takes every plan, including plans added later. An update that leaves this out keeps the listed plans of products that stay picked.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
           }
         },
         {
@@ -36551,6 +37116,83 @@
                 "type": "null"
               }
             ]
+          }
+        },
+        {
+          "name": "applies_to",
+          "flag": "applies-to",
+          "description": "What the promotion discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new promotion defaults to `one_time`, and an update that leaves this out keeps the current kind. The promotion only discounts order lines of its kind.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "subscriptions"
+            ]
+          }
+        },
+        {
+          "name": "subscription_payments",
+          "flag": "subscription-payments",
+          "description": "How many payments a `subscriptions` promotion discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` promotion needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` promotion, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` promotion always stores null here.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "store_wide",
+          "flag": "store-wide",
+          "description": "Send `false` with `products` to limit a `subscriptions` promotion to picked products and plans. Required whenever the request sends `products` or `product_variants`. A new promotion defaults to `true`, an update that leaves it out keeps the current scope, and switching a promotion to `one_time` makes it store-wide again. A `one_time` promotion with `false` returns `422` on `store_wide` with `A promotion for one-time purchases applies to the whole store.`",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "products",
+          "flag": "products",
+          "description": "Product IDs a narrowed subscription promotion reaches. Each one must sell a subscription, or the request returns `422` on `products` with `Pick only products that sell a subscription.` A narrowed promotion left with no products returns `422` with `Pick at least one subscription product for this promotion.` An update replaces the picks with this list, or keeps them when it is left out.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "name": "product_variants",
+          "flag": "product-variants",
+          "description": "Subscription plan IDs to limit the picked products to. Each one must be a subscription plan of a product in `products`, or the request returns `422` on `product_variants` with `Pick only subscription plans of the picked products.` A picked product with none of its plans listed takes every plan, including plans added later. An update that leaves this out keeps the listed plans of products that stay picked.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
           }
         },
         {
@@ -43495,6 +44137,290 @@
       "adapter": "GET /v2/stores"
     },
     {
+      "operationId": "dismissSubscriptionAction",
+      "target": "store",
+      "retry": "Reuse the same Idempotency-Key and exact request for one intended action, within the operation retention period. Inspect conflicts and uncertain outcomes.",
+      "authentication": {
+        "alternatives": [
+          [
+            {
+              "schemeName": "bearerAuth",
+              "scopes": []
+            }
+          ],
+          [
+            {
+              "schemeName": "oauthAccessToken",
+              "scopes": [
+                "admin"
+              ]
+            },
+            {
+              "schemeName": "storeAuth",
+              "scopes": []
+            }
+          ]
+        ],
+        "anonymous": false,
+        "apiKey": true,
+        "accessToken": true,
+        "customerSession": false,
+        "browserSession": false,
+        "clientBasic": false,
+        "apiKeyRequiresStore": false,
+        "apiKeyUsesStore": true,
+        "accessTokenRequiresStore": true
+      },
+      "operationKey": "POST /v2/subscriptions/{productSubscription}/actions/{action}/dismiss",
+      "commandPath": [
+        "subscriptions",
+        "actions",
+        "dismiss"
+      ],
+      "httpMethod": "POST",
+      "apiPath": "/v2/subscriptions/{productSubscription}/actions/{action}/dismiss",
+      "description": "Dismiss a subscription action\n\nDismiss a pending lifecycle action that the provider left unresolved, which frees the subscription for its next change. Only a pending action can be dismissed, and the required `note` is stored on the action as its `error` so the decision stays on the record. An action in any other state returns `422` with the refusal sentence under `errors.subscription`, while a missing or over-long `note` returns an ordinary field error. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "documentationUrl": "https://sell.app/docs/api/subscriptions/dismiss-a-subscription-action",
+      "effect": "consequential",
+      "example": "sellapp subscriptions actions dismiss --product-subscription 124 4207 --note 'Confirmed with the customer that they no longer want the upgrade.' --yes",
+      "bodyRequired": true,
+      "sdkService": "SubscriptionsActions",
+      "sdkMethod": "Dismiss",
+      "requestBodyEncoding": "json",
+      "parameters": [
+        {
+          "name": "productSubscription",
+          "description": "The productSubscription path parameter.",
+          "flag": "product-subscription",
+          "location": "path",
+          "required": true,
+          "valueKind": "json",
+          "example": "124"
+        },
+        {
+          "name": "action",
+          "description": "The action path parameter.",
+          "flag": "action",
+          "location": "path",
+          "required": true,
+          "valueKind": "json",
+          "example": "4207",
+          "positional": true
+        }
+      ],
+      "bodyFields": [
+        {
+          "name": "idempotency_key",
+          "flag": "body-idempotency-key",
+          "description": "Optional idempotency key. You may also send this as the Idempotency-Key header.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "note",
+          "flag": "note",
+          "description": "Why the action is being dismissed. The note is kept on the dismissed action as its error.",
+          "required": true,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "idempotencyKey": true,
+      "idempotencyKeyRequired": false,
+      "paginated": false,
+      "executable": true,
+      "adapter": "POST /v2/subscriptions/{productSubscription}/actions/{action}/dismiss"
+    },
+    {
+      "operationId": "getSubscriptionAction",
+      "target": "store",
+      "retry": "Repeat reads within finite pagination and polling bounds; respect Retry-After.",
+      "authentication": {
+        "alternatives": [
+          [
+            {
+              "schemeName": "bearerAuth",
+              "scopes": []
+            }
+          ],
+          [
+            {
+              "schemeName": "oauthAccessToken",
+              "scopes": [
+                "admin"
+              ]
+            },
+            {
+              "schemeName": "storeAuth",
+              "scopes": []
+            }
+          ]
+        ],
+        "anonymous": false,
+        "apiKey": true,
+        "accessToken": true,
+        "customerSession": false,
+        "browserSession": false,
+        "clientBasic": false,
+        "apiKeyRequiresStore": false,
+        "apiKeyUsesStore": true,
+        "accessTokenRequiresStore": true
+      },
+      "operationKey": "GET /v2/subscriptions/{productSubscription}/actions/{action}",
+      "commandPath": [
+        "subscriptions",
+        "actions",
+        "get"
+      ],
+      "httpMethod": "GET",
+      "apiPath": "/v2/subscriptions/{productSubscription}/actions/{action}",
+      "description": "Retrieve a subscription action\n\nRetrieve one recorded lifecycle action. An action is only ever reachable through the subscription that recorded it, so an action belonging to another subscription of the same store is not found either. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "documentationUrl": "https://sell.app/docs/api/subscriptions/retrieve-a-subscription-action",
+      "effect": "read",
+      "example": "sellapp subscriptions actions get --product-subscription 124 4192",
+      "bodyRequired": false,
+      "sdkService": "SubscriptionsActions",
+      "sdkMethod": "Get",
+      "requestBodyEncoding": null,
+      "parameters": [
+        {
+          "name": "productSubscription",
+          "description": "The productSubscription path parameter.",
+          "flag": "product-subscription",
+          "location": "path",
+          "required": true,
+          "valueKind": "json",
+          "example": "124"
+        },
+        {
+          "name": "action",
+          "description": "The action path parameter.",
+          "flag": "action",
+          "location": "path",
+          "required": true,
+          "valueKind": "json",
+          "example": "4192",
+          "positional": true
+        }
+      ],
+      "bodyFields": [],
+      "idempotencyKey": false,
+      "idempotencyKeyRequired": false,
+      "paginated": false,
+      "executable": true,
+      "adapter": "GET /v2/subscriptions/{productSubscription}/actions/{action}"
+    },
+    {
+      "operationId": "listSubscriptionActions",
+      "target": "store",
+      "retry": "Repeat reads within finite pagination and polling bounds; respect Retry-After.",
+      "authentication": {
+        "alternatives": [
+          [
+            {
+              "schemeName": "bearerAuth",
+              "scopes": []
+            }
+          ],
+          [
+            {
+              "schemeName": "oauthAccessToken",
+              "scopes": [
+                "admin"
+              ]
+            },
+            {
+              "schemeName": "storeAuth",
+              "scopes": []
+            }
+          ]
+        ],
+        "anonymous": false,
+        "apiKey": true,
+        "accessToken": true,
+        "customerSession": false,
+        "browserSession": false,
+        "clientBasic": false,
+        "apiKeyRequiresStore": false,
+        "apiKeyUsesStore": true,
+        "accessTokenRequiresStore": true
+      },
+      "operationKey": "GET /v2/subscriptions/{productSubscription}/actions",
+      "commandPath": [
+        "subscriptions",
+        "actions",
+        "list"
+      ],
+      "httpMethod": "GET",
+      "apiPath": "/v2/subscriptions/{productSubscription}/actions",
+      "description": "List subscription actions\n\nList the lifecycle actions recorded against one subscription, ordered by identifier descending so the newest action comes first. The order is fixed and cannot be steered from the request. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "documentationUrl": "https://sell.app/docs/api/subscriptions/list-subscription-actions",
+      "effect": "read",
+      "example": "sellapp subscriptions actions list 124",
+      "bodyRequired": false,
+      "sdkService": "SubscriptionsActions",
+      "sdkMethod": "List",
+      "requestBodyEncoding": null,
+      "parameters": [
+        {
+          "name": "productSubscription",
+          "description": "The productSubscription path parameter.",
+          "flag": "product-subscription",
+          "location": "path",
+          "required": true,
+          "valueKind": "json",
+          "example": "124",
+          "positional": true
+        },
+        {
+          "name": "limit",
+          "description": "Number of items to return per page.",
+          "flag": "limit",
+          "location": "query",
+          "required": false,
+          "valueKind": "json"
+        },
+        {
+          "name": "page",
+          "description": "Page number to return.",
+          "flag": "page",
+          "location": "query",
+          "required": false,
+          "valueKind": "json"
+        },
+        {
+          "name": "pagination",
+          "description": "Set to false to return at most 100 matching items in one data array without pagination links or metadata.",
+          "flag": "pagination",
+          "location": "query",
+          "required": false,
+          "valueKind": "boolean"
+        }
+      ],
+      "bodyFields": [],
+      "idempotencyKey": false,
+      "idempotencyKeyRequired": false,
+      "paginated": true,
+      "executable": true,
+      "adapter": "GET /v2/subscriptions/{productSubscription}/actions"
+    },
+    {
       "operationId": "cancelSubscription",
       "target": "store",
       "retry": "Reuse the same Idempotency-Key and exact request for one intended action, within the operation retention period. Inspect conflicts and uncertain outcomes.",
@@ -43536,7 +44462,7 @@
       ],
       "httpMethod": "PATCH",
       "apiPath": "/v2/subscriptions/{subscription}/cancel",
-      "description": "Cancel a subscription\n\nCancel an active subscription now or at period end. cancel_at_period_end is required. Refund flags are valid only when it is false; period-end cancellation does not refund the last payment. Refunds are off by default. refund_last_payment requests a real refund; pro_rated_refund requires refund_last_payment and defaults to false. Cancellation can succeed even if the requested refund fails. A 200 response or confirmed cancellation does not prove a refund, and the action response does not expose the provider refund result. Check the order and payment-provider refund records before retrying; do not replay cancellation as a refund-recovery step. Reuse an idempotency key only with identical action input and actor. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Cancel a subscription\n\nCancel an active subscription now or at period end, or one with a payment still owed now: a past due one the store bills in house, or a past due or unpaid Stripe, PayPal, or Razorpay subscription. cancel_at_period_end is required. Refund flags are valid only when it is false; period-end cancellation does not refund the last payment. New integrations should use the cancel-at-period-end and cancel-immediately lifecycle actions instead. A provider refusal, or a state check such as a change already in progress or a subscription that is no longer active, returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. Refunds are off by default. refund_last_payment requests a real refund; pro_rated_refund requires refund_last_payment and defaults to false. While a Stripe, PayPal, or Razorpay subscription is past due or unpaid, its current period was never paid for, so a pro-rated refund returns `422`; a full refund or no refund still works. Cancellation can succeed even if the requested refund fails. A 200 response or confirmed cancellation does not prove a refund, and the action response does not expose the provider refund result. Check the order and payment-provider refund records before retrying; do not replay cancellation as a refund-recovery step. Reuse an idempotency key only with identical action input and actor. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/cancel-a-subscription-immediately-with-a-refund",
       "effect": "consequential",
       "example": "sellapp subscriptions cancel 55 --cancel-at-period-end true --body-idempotency-key design-kit-subscription-55-cancel-v1 --yes",
@@ -43584,7 +44510,7 @@
         {
           "name": "pro_rated_refund",
           "flag": "pro-rated-refund",
-          "description": "Request a prorated refund. Requires refund_last_payment=true. False requests a full latest-payment refund when refund_last_payment is enabled.",
+          "description": "Request a prorated refund. Requires refund_last_payment=true. False requests a full latest-payment refund when refund_last_payment is enabled. Refused with `422` while a Stripe, PayPal, or Razorpay subscription is past due or unpaid.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -43661,7 +44587,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/subscriptions/{productSubscription}/actions/cancel-period-end",
-      "description": "Cancel a subscription at period end\n\nSchedule cancellation at the end of the current billing period without requesting a refund. Inspect capabilities first. The response records the cancellation action; retrieve the subscription to observe its current state. Reuse an idempotency key only with identical action input and actor. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Cancel a subscription at period end\n\nSchedule cancellation at the end of the current billing period without requesting a refund. Inspect capabilities first. PayPal has no cancellation at period end, so on a PayPal subscription this cancels it with PayPal straight away and keeps the customer's access until the period ends; it can't be kept afterwards. The response records the cancellation action; retrieve the subscription to observe its current state. Reuse an idempotency key only with identical action input and actor. A provider refusal, or a state check such as a change already in progress or a subscription that is no longer active, returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/cancel-at-period-end",
       "effect": "consequential",
       "example": "sellapp subscriptions cancel-at-period-end 55 --reason 'Customer request' --yes",
@@ -43769,7 +44695,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/subscriptions/{productSubscription}/actions/cancel-immediately",
-      "description": "Cancel a subscription immediately\n\nRequest immediate subscription cancellation. Inspect capabilities for provider support. This ends future billing and can change customer access. Refunds are off by default. refund_last_payment requests a real refund; pro_rated_refund requires refund_last_payment and defaults to false. Cancellation can succeed even if the requested refund fails. A 200 response or confirmed cancellation does not prove a refund, and the action response does not expose the provider refund result. Check the order and payment-provider refund records before retrying; do not replay cancellation as a refund-recovery step. Reuse an idempotency key only with identical action input and actor. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Cancel a subscription immediately\n\nRequest immediate subscription cancellation. Inspect capabilities for provider support. This ends future billing and can change customer access. It is the one action left on a Stripe or PayPal subscription that is past due or unpaid, and one of two left on a Razorpay one alongside a payment method update. A provider refusal, or a state check such as a change already in progress or a subscription that is no longer active, returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. Refunds are off by default. refund_last_payment requests a real refund; pro_rated_refund requires refund_last_payment and defaults to false. While a Stripe, PayPal, or Razorpay subscription is past due or unpaid, its current period was never paid for, so a pro-rated refund returns `422`; a full refund or no refund still works. Cancellation can succeed even if the requested refund fails. A 200 response or confirmed cancellation does not prove a refund, and the action response does not expose the provider refund result. Check the order and payment-provider refund records before retrying; do not replay cancellation as a refund-recovery step. Reuse an idempotency key only with identical action input and actor. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/cancel-immediately",
       "effect": "consequential",
       "example": "sellapp subscriptions cancel-immediately 55 --reason 'Customer request' --yes",
@@ -43843,7 +44769,7 @@
         {
           "name": "pro_rated_refund",
           "flag": "pro-rated-refund",
-          "description": "Request a prorated refund. Requires refund_last_payment=true. False requests a full latest-payment refund when refund_last_payment is enabled.",
+          "description": "Request a prorated refund. Requires refund_last_payment=true. False requests a full latest-payment refund when refund_last_payment is enabled. Refused with `422` while a Stripe, PayPal, or Razorpay subscription is past due or unpaid.",
           "required": false,
           "nullable": false,
           "binary": false,
@@ -43901,10 +44827,10 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/subscriptions/{productSubscription}/actions/change-plan/confirm",
-      "description": "Confirm a subscription plan change\n\nThis action belongs to the customer. Seller API requests return a 422 validation error. Check subscription capabilities and use the customer flow; never expose a seller API key to work around this restriction. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Confirm a subscription plan change\n\nConfirm a previously previewed subscription plan change, sending back the `preview_token` for a preview of the same change. A plan change belongs to the customer, and a store token confirms it on their behalf; a provider refusal, or a state check such as a change already in progress or a subscription that is no longer active, returns `422` with the refusal sentence under `errors.subscription`. `approval_url` accompanies a `pending` action whenever the customer still has to approve the revision at the provider or pay the proration order `proration_order_id` names, and is left out entirely when the provider applied the change itself. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/confirm-plan-change",
       "effect": "consequential",
-      "example": "sellapp subscriptions confirm-plan-change 1 --target-variant-id 4321 --preview-token subprev_9c4b2f --yes",
+      "example": "sellapp subscriptions confirm-plan-change 55 --target-variant-id 4321 --preview-token subprev_9c4b2f --yes",
       "bodyRequired": true,
       "sdkService": "Subscriptions",
       "sdkMethod": "ConfirmPlanChange",
@@ -43917,6 +44843,7 @@
           "location": "path",
           "required": true,
           "valueKind": "json",
+          "example": "55",
           "positional": true
         }
       ],
@@ -44061,7 +44988,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/subscriptions/{productSubscription}/actions/change-renewal-date/confirm",
-      "description": "Confirm a subscription renewal date change\n\nConfirm a subscription renewal date change. A preview token is required when the variant's billing-date policy requires previews. The current Stripe and PayPal provider flows do not support renewal-date changes and return 422. Check shift_billing_date capabilities before sending a request. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Confirm a subscription renewal date change\n\nConfirm a subscription renewal date change, sending a `preview_token` when the variant's billing-date policy requires previews. No payment method supports renewal-date changes today: Stripe, PayPal, Razorpay, and subscriptions the store bills in house all report `shift_billing_date` as `unsupported`, so this returns `422` with the refusal sentence under `errors.subscription`. Read the capabilities response first. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/confirm-renewal-date-change",
       "effect": "consequential",
       "example": "sellapp subscriptions confirm-renewal-date 1 --renewal-date 2026-10-01T12:00:00Z --preview-token subprev_project_library_55 --reason 'Align Maya'\\''s membership with the monthly reading circle.' --yes",
@@ -44214,7 +45141,7 @@
       ],
       "httpMethod": "GET",
       "apiPath": "/v2/subscriptions/{productSubscription}/capabilities",
-      "description": "View subscription capabilities\n\nReturn the lifecycle actions currently supported for a subscription. Capability status controls whether an actor can pause, resume, cancel, update the payment method, change plan, or shift the billing date. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "View subscription capabilities\n\nReturn the lifecycle actions currently supported for a subscription, each with the reason the customer and the seller are shown. A `customer_only` status names who owns the action rather than who may call the API: a store token carries a plan change and a payment method update on the customer's behalf, while a `customer_only` auto-renewal switch stays with the customer portal. `set_auto_renew` has no API route at all. While a Stripe, PayPal, or Razorpay subscription is past due or unpaid, every action except `cancel_immediately` and, on Razorpay, `update_payment_method`, is `unsupported`, and a subscription the store bills in house that is on hold for an unpaid renewal reports `resume` as `customer_only`, because only the customer can pay to resume it. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/view-subscription-capabilities",
       "effect": "read",
       "example": "sellapp subscriptions get-capabilities 1",
@@ -44282,10 +45209,10 @@
       ],
       "httpMethod": "GET",
       "apiPath": "/v2/subscriptions/{productSubscription}",
-      "description": "Retrieve a subscription\n\nRetrieve by SellApp subscription record ID. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Retrieve a subscription\n\nRetrieve one subscription by its SellApp subscription record identifier. Requires the `invoice` Sanctum ability. Foreign-store identifiers return not found. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/read-subscriptions",
       "effect": "read",
-      "example": "sellapp subscriptions get-subscription 991",
+      "example": "sellapp subscriptions get-subscription 123",
       "bodyRequired": false,
       "sdkService": "Subscriptions",
       "sdkMethod": "Get",
@@ -44293,12 +45220,12 @@
       "parameters": [
         {
           "name": "productSubscription",
-          "description": "The productSubscription identifier.",
+          "description": "The productSubscription path parameter.",
           "flag": "product-subscription",
           "location": "path",
           "required": true,
           "valueKind": "json",
-          "example": "991",
+          "example": "123",
           "positional": true
         }
       ],
@@ -44308,6 +45235,95 @@
       "paginated": false,
       "executable": true,
       "adapter": "GET /v2/subscriptions/{productSubscription}"
+    },
+    {
+      "operationId": "keepSubscription",
+      "target": "store",
+      "retry": "Reuse the same Idempotency-Key and exact request for one intended action, within the operation retention period. Inspect conflicts and uncertain outcomes.",
+      "authentication": {
+        "alternatives": [
+          [
+            {
+              "schemeName": "bearerAuth",
+              "scopes": []
+            }
+          ],
+          [
+            {
+              "schemeName": "oauthAccessToken",
+              "scopes": [
+                "admin"
+              ]
+            },
+            {
+              "schemeName": "storeAuth",
+              "scopes": []
+            }
+          ]
+        ],
+        "anonymous": false,
+        "apiKey": true,
+        "accessToken": true,
+        "customerSession": false,
+        "browserSession": false,
+        "clientBasic": false,
+        "apiKeyRequiresStore": false,
+        "apiKeyUsesStore": true,
+        "accessTokenRequiresStore": true
+      },
+      "operationKey": "POST /v2/subscriptions/{productSubscription}/actions/keep",
+      "commandPath": [
+        "subscriptions",
+        "keep"
+      ],
+      "httpMethod": "POST",
+      "apiPath": "/v2/subscriptions/{productSubscription}/actions/keep",
+      "description": "Keep a subscription\n\nStop a scheduled cancellation so the subscription keeps renewing, which is the undo for cancelling at period end. The subscription has to still be active, still be scheduled to cancel, and its period must not have ended yet. Any of those, a provider that cannot undo its own schedule (a PayPal subscription or a Razorpay trial, both already cancelled with the provider), or a change already in progress returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "documentationUrl": "https://sell.app/docs/api/subscriptions/keep-a-subscription",
+      "effect": "consequential",
+      "example": "sellapp subscriptions keep 55 --yes",
+      "bodyRequired": true,
+      "sdkService": "Subscriptions",
+      "sdkMethod": "Keep",
+      "requestBodyEncoding": "json",
+      "parameters": [
+        {
+          "name": "productSubscription",
+          "description": "The productSubscription path parameter.",
+          "flag": "product-subscription",
+          "location": "path",
+          "required": true,
+          "valueKind": "json",
+          "example": "55",
+          "positional": true
+        }
+      ],
+      "bodyFields": [
+        {
+          "name": "idempotency_key",
+          "flag": "body-idempotency-key",
+          "description": "Optional idempotency key. You may also send this as the Idempotency-Key header.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      ],
+      "idempotencyKey": true,
+      "idempotencyKeyRequired": false,
+      "paginated": false,
+      "executable": true,
+      "adapter": "POST /v2/subscriptions/{productSubscription}/actions/keep"
     },
     {
       "operationId": "listSubscriptions",
@@ -44351,7 +45367,7 @@
       ],
       "httpMethod": "GET",
       "apiPath": "/v2/subscriptions",
-      "description": "List subscriptions\n\nList page-based subscriptions with canonical customer and deprecated provider aliases. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "List subscriptions\n\nList the subscriptions belonging to the authenticated store, ordered by identifier ascending. Requires the `invoice` Sanctum ability. Use `status[]` to keep only the states you care about. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/read-subscriptions",
       "effect": "read",
       "example": "sellapp subscriptions list-subscriptions",
@@ -44359,7 +45375,40 @@
       "sdkService": "Subscriptions",
       "sdkMethod": "List",
       "requestBodyEncoding": null,
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "limit",
+          "description": "Number of items to return per page.",
+          "flag": "limit",
+          "location": "query",
+          "required": false,
+          "valueKind": "json"
+        },
+        {
+          "name": "page",
+          "description": "Page number to return.",
+          "flag": "page",
+          "location": "query",
+          "required": false,
+          "valueKind": "json"
+        },
+        {
+          "name": "pagination",
+          "description": "Set to false to return at most 100 matching items in one data array without pagination links or metadata.",
+          "flag": "pagination",
+          "location": "query",
+          "required": false,
+          "valueKind": "boolean"
+        },
+        {
+          "name": "status[]",
+          "description": "Filter by one or more subscription statuses. Repeat the parameter to select several; a single `status=ACTIVE` works too. A status outside the list is rejected with a validation error.",
+          "flag": "status",
+          "location": "query",
+          "required": false,
+          "valueKind": "json"
+        }
+      ],
       "bodyFields": [],
       "idempotencyKey": false,
       "idempotencyKeyRequired": false,
@@ -44409,7 +45458,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/subscriptions/{productSubscription}/actions/pause",
-      "description": "Pause a subscription\n\nPause a subscription after checking capabilities. Automatic resume dates are supported only by the current Stripe flow; use a future resume_at when supplied. Other provider pauses may need an explicit resume action. Customer-originated pauses are also subject to store pause policies. Reuse an idempotency key only with identical input and actor, and retrieve the subscription after the action. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Pause a subscription\n\nPause a subscription after checking capabilities. Automatic resume dates are supported by Stripe and by subscriptions the store bills in house; use a future resume_at when supplied. Other provider pauses may need an explicit resume action. Customer-originated pauses are also subject to store pause policies. Reuse an idempotency key only with identical input and actor, and retrieve the subscription after the action. A provider refusal, or a state check such as a change already in progress or a subscription that is no longer active, returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/pause-a-subscription",
       "effect": "consequential",
       "example": "sellapp subscriptions pause 55 --resume-at 2026-10-10T12:00:00Z --reason 'Customer request' --yes",
@@ -44452,7 +45501,7 @@
         {
           "name": "resume_at",
           "flag": "resume-at",
-          "description": "Use a future date-time at execution time. Automatic resume dates are supported only for Stripe; the shown date is illustrative.",
+          "description": "Use a future date-time at execution time. Automatic resume dates are supported by Stripe and by subscriptions the store bills in house; the shown date is illustrative.",
           "required": false,
           "nullable": true,
           "binary": false,
@@ -44537,7 +45586,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/subscriptions/{productSubscription}/actions/change-plan/preview",
-      "description": "Preview a subscription plan change\n\nThis action belongs to the customer. Seller API requests return a 422 validation error. Check subscription capabilities and use the customer flow; never expose a seller API key to work around this restriction. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Preview a subscription plan change\n\nPreview a subscription plan change before confirming it. The preview stores the change it was taken for and returns a `preview_token` the confirmation must send back, alongside the provider's own pricing preview. On Stripe and in-house subscriptions, `preview_payload.payment_required` says whether confirming charges `amount_due` today or leaves any amount to the next invoice, and `preview_payload.renewal_date` says when the subscription renews next. A plan change belongs to the customer, and a store token previews it on their behalf; a provider refusal, or a state check such as a change already in progress or a subscription that is no longer active, returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/preview-plan-change",
       "effect": "consequential",
       "example": "sellapp subscriptions preview-plan-change 1 --target-variant-id 4321 --effective-timing immediate --proration-behavior provider_default --yes",
@@ -44685,7 +45734,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/subscriptions/{productSubscription}/actions/change-renewal-date/preview",
-      "description": "Preview a subscription renewal date change\n\nPreview a new renewal date before confirmation when the subscription's billing-date policy requires a preview. The current Stripe and PayPal provider flows do not support renewal-date changes and return 422. Check shift_billing_date capabilities before sending a request. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Preview a subscription renewal date change\n\nPreview a new renewal date before confirmation when the subscription's billing-date policy requires one. No payment method supports renewal-date changes today: Stripe, PayPal, Razorpay, and subscriptions the store bills in house all report `shift_billing_date` as `unsupported`, so this returns `422` with the refusal sentence under `errors.subscription`. Read the capabilities response first. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/preview-renewal-date-change",
       "effect": "consequential",
       "example": "sellapp subscriptions preview-renewal-date 1 --renewal-date 2026-10-01T12:00:00Z --reason 'Align Maya'\\''s membership with the monthly reading circle.' --yes",
@@ -44819,7 +45868,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/subscriptions/{productSubscription}/actions/resume",
-      "description": "Resume a subscription\n\nResume a paused subscription and restore related entitlements where possible. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Resume a subscription\n\nResume a paused subscription and restore related entitlements where possible. A subscription that is not paused, a subscription the store bills in house that is on hold for an unpaid renewal (only the customer can resume it, by paying that renewal from the customer portal), a provider refusal, or a change already in progress returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/resume-a-subscription",
       "effect": "consequential",
       "example": "sellapp subscriptions resume 55 --yes",
@@ -44908,16 +45957,113 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/subscriptions/search",
-      "description": "Search subscriptions\n\nSearch while preserving page-based pagination. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Search subscriptions\n\nSearch the store's subscriptions, ordered by identifier ascending unless `sort` says otherwise. `search.value` matches the provider subscription ID, the provider customer ID, and the customer email. Filter on `id`, `customer_id` (the SellApp customer ID, as in `customer.id`), `provider`, `status`, or `product_variant_id`, and sort on `id`, `status`, `current_period_start`, `current_period_end`, `created_at`, or `updated_at`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/read-subscriptions",
       "effect": "read",
-      "example": "sellapp subscriptions search-subscriptions --search 'maya.chen@example.com' --status active",
-      "bodyRequired": true,
+      "example": "sellapp subscriptions search-subscriptions --body '{\"search\":{\"value\":\"maya.chen@example.com\"},\"filters\":[{\"field\":\"status\",\"operator\":\"=\",\"value\":\"ACTIVE\"}]}'",
+      "bodyRequired": false,
       "sdkService": "Subscriptions",
       "sdkMethod": "Search",
       "requestBodyEncoding": "json",
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "limit",
+          "description": "Number of items to return per page.",
+          "flag": "limit",
+          "location": "query",
+          "required": false,
+          "valueKind": "json"
+        },
+        {
+          "name": "page",
+          "description": "Page number to return.",
+          "flag": "page",
+          "location": "query",
+          "required": false,
+          "valueKind": "json"
+        },
+        {
+          "name": "pagination",
+          "description": "Set to false to return at most 100 matching items in one data array without pagination links or metadata.",
+          "flag": "pagination",
+          "location": "query",
+          "required": false,
+          "valueKind": "boolean"
+        }
+      ],
       "bodyFields": [
+        {
+          "name": "filters",
+          "flag": "filters",
+          "description": "Value for filters.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "operator": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "and",
+                    "or"
+                  ]
+                },
+                "nested": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                  }
+                }
+              },
+              "required": []
+            }
+          }
+        },
+        {
+          "name": "sort",
+          "flag": "sort",
+          "description": "Value for sort.",
+          "required": false,
+          "nullable": false,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ]
+                }
+              },
+              "required": [
+                "field"
+              ]
+            }
+          }
+        },
         {
           "name": "search",
           "flag": "search",
@@ -44927,19 +46073,46 @@
           "binary": false,
           "binaryArray": false,
           "schema": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "case_sensitive": {
+                "type": "boolean"
+              }
+            },
+            "required": []
           }
         },
         {
-          "name": "status",
-          "flag": "status",
-          "description": "Value for status.",
+          "name": "includes",
+          "flag": "includes",
+          "description": "Value for includes.",
           "required": false,
           "nullable": false,
           "binary": false,
           "binaryArray": false,
           "schema": {
-            "type": "string"
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "relation": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "relation"
+              ]
+            }
           }
         }
       ],
@@ -44991,10 +46164,10 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/subscriptions/{productSubscription}/actions/update-payment-method",
-      "description": "Update a subscription payment method\n\nThis action belongs to the customer. Seller API requests return a 422 validation error. Check subscription capabilities and use the customer flow; never expose a seller API key to work around this restriction. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Update a subscription payment method\n\nRequest a subscription payment method update. A payment method belongs to the customer, and a store token requests the update on their behalf. The customer still enters the new card themselves, so the action stays `pending` and `redirect_url` is where they finish it: Stripe's hosted page for a Stripe subscription, or a SellApp page for a Razorpay one. `return_url` chooses where Stripe sends the customer afterwards; Razorpay ignores it. PayPal subscriptions and subscriptions the store bills in house don't support the update. Read `update_payment_method` in the capabilities response before calling: an unsupported payment method, or a state check such as a change already in progress, a subscription that is no longer active, or a Stripe subscription with a payment still owed, returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/subscriptions/update-payment-method",
       "effect": "consequential",
-      "example": "sellapp subscriptions update-payment-method 1 --yes",
+      "example": "sellapp subscriptions update-payment-method 55 --return-url https://store.example.com/billing/updated --yes",
       "bodyRequired": true,
       "sdkService": "Subscriptions",
       "sdkMethod": "UpdatePaymentMethod",
@@ -45007,6 +46180,7 @@
           "location": "path",
           "required": true,
           "valueKind": "json",
+          "example": "55",
           "positional": true
         }
       ],
@@ -45023,6 +46197,26 @@
             "anyOf": [
               {
                 "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "return_url",
+          "flag": "return-url",
+          "description": "Where Stripe returns the customer once its hosted page finishes. Defaults to the store's customer portal page for this subscription. Razorpay subscriptions ignore it.",
+          "required": false,
+          "nullable": true,
+          "binary": false,
+          "binaryArray": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri"
               },
               {
                 "type": "null"
@@ -51973,9 +53167,13 @@
                 "product.created",
                 "product.trashed",
                 "product.updated",
+                "subscription.action",
                 "subscription.cancelled",
                 "subscription.created",
+                "subscription.plan_change_needs_attention",
+                "subscription.renewal_needs_attention",
                 "subscription.renewed",
+                "subscription.signup_needs_attention",
                 "ticket_message.created",
                 "variant.created",
                 "variant.sold_out",
@@ -52330,9 +53528,13 @@
                 "product.created",
                 "product.trashed",
                 "product.updated",
+                "subscription.action",
                 "subscription.cancelled",
                 "subscription.created",
+                "subscription.plan_change_needs_attention",
+                "subscription.renewal_needs_attention",
                 "subscription.renewed",
+                "subscription.signup_needs_attention",
                 "ticket_message.created",
                 "variant.created",
                 "variant.sold_out",
@@ -52527,9 +53729,13 @@
                   "product.created",
                   "product.trashed",
                   "product.updated",
+                  "subscription.action",
                   "subscription.cancelled",
                   "subscription.created",
+                  "subscription.plan_change_needs_attention",
+                  "subscription.renewal_needs_attention",
                   "subscription.renewed",
+                  "subscription.signup_needs_attention",
                   "ticket_message.created",
                   "variant.created",
                   "variant.sold_out",
@@ -52665,9 +53871,13 @@
               "product.created",
               "product.trashed",
               "product.updated",
+              "subscription.action",
               "subscription.cancelled",
               "subscription.created",
+              "subscription.plan_change_needs_attention",
+              "subscription.renewal_needs_attention",
               "subscription.renewed",
+              "subscription.signup_needs_attention",
               "ticket_message.created",
               "variant.created",
               "variant.sold_out",
@@ -52808,9 +54018,13 @@
                 "product.created",
                 "product.trashed",
                 "product.updated",
+                "subscription.action",
                 "subscription.cancelled",
                 "subscription.created",
+                "subscription.plan_change_needs_attention",
+                "subscription.renewal_needs_attention",
                 "subscription.renewed",
+                "subscription.signup_needs_attention",
                 "ticket_message.created",
                 "variant.created",
                 "variant.sold_out",
@@ -52868,7 +54082,7 @@
       ],
       "httpMethod": "GET",
       "apiPath": "/v2/webhook-deliveries/{delivery}",
-      "description": "Retrieve a webhook delivery\n\nRetrieve one redacted delivery. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Retrieve a webhook delivery\n\nRetrieve one redacted delivery. A disabled delivery with zero attempts was retained without contacting the endpoint. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/events",
       "effect": "read",
       "example": "sellapp webhook-platform get-webhook-delivery 01992b31-c8bd-75b5-b02d-6ae0aa418940",
@@ -53053,7 +54267,7 @@
       ],
       "httpMethod": "POST",
       "apiPath": "/v2/webhook-deliveries/{delivery}/replay",
-      "description": "Replay a webhook delivery\n\nAccept no URL, payload, or query overrides. Resolve the current channel server-side, create a new delivery ID, retain the integration-event ID, and sign with a new timestamp. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
+      "description": "Replay a webhook delivery\n\nAccept no URL, payload, or query overrides. Resolve the current channel server-side, create a new delivery ID, retain the integration-event ID, and sign with a new timestamp. A disabled channel returns 422: fix the endpoint and save the channel before replaying. A successful test alone does not re-enable delivery. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.",
       "documentationUrl": "https://sell.app/docs/api/events",
       "effect": "consequential",
       "example": "sellapp webhook-platform replay-webhook-delivery delivery_01K4CUSTOMER --yes",

@@ -2,22 +2,22 @@
   "schemaVersion": 1,
   "language": "cli",
   "repository": "sellapp/sellapp-cli",
-  "sourceSha": "617c71170f5c326d2d707c0f3e01caf9a948d2fc",
-  "specSha256": "02043ebfc36589e78743f00a0f4a2f3ac9ac14914b9cf2910f04fc34ad2d0924",
+  "sourceSha": "2a8fd1a82c3091e60f332257fe4460785b0c6e9a",
+  "specSha256": "aea767326d7193deffe5004a5751f7e8f59e40b037636c8fc29b936699dfff2e",
   "runId": "0",
   "runAttempt": "1",
-  "treeDigest": "8e1a3faf1058fdbb01b2acbf680b37167c4a900fb247cd2833aa159172210eca",
-  "contentDigest": "6588d7b6eddc4b8598ad0b3ae8775b2491d37fb6666e05df3e0f0b67559d8e0b",
+  "treeDigest": "b5b6868a3836feed708eab48a953d81924ab23f453bc0353469bc2351d175563",
+  "contentDigest": "a4fdcdf0c89a1567125f0940c61c90a3e4c6a95bb87582a51c9889550f8c707f",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
       "mode": "100644",
-      "sha256": "36cc65c92ddf0f865d4d0a628acc53e515c3e55686b9ad2efcac07fee126653a"
+      "sha256": "50cd6f93986981746e82394ba3d30ab7264ba5cbe5ad2ed72a078be802eb54b6"
     },
     {
       "path": ".oagen-manifest.json",
       "mode": "100644",
-      "sha256": "606ec4a93637147f8247fa269e99b2bfea6a3faafadccf4792f6750f82195ed4"
+      "sha256": "e5b7bd208ccb7fb769cb46549429ae29b6f4238aac5b216c5dfd37ddc4102dcf"
     },
     {
       "path": "LICENSE.txt",
@@ -37,12 +37,12 @@
     {
       "path": "docs/agent-skill.md",
       "mode": "100644",
-      "sha256": "096c8c6f06e4c8ec683971ea1aba00dc1adbbd31f255afaa2c2e600ee8637351"
+      "sha256": "8407aa0187700f831f3058eed90d9c1873736dc07a78e542cff6256de9385b87"
     },
     {
       "path": "docs/commands.md",
       "mode": "100644",
-      "sha256": "546070d6176a2f79a0cf37f52638293ef4c4b666af11ada103e8cf37073c4ae3"
+      "sha256": "406e165749098c5fe86bf2452673b10986d1ccecf7d673b81b8a652d48e3895c"
     },
     {
       "path": "docs/contributing.md",
@@ -112,7 +112,7 @@
     {
       "path": "docs/resources/charges.md",
       "mode": "100644",
-      "sha256": "93e0c4328b4f82760e7bc8cc6d3be680323114817e250e52ede355f1cc17b435"
+      "sha256": "4de2d3b5872e0f4bd87eda93ebc136589df9dc46e0ac61614c72a1c6da1a462a"
     },
     {
       "path": "docs/resources/community-connections.md",
@@ -122,7 +122,7 @@
     {
       "path": "docs/resources/coupons.md",
       "mode": "100644",
-      "sha256": "0b6bc689655374e5c17b198e4093db44c799dc4d1692dfd8afcb70ace11b7c50"
+      "sha256": "500c192c9dd0413afd42d82f12f82dd2708080badd84f857c2662d56f584e06a"
     },
     {
       "path": "docs/resources/courses.md",
@@ -137,7 +137,7 @@
     {
       "path": "docs/resources/customer-portal.md",
       "mode": "100644",
-      "sha256": "f44f7753ab9fde979e364503da7de2ee19a5ace9876c4e872e6d94a51d0b9090"
+      "sha256": "98c2d3cf7fdf3a369f9557269807ce8ae6e0cd3baf2e878df74cefcb41e47485"
     },
     {
       "path": "docs/resources/customer-sessions.md",
@@ -167,7 +167,7 @@
     {
       "path": "docs/resources/exports.md",
       "mode": "100644",
-      "sha256": "7e9a9c934b14d9c4efedc8d3b10594087fa2e6c7269436250ae942f329494c2f"
+      "sha256": "dab4d6c1e361270f1825c7530b269eb5688a814a19f77677127d67a49d5f243e"
     },
     {
       "path": "docs/resources/feedback.md",
@@ -187,7 +187,7 @@
     {
       "path": "docs/resources/invoices.md",
       "mode": "100644",
-      "sha256": "91a46e8bf6f50fb8dff94b2541dc86e96b4ab8316f1f68d11a28c309d1e0be9e"
+      "sha256": "acb8f6d6333559801e6573285eca5e3c95094f3c1d78928d4237f80dd918a772"
     },
     {
       "path": "docs/resources/license-instances.md",
@@ -217,7 +217,7 @@
     {
       "path": "docs/resources/orders.md",
       "mode": "100644",
-      "sha256": "18536393a36c361c4fe51d457d955cde60903a80e75dc1c18904e6d77b04a9e6"
+      "sha256": "7e72ca4b39dc06ede00192ed776e8109dc22ab94a374a3d3c51f4ce5efac2ab0"
     },
     {
       "path": "docs/resources/payment-methods.md",
@@ -227,7 +227,7 @@
     {
       "path": "docs/resources/product-variants.md",
       "mode": "100644",
-      "sha256": "cae59828a888a10d15db662e69fba8044d2bbdad43d5dfe0e56d20d711830db6"
+      "sha256": "ea3f0f5bce4408c0189fbfffa8be20d879cf98a61ff309cd13b1df3483805724"
     },
     {
       "path": "docs/resources/products.md",
@@ -237,7 +237,7 @@
     {
       "path": "docs/resources/promotions.md",
       "mode": "100644",
-      "sha256": "727fe90fbc4f64ebdff2530727ab50c9443480381d1fabb9e81bb7f5ae7c2b41"
+      "sha256": "c6daac609b7a6b95b92454d70e959ec2d6ed1ad0dd8b07a8ef39b23fdfa65594"
     },
     {
       "path": "docs/resources/refunds.md",
@@ -277,7 +277,7 @@
     {
       "path": "docs/resources/subscriptions.md",
       "mode": "100644",
-      "sha256": "f81da17f752a14d7a2bac5886c00422a9097f7a4e019bfb5c96f3c44d9de8d42"
+      "sha256": "5e0c4149bcf8bc34db96c43c468b7bb55aa63acdfa14cca1cac541939886c5ca"
     },
     {
       "path": "docs/resources/tickets.md",
@@ -327,7 +327,7 @@
     {
       "path": "docs/resources/webhook-platform.md",
       "mode": "100644",
-      "sha256": "416d1b2c7afa80a9675c9e16764b9dc22d33bcba01f45726ba4759d4f8444632"
+      "sha256": "92fdc751a069bfc91a17e6fe4b8acff35c6916c8e8f7f5435c7153cd638b3991"
     },
     {
       "path": "docs/usage.md",
@@ -377,7 +377,7 @@
     {
       "path": "generation-manifest.json",
       "mode": "100644",
-      "sha256": "a10480c0f6acb3a4d22f1ca9eccbd6ac924e28e5ce4c057845f14b4376c70447"
+      "sha256": "1faa31d03b46503d84e0acf8a0552db8a3f3bf0e190b141b6850fea6e921f673"
     },
     {
       "path": "go.mod",
@@ -397,12 +397,12 @@
     {
       "path": "internal/catalog/commands.json",
       "mode": "100644",
-      "sha256": "54c9355a5b134d7d0869f2ffbf40291444224d0fff03e03a425e070eea4311bf"
+      "sha256": "eb97c39f30e6af8fb7342bcb3503e1e3175a9260d0e2ca624e7f827e10e82e88"
     },
     {
       "path": "internal/catalog/embedding.json",
       "mode": "100644",
-      "sha256": "c61d12cf72aca3fad0491ece0f7054adc1e9b5536771ed867e39386565e6c3fa"
+      "sha256": "083428008015f9afb7d82be433c8204f291f632c9993312a58c514822d6d1509"
     },
     {
       "path": "internal/cli/adapters.go",
@@ -412,7 +412,7 @@
     {
       "path": "internal/cli/agent_assets.go",
       "mode": "100644",
-      "sha256": "899fc59473c0389334a792fc249b369b13504fb22a6923f8b3d92e4e2f6d33a6"
+      "sha256": "2c7b58c30a6ac4be20ea0f4bf21637124f0c73b9cca93ff7929e1556e1b32f0f"
     },
     {
       "path": "internal/cli/agent_safety_unix.go",
@@ -437,7 +437,7 @@
     {
       "path": "internal/cli/catalog.go",
       "mode": "100644",
-      "sha256": "01bc6e99bce645a4bf6adb5f5ddbdab9d165c04d7b269bce6e7cdb252648f4de"
+      "sha256": "df4d07da21d2739aab9e54c274c129f82b27b80ec6db94669f9ad31859d5b465"
     },
     {
       "path": "internal/cli/commerce.go",
@@ -557,7 +557,7 @@
     {
       "path": "internal/cli/root_test.go",
       "mode": "100644",
-      "sha256": "576144b11021da9107c2dafa4016282ea1df918322d53c63a092fff32637d9f2"
+      "sha256": "a9ae9ab5eebe9c7effa66c68df0537a7d78ccc3d0cfa02a5f90888a8aed8335c"
     },
     {
       "path": "internal/cli/setup.go",
@@ -612,12 +612,12 @@
     {
       "path": "internal/cli/version.go",
       "mode": "100644",
-      "sha256": "b00157bebab69dcfa21aa0985c7b01b352e5aba35848bd7f8062bb92c5848e8c"
+      "sha256": "a0b0feb0a120d470d7178d10eb057837b8c28e07ff65cec9ddf150ffa7ba1e13"
     },
     {
       "path": "internal/cli/workflow_guides.go",
       "mode": "100644",
-      "sha256": "78ffcb2a44403dde2d7f28d5b349bb570b0c25298c3bc08cca4b1f5ffacaca58"
+      "sha256": "78f9addaa1e85c2c41ccef25d167b28a3006f0745bb7e29ba411b8367df54d56"
     },
     {
       "path": "internal/cli/workflows.go",
@@ -632,7 +632,7 @@
     {
       "path": "internal/sdk/add_ons.go",
       "mode": "100644",
-      "sha256": "5ef5bc5bead235c5f535c8b9be18396d2e84ef6f5dc5938285648dfa87b38925"
+      "sha256": "fe4c69f162ab596ec51eb4564435bf9fadc8fdfc0a91574948977edea73a268b"
     },
     {
       "path": "internal/sdk/add_ons_parent_products.go",
@@ -692,12 +692,12 @@
     {
       "path": "internal/sdk/charges.go",
       "mode": "100644",
-      "sha256": "03c70f75dbd29372c87c30ae95160c262aedaebadf17a6181ade6759bcf9dcc8"
+      "sha256": "ce863b04c688662adae0f7d2e6f2cfc7ef7f1d9ee143b2fa66bf96d35e82f6bf"
     },
     {
       "path": "internal/sdk/cli_bridge.go",
       "mode": "100644",
-      "sha256": "0a6ea5e5cf800510cceabbe5ca183532504edb5c800c958bdf44741aa67f8078"
+      "sha256": "3d66228abc8c6ae810c0cb05ef62412012dd89e8307ea4eebc02f826303b569c"
     },
     {
       "path": "internal/sdk/community_connections.go",
@@ -707,7 +707,7 @@
     {
       "path": "internal/sdk/coupons.go",
       "mode": "100644",
-      "sha256": "1e71f04c2459f19e44b255b7b6f4b6140e3224ba49845adfc710b3d536f7967b"
+      "sha256": "625b6cad84860f10c339ea3c12c566a8b01a4ca027599a7381a1a6f5050e84e9"
     },
     {
       "path": "internal/sdk/courses.go",
@@ -747,7 +747,7 @@
     {
       "path": "internal/sdk/customer_portal.go",
       "mode": "100644",
-      "sha256": "0ad59f2e48e2594f3327c6147cbcdd517284f327725f7b5fc635792fa19cbb53"
+      "sha256": "07de8c4638d8a122498203fdb257c0de42b3b7f37b227ee9404d44e50c5701ee"
     },
     {
       "path": "internal/sdk/customer_sessions.go",
@@ -772,7 +772,7 @@
     {
       "path": "internal/sdk/enums.go",
       "mode": "100644",
-      "sha256": "2bf0e7ba0b5311b41b529d2f78597bad25c4bacfd53161934972c6c6c630116a"
+      "sha256": "5dac2a35d5c973e5e751915f3fc6752ceca1c3f7fae2115a952b966e6c46ccbd"
     },
     {
       "path": "internal/sdk/errors.go",
@@ -787,7 +787,7 @@
     {
       "path": "internal/sdk/exports.go",
       "mode": "100644",
-      "sha256": "7a36f8dc2662633ee63855b23a08d4bfe47aadbfbd349533788674ecfd514288"
+      "sha256": "2b3e7870d38897ee4add8b949c96e8917f36b751e9b95a71f4830ea190ba2b88"
     },
     {
       "path": "internal/sdk/feedback.go",
@@ -817,7 +817,7 @@
     {
       "path": "internal/sdk/invoices.go",
       "mode": "100644",
-      "sha256": "3fee235ec73da3fa3bce4e96e6876bd473bd116c375b372c3cad00978c361f9d"
+      "sha256": "8c7c0f8785d8e7f709d611f91c8c8bbf5e8c26f870a511a4bc609f7d18f45b95"
     },
     {
       "path": "internal/sdk/license_instances.go",
@@ -842,7 +842,7 @@
     {
       "path": "internal/sdk/models.go",
       "mode": "100644",
-      "sha256": "c424cf49ead0b5e37f131f2879094f039129fb77d3b0f3cf605a64d70f7d9014"
+      "sha256": "0a1a3d139c0755c14aff82612b157f533f6ae689a0357ea62ea3f9fc2e6db52d"
     },
     {
       "path": "internal/sdk/oauth.go",
@@ -862,7 +862,7 @@
     {
       "path": "internal/sdk/orders.go",
       "mode": "100644",
-      "sha256": "2e9c558a6a646feb3a0e53a88a7e24b4e1fbf82912b06ad58ecc2cd32e29b0f2"
+      "sha256": "44322c5c93c34545487a04648156a972833ab867bd1f081069349f1aa0320a47"
     },
     {
       "path": "internal/sdk/orders_line_items.go",
@@ -887,12 +887,12 @@
     {
       "path": "internal/sdk/pkg/events/events.go",
       "mode": "100644",
-      "sha256": "a19016b352946d183dc3d91f02dec0a1cc9f5fab11663dd426572036441b5cb3"
+      "sha256": "b99969c634f9b2f504565d3dceccb528f961067ef3d9d69a17fcb15d5f0c279c"
     },
     {
       "path": "internal/sdk/product_variants.go",
       "mode": "100644",
-      "sha256": "c38c6084405480259dce4f51343a05011bb25db86cd4c263f3354c35a8142e3c"
+      "sha256": "173e027db253c1ed2a6a0972ef0c638ee538e8343eaecffab0f0f3740d42a847"
     },
     {
       "path": "internal/sdk/product_variants_booking.go",
@@ -902,12 +902,12 @@
     {
       "path": "internal/sdk/product_variants_pricing.go",
       "mode": "100644",
-      "sha256": "671ab65c592fbc8928b54007cde03258f1ffdbaf5fc453d15b870bfaa73e4465"
+      "sha256": "87949fdd76e74fe66200e17fdbd1c0d299c0c422fbb4d34867a546d829d862fe"
     },
     {
       "path": "internal/sdk/products.go",
       "mode": "100644",
-      "sha256": "4858d6d67f9c4adce1999f1368cc24002a93485c11028ca04da867514de89b02"
+      "sha256": "83e9a6f944ac74e77072687102a32c5f0489493121f574d2ca23d398d1aeeedf"
     },
     {
       "path": "internal/sdk/products_addons.go",
@@ -917,7 +917,7 @@
     {
       "path": "internal/sdk/promotions.go",
       "mode": "100644",
-      "sha256": "69a44005b5672d0edae90f5d1f3704211f7e489ff1db6697681c6e145765461b"
+      "sha256": "69bdae436da991c0c7d8d7ac8aceda12b91162c870bb5234eb15ad997dad205e"
     },
     {
       "path": "internal/sdk/promotions_phases.go",
@@ -947,7 +947,7 @@
     {
       "path": "internal/sdk/runtime.go",
       "mode": "100644",
-      "sha256": "c88ab00f6526cb25d7a931673878227057d9965b532a4c1858e8dd54330f759b"
+      "sha256": "ea9de2e0e2bc087f97d25324210a9023d1ca52e1ebf824fc040f0aa462d2290c"
     },
     {
       "path": "internal/sdk/sections.go",
@@ -957,7 +957,7 @@
     {
       "path": "internal/sdk/sellapp.go",
       "mode": "100644",
-      "sha256": "dbbea01aac41bf0cc680729097c712f9a238cb835c8f58162853ec07ddda8ed0"
+      "sha256": "79ed930fd0fbf1125d977105c7269f66bcb8213b7ae7c5a9170e4e872a603616"
     },
     {
       "path": "internal/sdk/store_custom_domains.go",
@@ -977,7 +977,12 @@
     {
       "path": "internal/sdk/subscriptions.go",
       "mode": "100644",
-      "sha256": "4da610ceec588a1379c436bd4e4cea63dc155f5095e1f7e56e917f0c39a40b35"
+      "sha256": "119c6a73e3c9b63b16c635c037bba3c46ba4a565420f1afe8f82be3bc7477b77"
+    },
+    {
+      "path": "internal/sdk/subscriptions_actions.go",
+      "mode": "100644",
+      "sha256": "702e0aaf1bd88143a7548894cbca6c101e0389a5d112a2c4e77f71f813115861"
     },
     {
       "path": "internal/sdk/tickets.go",
@@ -1042,22 +1047,22 @@
     {
       "path": "internal/sdk/webhook_channels.go",
       "mode": "100644",
-      "sha256": "282e76daef3dc41d5c0bee1f89728b45e3d2ecbdc9ea15200a3e2b3047bd51ca"
+      "sha256": "de387469b2abbdcabd72fdfba3d39e3dd6123ecfacd17e5019b13d4657d37e57"
     },
     {
       "path": "internal/sdk/webhook_platform.go",
       "mode": "100644",
-      "sha256": "3ac64368e7d374afdf57909b573380c5e22740f88f247cd788cd0a3a479973f9"
+      "sha256": "c5cc1d2e67da69d9b17f71934cfe825887e4aacfce2fc7fb14e1ef9298a5e2d3"
     },
     {
       "path": "npm/launcher.cjs",
       "mode": "100644",
-      "sha256": "a888dc4335c28bb37a168d81162bbfca5169156395c59b4988586b858a0694a8"
+      "sha256": "f0fddcc929a4084a0c47d26e7bf60680c60ea506565060ad3a81e1f0c79c068b"
     },
     {
       "path": "npm/package.json",
       "mode": "100644",
-      "sha256": "ab06ea056d94ab0365172661df950ae5fd8f0d368d3d54fcdf57f3760fcd3ad4"
+      "sha256": "f8e5790d8d7e3b364e144230ffd4246e077c134bc4d80ca320c36224d00c0641"
     },
     {
       "path": "skills/sellapp/SKILL.md",
@@ -1067,47 +1072,47 @@
     {
       "path": "skills/sellapp/references/checkout.md",
       "mode": "100644",
-      "sha256": "4113a79231ccc07cdae8e6b9aa168017bf490f697889a05eca5232d4f77404eb"
+      "sha256": "8c3c9c23aad65f67d6303b02fade361c51e43daebc0df0e3ea34f20fe5b54b7d"
     },
     {
       "path": "skills/sellapp/references/connect-store.md",
       "mode": "100644",
-      "sha256": "8c24393ee467621fcddf792fed9453686208ae324da71413de3dc48fa776b276"
+      "sha256": "4169f483d0405fcbe152b8b29cf323bf842644e1619ba2b41a013918b9e3f183"
     },
     {
       "path": "skills/sellapp/references/customer-support.md",
       "mode": "100644",
-      "sha256": "aa5cae3c3d86fab25c363bd9bb049b3bef5c8cdc287df8274e1970d82b3df9aa"
+      "sha256": "842e0a792666aafbe059e04537437eb1e67226b48d24870edd8aa01069bf2970"
     },
     {
       "path": "skills/sellapp/references/exports.md",
       "mode": "100644",
-      "sha256": "148012c2327b3bc28193c8b47e7f92ebe3b3fe41d16d9be091a4246827014de9"
+      "sha256": "bd8621185fa671ded0830b8f1b36f26040ad2d8c84657796b730e0d8186c651f"
     },
     {
       "path": "skills/sellapp/references/orders-fulfillment-refunds.md",
       "mode": "100644",
-      "sha256": "59e759c05d7237046d6204191fd05703060ecc3919d87abbefddff83d81426c7"
+      "sha256": "26f09ada53339ae4120afc3d8e02e29bc475727a7df8dd3812fe165818c370ed"
     },
     {
       "path": "skills/sellapp/references/product-variant.md",
       "mode": "100644",
-      "sha256": "51c266131288fb6a6435107ae2404d35d130c07dd73b52eb8952b55b655e3096"
+      "sha256": "be6ce569c187f59d367b91ced54a0de02cab24f8c1aa03dcedfd892b3514a3b5"
     },
     {
       "path": "skills/sellapp/references/subscriptions.md",
       "mode": "100644",
-      "sha256": "c9dd906e1bea9e213bfd561b90e9b2c90f01c18f17d7705fc1fc0d5a00901cfe"
+      "sha256": "7f95d7a566f57c745a3f2a6916e784db263ffa8bda9d5ec1585f89597b4c5229"
     },
     {
       "path": "skills/sellapp/references/webhooks.md",
       "mode": "100644",
-      "sha256": "1ded07b3ebcd53fd42f531d4b78666e92804d56f988647684f116f252423c5c7"
+      "sha256": "53b03e59b265b5505184712a4c06d27d2a13f22added482d894e74bdda3f66ed"
     },
     {
       "path": "tools/release/main.go",
       "mode": "100644",
-      "sha256": "d6cfa0d65bf27c7d1c97eadc09377d6436cc2610a2a125a07c41cb29968fab2e"
+      "sha256": "35b4c20318f5cc443bea94d5a6d876b7c0ae19aadeeb519b4a344ab29de13051"
     },
     {
       "path": "tools/release/main_test.go",
@@ -1117,7 +1122,7 @@
     {
       "path": "tools/test-distribution.mjs",
       "mode": "100644",
-      "sha256": "f0f9031fd3487b3af3e640071fe75b3c685d96d6a4b90d0b8dd0e8122045137f"
+      "sha256": "f77ef9c4835b92a2774853ec6fcd5366e48c0701f3825780b387ef5b51564681"
     }
   ]
 }

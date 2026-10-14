@@ -126,7 +126,7 @@ func appendCLIItem(items []any, value any, maxItems int) ([]any, bool) {
 	return items, maxItems > 0 && len(items) >= maxItems
 }
 
-// ExecuteCLI invokes one of the 434 generated typed SDK adapters.
+// ExecuteCLI invokes one of the 438 generated typed SDK adapters.
 func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CLIInvocation, opts ...RequestOption) (any, error) {
 	options, err := invocationOptions(inv, opts)
 	if err != nil {
@@ -423,7 +423,16 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if err != nil {
 			return nil, err
 		}
-		err = client.ProductVariants().Delete(ctx, pathValue0, pathValue1, options...)
+		params := &ProductVariantsDeleteParams{}
+		if inv.Body != nil || len(inv.Files) > 0 {
+			if err := decodeCLIBody(inv.Body, params); err != nil {
+				return nil, err
+			}
+		}
+		if inv.Body == nil && len(inv.Files) == 0 {
+			params = nil
+		}
+		err = client.ProductVariants().Delete(ctx, pathValue0, pathValue1, params, options...)
 		return nil, err
 	case "DELETE /v2/products/{product}/variants/{variant}/deliverable/files/{file}":
 		pathValue0, _, err := decodeCLIValue[string](inv.Path, "product", true, true)
@@ -2440,11 +2449,45 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		}
 		return result, nil
 	case "GET /v2/customer-portal/subscriptions":
-		result, err := client.CustomerPortal().ListSubscriptions(ctx, options...)
-		if err != nil {
+		iterator := client.CustomerPortal().ListSubscriptions(ctx, options...)
+		items := make([]any, 0)
+		if !inv.All {
+			for index := range iterator.items {
+				var stop bool
+				items, stop = appendCLIItem(items, iterator.items[index], inv.MaxItems)
+				if stop {
+					break
+				}
+			}
+			if iterator.err != nil {
+				return nil, iterator.err
+			}
+			if inv.PageEnvelope {
+				return map[string]any{"data": items, "meta": iterator.Meta()}, nil
+			}
+			return items, nil
+		}
+		for {
+			if inv.MaxPages > 0 && iterator.index >= len(iterator.items) && iterator.hasNext() && len(iterator.visited) >= inv.MaxPages {
+				break
+			}
+			if !iterator.Next() {
+				break
+			}
+			current := iterator.Current()
+			if current == nil {
+				continue
+			}
+			var stop bool
+			items, stop = appendCLIItem(items, *current, inv.MaxItems)
+			if stop {
+				break
+			}
+		}
+		if err := iterator.Err(); err != nil {
 			return nil, err
 		}
-		return result, nil
+		return items, nil
 	case "GET /v2/customer-portal/subscriptions/{subscription}":
 		pathValue0, _, err := decodeCLIValue[int](inv.Path, "subscription", false, true)
 		if err != nil {
@@ -3149,14 +3192,14 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if queryValue13Present {
 			params.CouponCode = &queryValue13
 		}
-		queryValue14, queryValue14Present, err := decodeCLIValue[[]InvoicesStatus](inv.Query, "status", false, false)
+		queryValue14, queryValue14Present, err := decodeCLIValue[[]InvoicesStatus](inv.Query, "status[]", false, false)
 		if err != nil {
 			return nil, err
 		}
 		if queryValue14Present {
 			params.Status = queryValue14
 		}
-		queryValue15, queryValue15Present, err := decodeCLIValue[[]InvoicesPaymentMethods](inv.Query, "payment_methods", false, false)
+		queryValue15, queryValue15Present, err := decodeCLIValue[[]InvoicesPaymentMethods](inv.Query, "payment_methods[]", false, false)
 		if err != nil {
 			return nil, err
 		}
@@ -4721,7 +4764,36 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		}
 		return result, nil
 	case "GET /v2/subscriptions":
-		iterator := client.Subscriptions().List(ctx, options...)
+		params := &SubscriptionsListParams{}
+		queryValue0, queryValue0Present, err := decodeCLIValue[int](inv.Query, "limit", false, false)
+		if err != nil {
+			return nil, err
+		}
+		if queryValue0Present {
+			params.Limit = &queryValue0
+		}
+		queryValue1, queryValue1Present, err := decodeCLIValue[int](inv.Query, "page", false, false)
+		if err != nil {
+			return nil, err
+		}
+		if queryValue1Present {
+			params.Page = &queryValue1
+		}
+		queryValue2, queryValue2Present, err := decodeCLIValue[bool](inv.Query, "pagination", false, false)
+		if err != nil {
+			return nil, err
+		}
+		if queryValue2Present {
+			params.Pagination = &queryValue2
+		}
+		queryValue3, queryValue3Present, err := decodeCLIValue[[]SubscriptionsStatus](inv.Query, "status[]", false, false)
+		if err != nil {
+			return nil, err
+		}
+		if queryValue3Present {
+			params.Status = queryValue3
+		}
+		iterator := client.Subscriptions().List(ctx, params, options...)
 		items := make([]any, 0)
 		if !inv.All {
 			for index := range iterator.items {
@@ -4766,6 +4838,86 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 			return nil, err
 		}
 		result, err := client.Subscriptions().Get(ctx, pathValue0, options...)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	case "GET /v2/subscriptions/{productSubscription}/actions":
+		pathValue0, _, err := decodeCLIValue[int](inv.Path, "productSubscription", false, true)
+		if err != nil {
+			return nil, err
+		}
+		params := &SubscriptionsActionsListParams{}
+		queryValue0, queryValue0Present, err := decodeCLIValue[int](inv.Query, "limit", false, false)
+		if err != nil {
+			return nil, err
+		}
+		if queryValue0Present {
+			params.Limit = &queryValue0
+		}
+		queryValue1, queryValue1Present, err := decodeCLIValue[int](inv.Query, "page", false, false)
+		if err != nil {
+			return nil, err
+		}
+		if queryValue1Present {
+			params.Page = &queryValue1
+		}
+		queryValue2, queryValue2Present, err := decodeCLIValue[bool](inv.Query, "pagination", false, false)
+		if err != nil {
+			return nil, err
+		}
+		if queryValue2Present {
+			params.Pagination = &queryValue2
+		}
+		iterator := client.SubscriptionsActions().List(ctx, pathValue0, params, options...)
+		items := make([]any, 0)
+		if !inv.All {
+			for index := range iterator.items {
+				var stop bool
+				items, stop = appendCLIItem(items, iterator.items[index], inv.MaxItems)
+				if stop {
+					break
+				}
+			}
+			if iterator.err != nil {
+				return nil, iterator.err
+			}
+			if inv.PageEnvelope {
+				return map[string]any{"data": items, "meta": iterator.Meta()}, nil
+			}
+			return items, nil
+		}
+		for {
+			if inv.MaxPages > 0 && iterator.index >= len(iterator.items) && iterator.hasNext() && len(iterator.visited) >= inv.MaxPages {
+				break
+			}
+			if !iterator.Next() {
+				break
+			}
+			current := iterator.Current()
+			if current == nil {
+				continue
+			}
+			var stop bool
+			items, stop = appendCLIItem(items, *current, inv.MaxItems)
+			if stop {
+				break
+			}
+		}
+		if err := iterator.Err(); err != nil {
+			return nil, err
+		}
+		return items, nil
+	case "GET /v2/subscriptions/{productSubscription}/actions/{action}":
+		pathValue0, _, err := decodeCLIValue[int](inv.Path, "productSubscription", false, true)
+		if err != nil {
+			return nil, err
+		}
+		pathValue1, _, err := decodeCLIValue[int](inv.Path, "action", false, true)
+		if err != nil {
+			return nil, err
+		}
+		result, err := client.SubscriptionsActions().Get(ctx, pathValue0, pathValue1, options...)
 		if err != nil {
 			return nil, err
 		}
@@ -5279,6 +5431,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if isCLINull(inv.Body, "minimum_amount") {
 			params.NullFields = append(params.NullFields, "minimum_amount")
 		}
+		if isCLINull(inv.Body, "subscription_payments") {
+			params.NullFields = append(params.NullFields, "subscription_payments")
+		}
 		queryValue0, queryValue0Present, err := decodeCLIValue[bool](inv.Query, "with_trashed", false, false)
 		if err != nil {
 			return nil, err
@@ -5519,6 +5674,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		}
 		if isCLINull(inv.Body, "minimum_amount") {
 			params.NullFields = append(params.NullFields, "minimum_amount")
+		}
+		if isCLINull(inv.Body, "subscription_payments") {
+			params.NullFields = append(params.NullFields, "subscription_payments")
 		}
 		queryValue0, queryValue0Present, err := decodeCLIValue[bool](inv.Query, "with_trashed", false, false)
 		if err != nil {
@@ -6061,6 +6219,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if isCLINull(inv.Body, "maximum_purchase_quantity") {
 			params.NullFields = append(params.NullFields, "maximum_purchase_quantity")
 		}
+		if isCLINull(inv.Body, "stock") {
+			params.NullFields = append(params.NullFields, "stock")
+		}
 		result, err := client.ProductVariants().Update(ctx, pathValue0, pathValue1, params, options...)
 		if err != nil {
 			return nil, err
@@ -6211,6 +6372,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		}
 		if isCLINull(inv.Body, "max_redemptions") {
 			params.NullFields = append(params.NullFields, "max_redemptions")
+		}
+		if isCLINull(inv.Body, "subscription_payments") {
+			params.NullFields = append(params.NullFields, "subscription_payments")
 		}
 		result, err := client.Promotions().Update(ctx, pathValue0, params, options...)
 		if err != nil {
@@ -6571,6 +6735,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		}
 		if isCLINull(inv.Body, "minimum_amount") {
 			params.NullFields = append(params.NullFields, "minimum_amount")
+		}
+		if isCLINull(inv.Body, "subscription_payments") {
+			params.NullFields = append(params.NullFields, "subscription_payments")
 		}
 		result, err := client.Coupons().Create(ctx, params, options...)
 		if err != nil {
@@ -7282,6 +7449,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if isCLINull(inv.Body, "minimum_amount") {
 			params.NullFields = append(params.NullFields, "minimum_amount")
 		}
+		if isCLINull(inv.Body, "subscription_payments") {
+			params.NullFields = append(params.NullFields, "subscription_payments")
+		}
 		result, err := client.Coupons().V2CreateCoupon(ctx, params, options...)
 		if err != nil {
 			return nil, err
@@ -7612,6 +7782,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if err := decodeCLIBody(inv.Body, params); err != nil {
 			return nil, err
 		}
+		if isCLINull(inv.Body, "reason") {
+			params.NullFields = append(params.NullFields, "reason")
+		}
 		result, err := client.CustomerPortal().CancelSubscriptionImmediately(ctx, pathValue0, params, options...)
 		if err != nil {
 			return nil, err
@@ -7626,6 +7799,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if err := decodeCLIBody(inv.Body, params); err != nil {
 			return nil, err
 		}
+		if isCLINull(inv.Body, "reason") {
+			params.NullFields = append(params.NullFields, "reason")
+		}
 		result, err := client.CustomerPortal().CancelSubscriptionAtPeriodEnd(ctx, pathValue0, params, options...)
 		if err != nil {
 			return nil, err
@@ -7638,6 +7814,12 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		}
 		params := &CustomerPortalConfirmSubscriptionPlanChangeParams{}
 		if err := decodeCLIBody(inv.Body, params); err != nil {
+			return nil, err
+		}
+		if err := requireCLIField(inv, "target_variant_id", false); err != nil {
+			return nil, err
+		}
+		if err := requireCLIField(inv, "preview_token", false); err != nil {
 			return nil, err
 		}
 		result, err := client.CustomerPortal().ConfirmSubscriptionPlanChange(ctx, pathValue0, params, options...)
@@ -7654,6 +7836,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if err := decodeCLIBody(inv.Body, params); err != nil {
 			return nil, err
 		}
+		if err := requireCLIField(inv, "target_variant_id", false); err != nil {
+			return nil, err
+		}
 		result, err := client.CustomerPortal().PreviewSubscriptionPlanChange(ctx, pathValue0, params, options...)
 		if err != nil {
 			return nil, err
@@ -7667,6 +7852,15 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		params := &CustomerPortalConfirmSubscriptionRenewalDateChangeParams{}
 		if err := decodeCLIBody(inv.Body, params); err != nil {
 			return nil, err
+		}
+		if err := requireCLIField(inv, "renewal_date", false); err != nil {
+			return nil, err
+		}
+		if isCLINull(inv.Body, "preview_token") {
+			params.NullFields = append(params.NullFields, "preview_token")
+		}
+		if isCLINull(inv.Body, "reason") {
+			params.NullFields = append(params.NullFields, "reason")
 		}
 		result, err := client.CustomerPortal().ConfirmSubscriptionRenewalDateChange(ctx, pathValue0, params, options...)
 		if err != nil {
@@ -7682,6 +7876,12 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if err := decodeCLIBody(inv.Body, params); err != nil {
 			return nil, err
 		}
+		if err := requireCLIField(inv, "renewal_date", false); err != nil {
+			return nil, err
+		}
+		if isCLINull(inv.Body, "reason") {
+			params.NullFields = append(params.NullFields, "reason")
+		}
 		result, err := client.CustomerPortal().PreviewSubscriptionRenewalDateChange(ctx, pathValue0, params, options...)
 		if err != nil {
 			return nil, err
@@ -7696,6 +7896,12 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if err := decodeCLIBody(inv.Body, params); err != nil {
 			return nil, err
 		}
+		if isCLINull(inv.Body, "resume_at") {
+			params.NullFields = append(params.NullFields, "resume_at")
+		}
+		if isCLINull(inv.Body, "reason") {
+			params.NullFields = append(params.NullFields, "reason")
+		}
 		result, err := client.CustomerPortal().PauseSubscription(ctx, pathValue0, params, options...)
 		if err != nil {
 			return nil, err
@@ -7706,11 +7912,7 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if err != nil {
 			return nil, err
 		}
-		params := &CustomerPortalResumeSubscriptionParams{}
-		if err := decodeCLIBody(inv.Body, params); err != nil {
-			return nil, err
-		}
-		result, err := client.CustomerPortal().ResumeSubscription(ctx, pathValue0, params, options...)
+		result, err := client.CustomerPortal().ResumeSubscription(ctx, pathValue0, options...)
 		if err != nil {
 			return nil, err
 		}
@@ -7723,6 +7925,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		params := &CustomerPortalUpdateSubscriptionPaymentMethodParams{}
 		if err := decodeCLIBody(inv.Body, params); err != nil {
 			return nil, err
+		}
+		if isCLINull(inv.Body, "return_url") {
+			params.NullFields = append(params.NullFields, "return_url")
 		}
 		result, err := client.CustomerPortal().UpdateSubscriptionPaymentMethod(ctx, pathValue0, params, options...)
 		if err != nil {
@@ -9105,6 +9310,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if isCLINull(inv.Body, "max_redemptions") {
 			params.NullFields = append(params.NullFields, "max_redemptions")
 		}
+		if isCLINull(inv.Body, "subscription_payments") {
+			params.NullFields = append(params.NullFields, "subscription_payments")
+		}
 		result, err := client.Promotions().Create(ctx, params, options...)
 		if err != nil {
 			return nil, err
@@ -9142,6 +9350,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		}
 		if isCLINull(inv.Body, "max_redemptions") {
 			params.NullFields = append(params.NullFields, "max_redemptions")
+		}
+		if isCLINull(inv.Body, "subscription_payments") {
+			params.NullFields = append(params.NullFields, "subscription_payments")
 		}
 		result, err := client.Promotions().Restore(ctx, pathValue0, params, options...)
 		if err != nil {
@@ -9633,6 +9844,30 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 			return nil, err
 		}
 		return result, nil
+	case "POST /v2/subscriptions/{productSubscription}/actions/{action}/dismiss":
+		pathValue0, _, err := decodeCLIValue[int](inv.Path, "productSubscription", false, true)
+		if err != nil {
+			return nil, err
+		}
+		pathValue1, _, err := decodeCLIValue[int](inv.Path, "action", false, true)
+		if err != nil {
+			return nil, err
+		}
+		params := &SubscriptionsActionsDismissParams{}
+		if err := decodeCLIBody(inv.Body, params); err != nil {
+			return nil, err
+		}
+		if err := requireCLIField(inv, "note", false); err != nil {
+			return nil, err
+		}
+		if isCLINull(inv.Body, "idempotency_key") {
+			params.NullFields = append(params.NullFields, "idempotency_key")
+		}
+		result, err := client.SubscriptionsActions().Dismiss(ctx, pathValue0, pathValue1, params, options...)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
 	case "POST /v2/subscriptions/{productSubscription}/actions/cancel-immediately":
 		pathValue0, _, err := decodeCLIValue[int](inv.Path, "productSubscription", false, true)
 		if err != nil {
@@ -9691,8 +9926,11 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if isCLINull(inv.Body, "idempotency_key") {
 			params.NullFields = append(params.NullFields, "idempotency_key")
 		}
-		err = client.Subscriptions().ConfirmPlanChange(ctx, pathValue0, params, options...)
-		return nil, err
+		result, err := client.Subscriptions().ConfirmPlanChange(ctx, pathValue0, params, options...)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
 	case "POST /v2/subscriptions/{productSubscription}/actions/change-plan/preview":
 		pathValue0, _, err := decodeCLIValue[int](inv.Path, "productSubscription", false, true)
 		if err != nil {
@@ -9708,8 +9946,11 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if isCLINull(inv.Body, "idempotency_key") {
 			params.NullFields = append(params.NullFields, "idempotency_key")
 		}
-		err = client.Subscriptions().PreviewPlanChange(ctx, pathValue0, params, options...)
-		return nil, err
+		result, err := client.Subscriptions().PreviewPlanChange(ctx, pathValue0, params, options...)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
 	case "POST /v2/subscriptions/{productSubscription}/actions/change-renewal-date/confirm":
 		pathValue0, _, err := decodeCLIValue[int](inv.Path, "productSubscription", false, true)
 		if err != nil {
@@ -9755,6 +9996,23 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 			params.NullFields = append(params.NullFields, "reason")
 		}
 		result, err := client.Subscriptions().PreviewRenewalDate(ctx, pathValue0, params, options...)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	case "POST /v2/subscriptions/{productSubscription}/actions/keep":
+		pathValue0, _, err := decodeCLIValue[int](inv.Path, "productSubscription", false, true)
+		if err != nil {
+			return nil, err
+		}
+		params := &SubscriptionsKeepParams{}
+		if err := decodeCLIBody(inv.Body, params); err != nil {
+			return nil, err
+		}
+		if isCLINull(inv.Body, "idempotency_key") {
+			params.NullFields = append(params.NullFields, "idempotency_key")
+		}
+		result, err := client.Subscriptions().Keep(ctx, pathValue0, params, options...)
 		if err != nil {
 			return nil, err
 		}
@@ -9811,12 +10069,41 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if isCLINull(inv.Body, "idempotency_key") {
 			params.NullFields = append(params.NullFields, "idempotency_key")
 		}
-		err = client.Subscriptions().UpdatePaymentMethod(ctx, pathValue0, params, options...)
-		return nil, err
+		if isCLINull(inv.Body, "return_url") {
+			params.NullFields = append(params.NullFields, "return_url")
+		}
+		result, err := client.Subscriptions().UpdatePaymentMethod(ctx, pathValue0, params, options...)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
 	case "POST /v2/subscriptions/search":
 		params := &SubscriptionsSearchParams{}
-		if err := decodeCLIBody(inv.Body, params); err != nil {
+		if inv.Body != nil || len(inv.Files) > 0 {
+			if err := decodeCLIBody(inv.Body, params); err != nil {
+				return nil, err
+			}
+		}
+		queryValue0, queryValue0Present, err := decodeCLIValue[int](inv.Query, "limit", false, false)
+		if err != nil {
 			return nil, err
+		}
+		if queryValue0Present {
+			params.Limit = &queryValue0
+		}
+		queryValue1, queryValue1Present, err := decodeCLIValue[int](inv.Query, "page", false, false)
+		if err != nil {
+			return nil, err
+		}
+		if queryValue1Present {
+			params.Page = &queryValue1
+		}
+		queryValue2, queryValue2Present, err := decodeCLIValue[bool](inv.Query, "pagination", false, false)
+		if err != nil {
+			return nil, err
+		}
+		if queryValue2Present {
+			params.Pagination = &queryValue2
 		}
 		iterator := client.Subscriptions().Search(ctx, params, options...)
 		items := make([]any, 0)
@@ -10294,6 +10581,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if isCLINull(inv.Body, "minimum_amount") {
 			params.NullFields = append(params.NullFields, "minimum_amount")
 		}
+		if isCLINull(inv.Body, "subscription_payments") {
+			params.NullFields = append(params.NullFields, "subscription_payments")
+		}
 		queryValue0, queryValue0Present, err := decodeCLIValue[bool](inv.Query, "with_trashed", false, false)
 		if err != nil {
 			return nil, err
@@ -10501,6 +10791,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		}
 		if isCLINull(inv.Body, "minimum_amount") {
 			params.NullFields = append(params.NullFields, "minimum_amount")
+		}
+		if isCLINull(inv.Body, "subscription_payments") {
+			params.NullFields = append(params.NullFields, "subscription_payments")
 		}
 		queryValue0, queryValue0Present, err := decodeCLIValue[bool](inv.Query, "with_trashed", false, false)
 		if err != nil {
@@ -10810,6 +11103,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		if isCLINull(inv.Body, "maximum_purchase_quantity") {
 			params.NullFields = append(params.NullFields, "maximum_purchase_quantity")
 		}
+		if isCLINull(inv.Body, "stock") {
+			params.NullFields = append(params.NullFields, "stock")
+		}
 		result, err := client.ProductVariants().Replace(ctx, pathValue0, pathValue1, params, options...)
 		if err != nil {
 			return nil, err
@@ -10981,6 +11277,9 @@ func ExecuteCLI(ctx context.Context, client *Client, operationKey string, inv CL
 		}
 		if isCLINull(inv.Body, "max_redemptions") {
 			params.NullFields = append(params.NullFields, "max_redemptions")
+		}
+		if isCLINull(inv.Body, "subscription_payments") {
+			params.NullFields = append(params.NullFields, "subscription_payments")
 		}
 		result, err := client.Promotions().Replace(ctx, pathValue0, params, options...)
 		if err != nil {

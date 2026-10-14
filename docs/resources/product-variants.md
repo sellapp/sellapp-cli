@@ -495,10 +495,11 @@ sellapp product-variants create 120 --body '{"title":"Monthly membership","descr
 | --description | Yes | Value for description. |
 | --deliverable | Yes | Value for deliverable. |
 | --pricing | Yes | Value for pricing. |
-| --payment-methods | Yes | Value for payment methods. |
+| --payment-methods | Yes | Complete gateway selection for this variant. Selecting CUSTOM_PAYMENT_METHOD also requires at least one custom_payment_method_ids entry. |
 | --minimum-purchase-quantity | No | Value for minimum purchase quantity. |
 | --maximum-purchase-quantity | No | Value for maximum purchase quantity. |
 | --bulk-discount | No | Value for bulk discount. |
+| --custom-payment-method-ids | No | Enabled, usable custom payment method ULIDs belonging to the selected store. Supply at least one when payment_methods includes CUSTOM_PAYMENT_METHOD. Include CUSTOM_PAYMENT_METHOD in payment_methods whenever sending nonempty IDs. On updates, omitting both selections preserves the current methods. Nonempty IDs are rejected when custom payments are not selected. |
 | --other-settings | No | Value for other settings. |
 | --expected-updated-at | No | Optional optimistic-concurrency snapshot for updates. Use the variant's latest updated_at value; stale snapshots receive a 422 validation response. |
 
@@ -537,7 +538,7 @@ Inspect the complete schema: `sellapp commands product-variants create --json`.
 
 Delete a product variant
 
-Deletes a product variant. This will permanently delete the product variant and all of its details, including the sensitive deliverables, will no longer be retrievable. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Soft-delete a variant in the authenticated store. Variants referenced by non-terminal subscriptions cannot be deleted. Send expected_updated_at from the latest variant response to reject a stale deletion with 422. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/product-variants/delete-a-product-variant) · Effect: **consequential**
 
@@ -549,6 +550,7 @@ sellapp product-variants delete --product 1 2 --yes
 | --- | --- | --- |
 | --product | Yes | The product path parameter. |
 | variant (positional) | Yes | The variant path parameter. |
+| --expected-updated-at | No | Optional optimistic-concurrency snapshot. Send the exact `updated_at` value from the product you last retrieved; the mutation is rejected if the product has changed. |
 
 A request body is optional or not used by this operation.
 
@@ -686,7 +688,7 @@ Inspect the complete schema: `sellapp commands product-variants list --json`.
 
 Replace product variant pricing
 
-Replace a variant's pricing and payment-method selection. Omitted `compare_at_price` and `bulk_discount` values are cleared. An empty payment-method array is accepted only when the resulting published variant is genuinely free, including having no paid credit-rate tiers. Requires the `listing` Sanctum ability. Relationship IDs are scoped to the current store. Use the ISO 8601 string `expected_updated_at` to reject stale writes. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Replace a variant's pricing and payment-method selection. Omitted `compare_at_price` and `bulk_discount` values are cleared. An omitted `trial` is kept. A `trial` is accepted only on `SUBSCRIPTION` pricing and is dropped when the pricing becomes `SINGLE_PAYMENT`. Send `trial: null` to remove it. An empty payment-method array is accepted only when the resulting published variant is genuinely free, including having no paid credit-rate tiers. Bundle products only support one-time pricing. A bundle variant whose resulting pricing type is `SUBSCRIPTION` is refused with a `422` carrying that sentence on `pricing.type`. Requires the `listing` Sanctum ability. Relationship IDs are scoped to the current store. Use the ISO 8601 string `expected_updated_at` to reject stale writes. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/product-variants) · Effect: **write**
 
@@ -739,7 +741,7 @@ Inspect the complete schema: `sellapp commands product-variants pricing replace 
 
 Partially update product variant pricing
 
-Update only the supplied pricing, subscription cadence, quantity pricing tier, or payment-method fields; omitted fields retain their current values. An empty payment-method array is accepted only when the resulting published variant is genuinely free, including having no paid credit-rate tiers. Requires the `listing` Sanctum ability. Relationship IDs are scoped to the current store. Use the ISO 8601 string `expected_updated_at` to reject stale writes. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Update only the supplied pricing, subscription cadence, quantity pricing tier, or payment-method fields; omitted fields retain their current values. A `trial` is accepted only on `SUBSCRIPTION` pricing and is dropped when the pricing becomes `SINGLE_PAYMENT`. Send `trial: null` to remove it. An empty payment-method array is accepted only when the resulting published variant is genuinely free, including having no paid credit-rate tiers. Bundle products only support one-time pricing. A bundle variant whose resulting pricing type is `SUBSCRIPTION` is refused with a `422` carrying that sentence on `pricing.type`. Requires the `listing` Sanctum ability. Relationship IDs are scoped to the current store. Use the ISO 8601 string `expected_updated_at` to reject stale writes. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/product-variants/update-product-variant-pricing) · Effect: **write**
 
@@ -792,7 +794,7 @@ Inspect the complete schema: `sellapp commands product-variants pricing update -
 
 Update a product variant with PUT
 
-Update a product variant using the PUT compatibility method. Fields remain partial for backward compatibility. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Update a product variant using the PUT compatibility method. Fields remain partial for backward compatibility. Bundle products only support one-time pricing. Adding the bundle deliverable type to a subscription variant is refused with a `422` carrying that sentence on `deliverable.types`. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/product-variants) · Effect: **write**
 
@@ -811,9 +813,11 @@ sellapp product-variants replace --product 120 4321 --title 'Monthly membership 
 | --minimum-purchase-quantity | No | Value for minimum purchase quantity. |
 | --maximum-purchase-quantity | No | Value for maximum purchase quantity. |
 | --bulk-discount | No | Value for bulk discount. |
-| --payment-methods | No | Value for payment methods. |
+| --payment-methods | No | Complete gateway selection for this variant. Selecting CUSTOM_PAYMENT_METHOD also requires at least one custom_payment_method_ids entry. |
+| --custom-payment-method-ids | No | Enabled, usable custom payment method ULIDs belonging to the selected store. Supply at least one when payment_methods includes CUSTOM_PAYMENT_METHOD. Include CUSTOM_PAYMENT_METHOD in payment_methods whenever sending nonempty IDs. On updates, omitting both selections preserves the current methods. Nonempty IDs are rejected when custom payments are not selected. |
 | --other-settings | No | Value for other settings. |
 | --expected-updated-at | No | Optional optimistic-concurrency snapshot for updates. Use the variant's latest updated_at value; stale snapshots receive a 422 validation response. |
+| --stock | No | Set an existing variant's stock count while preserving delivery instructions and uploaded files. Send 0 for out of stock or null for unlimited stock. Omit deliverable for a stock-only change. TEXT variants manage stock through their serial inventory and reject this field. |
 
 The request body is required.
 
@@ -901,7 +905,7 @@ Inspect the complete schema: `sellapp commands product-variants search --json`.
 
 Update a product variant
 
-Updates a product variant's details. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Updates a product variant's details. Bundle products only support one-time pricing. Adding the bundle deliverable type to a subscription variant is refused with a `422` carrying that sentence on `deliverable.types`. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/product-variants/update-a-product-variant) · Effect: **write**
 
@@ -920,9 +924,11 @@ sellapp product-variants update --product 120 4321 --title 'Monthly membership p
 | --minimum-purchase-quantity | No | Value for minimum purchase quantity. |
 | --maximum-purchase-quantity | No | Value for maximum purchase quantity. |
 | --bulk-discount | No | Value for bulk discount. |
-| --payment-methods | No | Value for payment methods. |
+| --payment-methods | No | Complete gateway selection for this variant. Selecting CUSTOM_PAYMENT_METHOD also requires at least one custom_payment_method_ids entry. |
+| --custom-payment-method-ids | No | Enabled, usable custom payment method ULIDs belonging to the selected store. Supply at least one when payment_methods includes CUSTOM_PAYMENT_METHOD. Include CUSTOM_PAYMENT_METHOD in payment_methods whenever sending nonempty IDs. On updates, omitting both selections preserves the current methods. Nonempty IDs are rejected when custom payments are not selected. |
 | --other-settings | No | Value for other settings. |
 | --expected-updated-at | No | Optional optimistic-concurrency snapshot for updates. Use the variant's latest updated_at value; stale snapshots receive a 422 validation response. |
+| --stock | No | Set an existing variant's stock count while preserving delivery instructions and uploaded files. Send 0 for out of stock or null for unlimited stock. Omit deliverable for a stock-only change. TEXT variants manage stock through their serial inventory and reject this field. |
 
 The request body is required.
 

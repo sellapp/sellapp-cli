@@ -6,7 +6,7 @@
 
 Create a promotion
 
-Create a promotion and its initial ordered phase set. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Create a promotion and its initial ordered phase set. `applies_to` chooses whether it discounts one-time purchases or the first `subscription_payments` payments of a subscription plan, and a subscription promotion can be limited to picked products and plans with `store_wide`, `products`, and `product_variants`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/promotions/create-promotion) · Effect: **consequential**
 
@@ -24,6 +24,11 @@ sellapp promotions create --body '{"name":"Ship Week","status":"active","starts_
 | --starts-at | No | Value for starts at. |
 | --ends-at | No | A date and time after starts_at and after the current time, or null for no end date. |
 | --max-redemptions | No | Value for max redemptions. |
+| --applies-to | No | What the promotion discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new promotion defaults to `one_time`, and an update that leaves this out keeps the current kind. The promotion only discounts order lines of its kind. |
+| --subscription-payments | No | How many payments a `subscriptions` promotion discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` promotion needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` promotion, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` promotion always stores null here. |
+| --store-wide | No | Send `false` with `products` to limit a `subscriptions` promotion to picked products and plans. Required whenever the request sends `products` or `product_variants`. A new promotion defaults to `true`, an update that leaves it out keeps the current scope, and switching a promotion to `one_time` makes it store-wide again. A `one_time` promotion with `false` returns `422` on `store_wide` with `A promotion for one-time purchases applies to the whole store.` |
+| --products | No | Product IDs a narrowed subscription promotion reaches. Each one must sell a subscription, or the request returns `422` on `products` with `Pick only products that sell a subscription.` A narrowed promotion left with no products returns `422` with `Pick at least one subscription product for this promotion.` An update replaces the picks with this list, or keeps them when it is left out. |
+| --product-variants | No | Subscription plan IDs to limit the picked products to. Each one must be a subscription plan of a product in `products`, or the request returns `422` on `product_variants` with `Pick only subscription plans of the picked products.` A picked product with none of its plans listed takes every plan, including plans added later. An update that leaves this out keeps the listed plans of products that stay picked. |
 
 The request body is required.
 
@@ -316,6 +321,11 @@ sellapp promotions replace 1 --name 'One More Sprint' --is-stackable true --yes
 | --priority | No | Value for priority. |
 | --is-stackable | No | Value for is stackable. |
 | --max-redemptions | No | Value for max redemptions. |
+| --applies-to | No | What the promotion discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new promotion defaults to `one_time`, and an update that leaves this out keeps the current kind. The promotion only discounts order lines of its kind. |
+| --subscription-payments | No | How many payments a `subscriptions` promotion discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` promotion needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` promotion, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` promotion always stores null here. |
+| --store-wide | No | Send `false` with `products` to limit a `subscriptions` promotion to picked products and plans. Required whenever the request sends `products` or `product_variants`. A new promotion defaults to `true`, an update that leaves it out keeps the current scope, and switching a promotion to `one_time` makes it store-wide again. A `one_time` promotion with `false` returns `422` on `store_wide` with `A promotion for one-time purchases applies to the whole store.` |
+| --products | No | Product IDs a narrowed subscription promotion reaches. Each one must sell a subscription, or the request returns `422` on `products` with `Pick only products that sell a subscription.` A narrowed promotion left with no products returns `422` with `Pick at least one subscription product for this promotion.` An update replaces the picks with this list, or keeps them when it is left out. |
+| --product-variants | No | Subscription plan IDs to limit the picked products to. Each one must be a subscription plan of a product in `products`, or the request returns `422` on `product_variants` with `Pick only subscription plans of the picked products.` A picked product with none of its plans listed takes every plan, including plans added later. An update that leaves this out keeps the listed plans of products that stay picked. |
 | --phases | No | The complete ordered phase set. Array order becomes phase position. |
 
 The request body is required.
@@ -372,6 +382,11 @@ sellapp promotions restore 1 --body '{"name":"Ship Week","status":"active","star
 | --starts-at | No | Value for starts at. |
 | --ends-at | No | A date and time after starts_at and after the current time, or null for no end date. |
 | --max-redemptions | No | Value for max redemptions. |
+| --applies-to | No | What the promotion discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new promotion defaults to `one_time`, and an update that leaves this out keeps the current kind. The promotion only discounts order lines of its kind. |
+| --subscription-payments | No | How many payments a `subscriptions` promotion discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` promotion needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` promotion, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` promotion always stores null here. |
+| --store-wide | No | Send `false` with `products` to limit a `subscriptions` promotion to picked products and plans. Required whenever the request sends `products` or `product_variants`. A new promotion defaults to `true`, an update that leaves it out keeps the current scope, and switching a promotion to `one_time` makes it store-wide again. A `one_time` promotion with `false` returns `422` on `store_wide` with `A promotion for one-time purchases applies to the whole store.` |
+| --products | No | Product IDs a narrowed subscription promotion reaches. Each one must sell a subscription, or the request returns `422` on `products` with `Pick only products that sell a subscription.` A narrowed promotion left with no products returns `422` with `Pick at least one subscription product for this promotion.` An update replaces the picks with this list, or keeps them when it is left out. |
+| --product-variants | No | Subscription plan IDs to limit the picked products to. Each one must be a subscription plan of a product in `products`, or the request returns `422` on `product_variants` with `Pick only subscription plans of the picked products.` A picked product with none of its plans listed takes every plan, including plans added later. An update that leaves this out keeps the listed plans of products that stay picked. |
 
 The request body is required.
 
@@ -479,6 +494,11 @@ sellapp promotions update 1 --name 'One More Sprint' --is-stackable true --yes
 | --priority | No | Value for priority. |
 | --is-stackable | No | Value for is stackable. |
 | --max-redemptions | No | Value for max redemptions. |
+| --applies-to | No | What the promotion discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new promotion defaults to `one_time`, and an update that leaves this out keeps the current kind. The promotion only discounts order lines of its kind. |
+| --subscription-payments | No | How many payments a `subscriptions` promotion discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` promotion needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` promotion, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` promotion always stores null here. |
+| --store-wide | No | Send `false` with `products` to limit a `subscriptions` promotion to picked products and plans. Required whenever the request sends `products` or `product_variants`. A new promotion defaults to `true`, an update that leaves it out keeps the current scope, and switching a promotion to `one_time` makes it store-wide again. A `one_time` promotion with `false` returns `422` on `store_wide` with `A promotion for one-time purchases applies to the whole store.` |
+| --products | No | Product IDs a narrowed subscription promotion reaches. Each one must sell a subscription, or the request returns `422` on `products` with `Pick only products that sell a subscription.` A narrowed promotion left with no products returns `422` with `Pick at least one subscription product for this promotion.` An update replaces the picks with this list, or keeps them when it is left out. |
+| --product-variants | No | Subscription plan IDs to limit the picked products to. Each one must be a subscription plan of a product in `products`, or the request returns `422` on `product_variants` with `Pick only subscription plans of the picked products.` A picked product with none of its plans listed takes every plan, including plans added later. An update that leaves this out keeps the listed plans of products that stay picked. |
 | --phases | No | The complete ordered phase set. Array order becomes phase position. |
 
 The request body is required.

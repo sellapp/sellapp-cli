@@ -194,6 +194,7 @@
     "internal/sdk/store_notification_channels.go",
     "internal/sdk/store_settings.go",
     "internal/sdk/subscriptions.go",
+    "internal/sdk/subscriptions_actions.go",
     "internal/sdk/tickets.go",
     "internal/sdk/tickets_messages.go",
     "internal/sdk/upsell_offers.go",
@@ -488,6 +489,18 @@
       "sdkMethod": "Cancel",
       "service": "subscriptions"
     },
+    "GET /v2/subscriptions": {
+      "sdkMethod": "List",
+      "service": "subscriptions"
+    },
+    "POST /v2/subscriptions/search": {
+      "sdkMethod": "Search",
+      "service": "subscriptions"
+    },
+    "GET /v2/subscriptions/{productSubscription}": {
+      "sdkMethod": "Get",
+      "service": "subscriptions"
+    },
     "GET /v2/subscriptions/{productSubscription}/capabilities": {
       "sdkMethod": "GetCapabilities",
       "service": "subscriptions"
@@ -498,6 +511,10 @@
     },
     "POST /v2/subscriptions/{productSubscription}/actions/cancel-immediately": {
       "sdkMethod": "CancelImmediately",
+      "service": "subscriptions"
+    },
+    "POST /v2/subscriptions/{productSubscription}/actions/keep": {
+      "sdkMethod": "Keep",
       "service": "subscriptions"
     },
     "POST /v2/subscriptions/{productSubscription}/actions/pause": {
@@ -528,17 +545,17 @@
       "sdkMethod": "ConfirmRenewalDate",
       "service": "subscriptions"
     },
-    "GET /v2/subscriptions": {
+    "GET /v2/subscriptions/{productSubscription}/actions": {
       "sdkMethod": "List",
-      "service": "subscriptions"
+      "service": "subscriptions_actions"
     },
-    "POST /v2/subscriptions/search": {
-      "sdkMethod": "Search",
-      "service": "subscriptions"
-    },
-    "GET /v2/subscriptions/{productSubscription}": {
+    "GET /v2/subscriptions/{productSubscription}/actions/{action}": {
       "sdkMethod": "Get",
-      "service": "subscriptions"
+      "service": "subscriptions_actions"
+    },
+    "POST /v2/subscriptions/{productSubscription}/actions/{action}/dismiss": {
+      "sdkMethod": "Dismiss",
+      "service": "subscriptions_actions"
     },
     "GET /v2/bookings": {
       "sdkMethod": "List",

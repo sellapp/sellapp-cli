@@ -63,7 +63,8 @@ type ChargesCreateParams struct {
 	UseAllPaymentMethods   *bool                                                  `json:"use_all_payment_methods,omitempty" url:"-"`
 	Deliverable            *CreateChargeRequestApplicationJSONPropertyDeliverable `json:"deliverable,omitempty" url:"-"`
 	Metadata               *CreateChargeRequestApplicationJSONPropertyMetadata    `json:"metadata,omitempty" url:"-"`
-	CouponCode             *string                                                `json:"coupon_code,omitempty" url:"-"`
+	// CouponCode is optional coupon code. A charge takes a store-wide coupon for one-time purchases only: a coupon whose `applies_to` is `subscriptions` returns `422` with `Coupon code {code} only applies to subscriptions.`
+	CouponCode *string `json:"coupon_code,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
 	// clearing the corresponding value (e.g. []string{"external_id"}).
 	NullFields []string `json:"-" url:"-"`

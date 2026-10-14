@@ -19,7 +19,7 @@ type SubscriptionsCancelParams struct {
 	CancelAtPeriodEnd bool `json:"cancel_at_period_end" url:"-"`
 	// RefundLastPayment is request a real refund of the latest payment during immediate cancellation. Cancellation success does not prove refund success; verify provider/order refund records.
 	RefundLastPayment *bool `json:"refund_last_payment,omitempty" url:"-"`
-	// ProRatedRefund is request a prorated refund. Requires refund_last_payment=true. False requests a full latest-payment refund when refund_last_payment is enabled.
+	// ProRatedRefund is request a prorated refund. Requires refund_last_payment=true. False requests a full latest-payment refund when refund_last_payment is enabled. Refused with `422` while a Stripe, PayPal, or Razorpay subscription is past due or unpaid.
 	ProRatedRefund *bool `json:"pro_rated_refund,omitempty" url:"-"`
 	// IdempotencyKey is optional idempotency key. You may also send this as the Idempotency-Key header.
 	IdempotencyKey *string `json:"idempotency_key,omitempty" url:"-"`
@@ -55,7 +55,9 @@ func (p SubscriptionsCancelParams) MarshalJSON() ([]byte, error) {
 }
 
 // Cancel a subscription
-// Cancel an active subscription now or at period end. cancel_at_period_end is required. Refund flags are valid only when it is false; period-end cancellation does not refund the last payment. Refunds are off by default. refund_last_payment requests a real refund; pro_rated_refund requires refund_last_payment and defaults to false. Cancellation can succeed even if the requested refund fails. A 200 response or confirmed cancellation does not prove a refund, and the action response does not expose the provider refund result. Check the order and payment-provider refund records before retrying; do not replay cancellation as a refund-recovery step. Reuse an idempotency key only with identical action input and actor. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Cancel an active subscription now or at period end, or one with a payment still owed now: a past due one the store bills in house, or a past due or unpaid Stripe, PayPal, or Razorpay subscription. cancel_at_period_end is required. Refund flags are valid only when it is false; period-end cancellation does not refund the last payment. New integrations should use the cancel-at-period-end and cancel-immediately lifecycle actions instead. A provider refusal, or a state check such as a change already in progress or a subscription that is no longer active, returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. Refunds are off by default. refund_last_payment requests a real refund; pro_rated_refund requires refund_last_payment and defaults to false. While a Stripe, PayPal, or Razorpay subscription is past due or unpaid, its current period was never paid for, so a pro-rated refund returns `422`; a full refund or no refund still works. Cancellation can succeed even if the requested refund fails. A 200 response or confirmed cancellation does not prove a refund, and the action response does not expose the provider refund result. Check the order and payment-provider refund records before retrying; do not replay cancellation as a refund-recovery step. Reuse an idempotency key only with identical action input and actor. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+//
+// Deprecated: this operation is deprecated.
 func (s *SubscriptionService) Cancel(ctx context.Context, subscription int, params *SubscriptionsCancelParams, opts ...RequestOption) (*SdkCancelSubscriptionResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("cancelSubscription", true)}, opts...)
 	var result SdkCancelSubscriptionResponseValue200ApplicationJSON
@@ -76,8 +78,127 @@ func (s *SubscriptionService) CancelWithResponse(ctx context.Context, subscripti
 	return rawResponse(value, metadata), nil
 }
 
+// SubscriptionsListParams contains the parameters for List.
+type SubscriptionsListParams struct {
+	// Limit is number of items to return per page.
+	// Defaults to 15.
+	Limit *int `url:"limit,omitempty" json:"-"`
+	// Page is page number to return.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
+	// Pagination is set to false to return at most 100 matching items in one data array without pagination links or metadata.
+	// Defaults to true.
+	Pagination *bool `url:"pagination,omitempty" json:"-"`
+	// Status is filter by one or more subscription statuses. Repeat the parameter to select several; a single `status=ACTIVE` works too. A status outside the list is rejected with a validation error.
+	Status []SubscriptionsStatus `url:"status[],omitempty" json:"-"`
+}
+
+// List subscriptions
+// List the subscriptions belonging to the authenticated store, ordered by identifier ascending. Requires the `invoice` Sanctum ability. Use `status[]` to keep only the states you care about. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *SubscriptionService) List(ctx context.Context, params *SubscriptionsListParams, opts ...RequestOption) *Iterator[SdkListSubscriptionsResponseValue200ApplicationJSON] {
+	opts = append([]RequestOption{withOperation("listSubscriptions", false)}, opts...)
+	return newIterator[SdkListSubscriptionsResponseValue200ApplicationJSON](ctx, s.client, "GET", "/v2/subscriptions", params, "after", "data", opts, map[string]string{"limit": "15"})
+}
+
+func (s *SubscriptionService) ListWithResponse(ctx context.Context, params *SubscriptionsListParams, opts ...RequestOption) (*RawResponse[*Iterator[SdkListSubscriptionsResponseValue200ApplicationJSON]], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value := s.List(ctx, params, captureOpts...)
+	if err := value.Err(); err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// SubscriptionsSearchParams contains the parameters for Search.
+type SubscriptionsSearchParams struct {
+	Filters  []*SearchSubscriptionsRequestApplicationJSONPropertyFiltersItem  `json:"filters,omitempty" url:"-"`
+	Sort     []*SearchSubscriptionsRequestApplicationJSONPropertySortItem     `json:"sort,omitempty" url:"-"`
+	Search   *SearchSubscriptionsRequestApplicationJSONPropertySearch         `json:"search,omitempty" url:"-"`
+	Includes []*SearchSubscriptionsRequestApplicationJSONPropertyIncludesItem `json:"includes,omitempty" url:"-"`
+	// Limit is number of items to return per page.
+	// Defaults to 15.
+	Limit *int `url:"limit,omitempty" json:"-"`
+	// Page is page number to return.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
+	// Pagination is set to false to return at most 100 matching items in one data array without pagination links or metadata.
+	// Defaults to true.
+	Pagination *bool `url:"pagination,omitempty" json:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for SubscriptionsSearchParams.
+func (p SubscriptionsSearchParams) MarshalJSON() ([]byte, error) {
+	type Alias SubscriptionsSearchParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if p.Filters == nil && p.Sort == nil && p.Includes == nil {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	if p.Filters != nil {
+		m["filters"] = p.Filters
+	}
+	if p.Sort != nil {
+		m["sort"] = p.Sort
+	}
+	if p.Includes != nil {
+		m["includes"] = p.Includes
+	}
+	return json.Marshal(m)
+}
+
+// Search subscriptions
+// Search the store's subscriptions, ordered by identifier ascending unless `sort` says otherwise. `search.value` matches the provider subscription ID, the provider customer ID, and the customer email. Filter on `id`, `customer_id` (the SellApp customer ID, as in `customer.id`), `provider`, `status`, or `product_variant_id`, and sort on `id`, `status`, `current_period_start`, `current_period_end`, `created_at`, or `updated_at`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *SubscriptionService) Search(ctx context.Context, params *SubscriptionsSearchParams, opts ...RequestOption) *Iterator[SdkSearchSubscriptionsResponseValue200ApplicationJSON] {
+	opts = append([]RequestOption{withOperation("searchSubscriptions", false)}, opts...)
+	return newIterator[SdkSearchSubscriptionsResponseValue200ApplicationJSON](ctx, s.client, "POST", "/v2/subscriptions/search", params, "after", "data", opts, map[string]string{"limit": "15"}, func() any {
+		if params == nil {
+			return nil
+		}
+		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkSearchSubscriptionsRequestApplicationJson\",\"properties\":{\"filters\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertyFiltersItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"operator\":{\"kind\":\"primitive\",\"type\":\"string\"},\"value\":{\"kind\":\"primitive\",\"type\":\"unknown\"},\"type\":{\"kind\":\"enum\",\"values\":[\"and\",\"or\"]},\"nested\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertyFiltersItemPropertyNestedItem\",\"properties\":{},\"required\":[],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}},\"sort\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertySortItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"direction\":{\"kind\":\"enum\",\"values\":[\"asc\",\"desc\"]}},\"required\":[\"field\"],\"additionalProperties\":true}},\"search\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertySearch\",\"properties\":{\"value\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"case_sensitive\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true},\"includes\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertyIncludesItem\",\"properties\":{\"relation\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[\"relation\"],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}"))
+	}())
+}
+
+func (s *SubscriptionService) SearchWithResponse(ctx context.Context, params *SubscriptionsSearchParams, opts ...RequestOption) (*RawResponse[*Iterator[SdkSearchSubscriptionsResponseValue200ApplicationJSON]], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value := s.Search(ctx, params, captureOpts...)
+	if err := value.Err(); err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// Get retrieve a subscription
+// Retrieve one subscription by its SellApp subscription record identifier. Requires the `invoice` Sanctum ability. Foreign-store identifiers return not found. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *SubscriptionService) Get(ctx context.Context, productSubscription int, opts ...RequestOption) (*SdkGetSubscriptionResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("getSubscription", false)}, opts...)
+	var result SdkGetSubscriptionResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", fmt.Sprintf("/v2/subscriptions/%s", url.PathEscape(fmt.Sprint(productSubscription))), nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *SubscriptionService) GetWithResponse(ctx context.Context, productSubscription int, opts ...RequestOption) (*RawResponse[*SdkGetSubscriptionResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Get(ctx, productSubscription, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
 // GetCapabilities view subscription capabilities
-// Return the lifecycle actions currently supported for a subscription. Capability status controls whether an actor can pause, resume, cancel, update the payment method, change plan, or shift the billing date. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Return the lifecycle actions currently supported for a subscription, each with the reason the customer and the seller are shown. A `customer_only` status names who owns the action rather than who may call the API: a store token carries a plan change and a payment method update on the customer's behalf, while a `customer_only` auto-renewal switch stays with the customer portal. `set_auto_renew` has no API route at all. While a Stripe, PayPal, or Razorpay subscription is past due or unpaid, every action except `cancel_immediately` and, on Razorpay, `update_payment_method`, is `unsupported`, and a subscription the store bills in house that is on hold for an unpaid renewal reports `resume` as `customer_only`, because only the customer can pay to resume it. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *SubscriptionService) GetCapabilities(ctx context.Context, productSubscription int, opts ...RequestOption) (*SdkGetSubscriptionCapabilitiesResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("getSubscriptionCapabilities", false)}, opts...)
 	var result SdkGetSubscriptionCapabilitiesResponseValue200ApplicationJSON
@@ -136,7 +257,7 @@ func (p SubscriptionsCancelAtPeriodEndParams) MarshalJSON() ([]byte, error) {
 }
 
 // CancelAtPeriodEnd cancel a subscription at period end
-// Schedule cancellation at the end of the current billing period without requesting a refund. Inspect capabilities first. The response records the cancellation action; retrieve the subscription to observe its current state. Reuse an idempotency key only with identical action input and actor. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Schedule cancellation at the end of the current billing period without requesting a refund. Inspect capabilities first. PayPal has no cancellation at period end, so on a PayPal subscription this cancels it with PayPal straight away and keeps the customer's access until the period ends; it can't be kept afterwards. The response records the cancellation action; retrieve the subscription to observe its current state. Reuse an idempotency key only with identical action input and actor. A provider refusal, or a state check such as a change already in progress or a subscription that is no longer active, returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *SubscriptionService) CancelAtPeriodEnd(ctx context.Context, productSubscription int, params *SubscriptionsCancelAtPeriodEndParams, opts ...RequestOption) (*SdkCancelSubscriptionAtPeriodEndResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("cancelSubscriptionAtPeriodEnd", true)}, opts...)
 	var result SdkCancelSubscriptionAtPeriodEndResponseValue200ApplicationJSON
@@ -164,7 +285,7 @@ type SubscriptionsCancelImmediatelyParams struct {
 	Reason         *string `json:"reason,omitempty" url:"-"`
 	// RefundLastPayment is request a real refund of the latest payment during immediate cancellation. Cancellation success does not prove refund success; verify provider/order refund records.
 	RefundLastPayment *bool `json:"refund_last_payment,omitempty" url:"-"`
-	// ProRatedRefund is request a prorated refund. Requires refund_last_payment=true. False requests a full latest-payment refund when refund_last_payment is enabled.
+	// ProRatedRefund is request a prorated refund. Requires refund_last_payment=true. False requests a full latest-payment refund when refund_last_payment is enabled. Refused with `422` while a Stripe, PayPal, or Razorpay subscription is past due or unpaid.
 	ProRatedRefund *bool `json:"pro_rated_refund,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
 	// clearing the corresponding value (e.g. []string{"external_id"}).
@@ -199,7 +320,7 @@ func (p SubscriptionsCancelImmediatelyParams) MarshalJSON() ([]byte, error) {
 }
 
 // CancelImmediately cancel a subscription immediately
-// Request immediate subscription cancellation. Inspect capabilities for provider support. This ends future billing and can change customer access. Refunds are off by default. refund_last_payment requests a real refund; pro_rated_refund requires refund_last_payment and defaults to false. Cancellation can succeed even if the requested refund fails. A 200 response or confirmed cancellation does not prove a refund, and the action response does not expose the provider refund result. Check the order and payment-provider refund records before retrying; do not replay cancellation as a refund-recovery step. Reuse an idempotency key only with identical action input and actor. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Request immediate subscription cancellation. Inspect capabilities for provider support. This ends future billing and can change customer access. It is the one action left on a Stripe or PayPal subscription that is past due or unpaid, and one of two left on a Razorpay one alongside a payment method update. A provider refusal, or a state check such as a change already in progress or a subscription that is no longer active, returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. Refunds are off by default. refund_last_payment requests a real refund; pro_rated_refund requires refund_last_payment and defaults to false. While a Stripe, PayPal, or Razorpay subscription is past due or unpaid, its current period was never paid for, so a pro-rated refund returns `422`; a full refund or no refund still works. Cancellation can succeed even if the requested refund fails. A 200 response or confirmed cancellation does not prove a refund, and the action response does not expose the provider refund result. Check the order and payment-provider refund records before retrying; do not replay cancellation as a refund-recovery step. Reuse an idempotency key only with identical action input and actor. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *SubscriptionService) CancelImmediately(ctx context.Context, productSubscription int, params *SubscriptionsCancelImmediatelyParams, opts ...RequestOption) (*SdkCancelSubscriptionImmediatelyResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("cancelSubscriptionImmediately", true)}, opts...)
 	var result SdkCancelSubscriptionImmediatelyResponseValue200ApplicationJSON
@@ -220,11 +341,68 @@ func (s *SubscriptionService) CancelImmediatelyWithResponse(ctx context.Context,
 	return rawResponse(value, metadata), nil
 }
 
+// SubscriptionsKeepParams contains the parameters for Keep.
+type SubscriptionsKeepParams struct {
+	// IdempotencyKey is optional idempotency key. You may also send this as the Idempotency-Key header.
+	IdempotencyKey *string `json:"idempotency_key,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for SubscriptionsKeepParams.
+func (p SubscriptionsKeepParams) MarshalJSON() ([]byte, error) {
+	type Alias SubscriptionsKeepParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"idempotency_key": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("SubscriptionsKeepParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
+}
+
+// Keep a subscription
+// Stop a scheduled cancellation so the subscription keeps renewing, which is the undo for cancelling at period end. The subscription has to still be active, still be scheduled to cancel, and its period must not have ended yet. Any of those, a provider that cannot undo its own schedule (a PayPal subscription or a Razorpay trial, both already cancelled with the provider), or a change already in progress returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *SubscriptionService) Keep(ctx context.Context, productSubscription int, params *SubscriptionsKeepParams, opts ...RequestOption) (*SdkKeepSubscriptionResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("keepSubscription", true)}, opts...)
+	var result SdkKeepSubscriptionResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/subscriptions/%s/actions/keep", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkKeepSubscriptionRequestApplicationJson\",\"properties\":{\"idempotency_key\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *SubscriptionService) KeepWithResponse(ctx context.Context, productSubscription int, params *SubscriptionsKeepParams, opts ...RequestOption) (*RawResponse[*SdkKeepSubscriptionResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Keep(ctx, productSubscription, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
 // SubscriptionsPauseParams contains the parameters for Pause.
 type SubscriptionsPauseParams struct {
 	// IdempotencyKey is optional idempotency key. You may also send this as the Idempotency-Key header.
 	IdempotencyKey *string `json:"idempotency_key,omitempty" url:"-"`
-	// ResumeAt is use a future date-time at execution time. Automatic resume dates are supported only for Stripe; the shown date is illustrative.
+	// ResumeAt is use a future date-time at execution time. Automatic resume dates are supported by Stripe and by subscriptions the store bills in house; the shown date is illustrative.
 	ResumeAt *string `json:"resume_at,omitempty" url:"-"`
 	Reason   *string `json:"reason,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
@@ -261,7 +439,7 @@ func (p SubscriptionsPauseParams) MarshalJSON() ([]byte, error) {
 }
 
 // Pause a subscription
-// Pause a subscription after checking capabilities. Automatic resume dates are supported only by the current Stripe flow; use a future resume_at when supplied. Other provider pauses may need an explicit resume action. Customer-originated pauses are also subject to store pause policies. Reuse an idempotency key only with identical input and actor, and retrieve the subscription after the action. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Pause a subscription after checking capabilities. Automatic resume dates are supported by Stripe and by subscriptions the store bills in house; use a future resume_at when supplied. Other provider pauses may need an explicit resume action. Customer-originated pauses are also subject to store pause policies. Reuse an idempotency key only with identical input and actor, and retrieve the subscription after the action. A provider refusal, or a state check such as a change already in progress or a subscription that is no longer active, returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *SubscriptionService) Pause(ctx context.Context, productSubscription int, params *SubscriptionsPauseParams, opts ...RequestOption) (*SdkPauseSubscriptionResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("pauseSubscription", true)}, opts...)
 	var result SdkPauseSubscriptionResponseValue200ApplicationJSON
@@ -318,7 +496,7 @@ func (p SubscriptionsResumeParams) MarshalJSON() ([]byte, error) {
 }
 
 // Resume a subscription
-// Resume a paused subscription and restore related entitlements where possible. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Resume a paused subscription and restore related entitlements where possible. A subscription that is not paused, a subscription the store bills in house that is on hold for an unpaid renewal (only the customer can resume it, by paying that renewal from the customer portal), a provider refusal, or a change already in progress returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *SubscriptionService) Resume(ctx context.Context, productSubscription int, params *SubscriptionsResumeParams, opts ...RequestOption) (*SdkResumeSubscriptionResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("resumeSubscription", true)}, opts...)
 	var result SdkResumeSubscriptionResponseValue200ApplicationJSON
@@ -343,6 +521,8 @@ func (s *SubscriptionService) ResumeWithResponse(ctx context.Context, productSub
 type SubscriptionsUpdatePaymentMethodParams struct {
 	// IdempotencyKey is optional idempotency key. You may also send this as the Idempotency-Key header.
 	IdempotencyKey *string `json:"idempotency_key,omitempty" url:"-"`
+	// ReturnURL is where Stripe returns the customer once its hosted page finishes. Defaults to the store's customer portal page for this subscription. Razorpay subscriptions ignore it.
+	ReturnURL *string `json:"return_url,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
 	// clearing the corresponding value (e.g. []string{"external_id"}).
 	NullFields []string `json:"-" url:"-"`
@@ -364,6 +544,7 @@ func (p SubscriptionsUpdatePaymentMethodParams) MarshalJSON() ([]byte, error) {
 	}
 	nullable := map[string]bool{
 		"idempotency_key": true,
+		"return_url":      true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -375,20 +556,25 @@ func (p SubscriptionsUpdatePaymentMethodParams) MarshalJSON() ([]byte, error) {
 }
 
 // UpdatePaymentMethod update a subscription payment method
-// This action belongs to the customer. Seller API requests return a 422 validation error. Check subscription capabilities and use the customer flow; never expose a seller API key to work around this restriction. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
-func (s *SubscriptionService) UpdatePaymentMethod(ctx context.Context, productSubscription int, params *SubscriptionsUpdatePaymentMethodParams, opts ...RequestOption) error {
+// Request a subscription payment method update. A payment method belongs to the customer, and a store token requests the update on their behalf. The customer still enters the new card themselves, so the action stays `pending` and `redirect_url` is where they finish it: Stripe's hosted page for a Stripe subscription, or a SellApp page for a Razorpay one. `return_url` chooses where Stripe sends the customer afterwards; Razorpay ignores it. PayPal subscriptions and subscriptions the store bills in house don't support the update. Read `update_payment_method` in the capabilities response before calling: an unsupported payment method, or a state check such as a change already in progress, a subscription that is no longer active, or a Stripe subscription with a payment still owed, returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *SubscriptionService) UpdatePaymentMethod(ctx context.Context, productSubscription int, params *SubscriptionsUpdatePaymentMethodParams, opts ...RequestOption) (*SdkUpdateSubscriptionPaymentMethodResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("updateSubscriptionPaymentMethod", true)}, opts...)
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/subscriptions/%s/actions/update-payment-method", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateSubscriptionPaymentMethodRequestApplicationJson\",\"properties\":{\"idempotency_key\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}}}},\"required\":[],\"additionalProperties\":true}")), nil, opts)
-	return err
-}
-
-func (s *SubscriptionService) UpdatePaymentMethodWithResponse(ctx context.Context, productSubscription int, params *SubscriptionsUpdatePaymentMethodParams, opts ...RequestOption) (*RawResponse[struct{}], error) {
-	var metadata *responseMetadata
-	captureOpts := append(opts, withResponseMetadata(&metadata))
-	if err := s.UpdatePaymentMethod(ctx, productSubscription, params, captureOpts...); err != nil {
+	var result SdkUpdateSubscriptionPaymentMethodResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/subscriptions/%s/actions/update-payment-method", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateSubscriptionPaymentMethodRequestApplicationJson\",\"properties\":{\"idempotency_key\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}}},\"return_url\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\",\"constraints\":{\"maxLength\":2000}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
 		return nil, err
 	}
-	return rawResponse(struct{}{}, metadata), nil
+	return &result, nil
+}
+
+func (s *SubscriptionService) UpdatePaymentMethodWithResponse(ctx context.Context, productSubscription int, params *SubscriptionsUpdatePaymentMethodParams, opts ...RequestOption) (*RawResponse[*SdkUpdateSubscriptionPaymentMethodResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.UpdatePaymentMethod(ctx, productSubscription, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
 }
 
 // SubscriptionsPreviewPlanChangeParams contains the parameters for PreviewPlanChange.
@@ -431,20 +617,25 @@ func (p SubscriptionsPreviewPlanChangeParams) MarshalJSON() ([]byte, error) {
 }
 
 // PreviewPlanChange preview a subscription plan change
-// This action belongs to the customer. Seller API requests return a 422 validation error. Check subscription capabilities and use the customer flow; never expose a seller API key to work around this restriction. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
-func (s *SubscriptionService) PreviewPlanChange(ctx context.Context, productSubscription int, params *SubscriptionsPreviewPlanChangeParams, opts ...RequestOption) error {
+// Preview a subscription plan change before confirming it. The preview stores the change it was taken for and returns a `preview_token` the confirmation must send back, alongside the provider's own pricing preview. On Stripe and in-house subscriptions, `preview_payload.payment_required` says whether confirming charges `amount_due` today or leaves any amount to the next invoice, and `preview_payload.renewal_date` says when the subscription renews next. A plan change belongs to the customer, and a store token previews it on their behalf; a provider refusal, or a state check such as a change already in progress or a subscription that is no longer active, returns `422` with the refusal sentence under `errors.subscription`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *SubscriptionService) PreviewPlanChange(ctx context.Context, productSubscription int, params *SubscriptionsPreviewPlanChangeParams, opts ...RequestOption) (*SdkPreviewSubscriptionPlanChangeResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("previewSubscriptionPlanChange", true)}, opts...)
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/subscriptions/%s/actions/change-plan/preview", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkPreviewSubscriptionPlanChangeRequestApplicationJson\",\"properties\":{\"idempotency_key\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}}},\"target_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"effective_timing\":{\"kind\":\"enum\",\"values\":[\"immediate\",\"next_renewal\"]},\"proration_behavior\":{\"kind\":\"enum\",\"values\":[\"invoice_now\",\"credit_next_invoice\",\"none\",\"provider_default\"]},\"metadata\":{\"kind\":\"object\",\"modelName\":\"PreviewSubscriptionPlanChangeRequestApplicationJsonPropertyMetadata\",\"properties\":{},\"required\":[],\"additionalProperties\":true}},\"required\":[\"target_variant_id\"],\"additionalProperties\":true}")), nil, opts)
-	return err
-}
-
-func (s *SubscriptionService) PreviewPlanChangeWithResponse(ctx context.Context, productSubscription int, params *SubscriptionsPreviewPlanChangeParams, opts ...RequestOption) (*RawResponse[struct{}], error) {
-	var metadata *responseMetadata
-	captureOpts := append(opts, withResponseMetadata(&metadata))
-	if err := s.PreviewPlanChange(ctx, productSubscription, params, captureOpts...); err != nil {
+	var result SdkPreviewSubscriptionPlanChangeResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/subscriptions/%s/actions/change-plan/preview", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkPreviewSubscriptionPlanChangeRequestApplicationJson\",\"properties\":{\"idempotency_key\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}}},\"target_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"effective_timing\":{\"kind\":\"enum\",\"values\":[\"immediate\",\"next_renewal\"]},\"proration_behavior\":{\"kind\":\"enum\",\"values\":[\"invoice_now\",\"credit_next_invoice\",\"none\",\"provider_default\"]},\"metadata\":{\"kind\":\"object\",\"modelName\":\"PreviewSubscriptionPlanChangeRequestApplicationJsonPropertyMetadata\",\"properties\":{},\"required\":[],\"additionalProperties\":true}},\"required\":[\"target_variant_id\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
 		return nil, err
 	}
-	return rawResponse(struct{}{}, metadata), nil
+	return &result, nil
+}
+
+func (s *SubscriptionService) PreviewPlanChangeWithResponse(ctx context.Context, productSubscription int, params *SubscriptionsPreviewPlanChangeParams, opts ...RequestOption) (*RawResponse[*SdkPreviewSubscriptionPlanChangeResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.PreviewPlanChange(ctx, productSubscription, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
 }
 
 // SubscriptionsConfirmPlanChangeParams contains the parameters for ConfirmPlanChange.
@@ -488,20 +679,25 @@ func (p SubscriptionsConfirmPlanChangeParams) MarshalJSON() ([]byte, error) {
 }
 
 // ConfirmPlanChange confirm a subscription plan change
-// This action belongs to the customer. Seller API requests return a 422 validation error. Check subscription capabilities and use the customer flow; never expose a seller API key to work around this restriction. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
-func (s *SubscriptionService) ConfirmPlanChange(ctx context.Context, productSubscription int, params *SubscriptionsConfirmPlanChangeParams, opts ...RequestOption) error {
+// Confirm a previously previewed subscription plan change, sending back the `preview_token` for a preview of the same change. A plan change belongs to the customer, and a store token confirms it on their behalf; a provider refusal, or a state check such as a change already in progress or a subscription that is no longer active, returns `422` with the refusal sentence under `errors.subscription`. `approval_url` accompanies a `pending` action whenever the customer still has to approve the revision at the provider or pay the proration order `proration_order_id` names, and is left out entirely when the provider applied the change itself. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *SubscriptionService) ConfirmPlanChange(ctx context.Context, productSubscription int, params *SubscriptionsConfirmPlanChangeParams, opts ...RequestOption) (*SdkConfirmSubscriptionPlanChangeResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("confirmSubscriptionPlanChange", true)}, opts...)
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/subscriptions/%s/actions/change-plan/confirm", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkConfirmSubscriptionPlanChangeRequestApplicationJson\",\"properties\":{\"idempotency_key\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}}},\"target_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"preview_token\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}},\"effective_timing\":{\"kind\":\"enum\",\"values\":[\"immediate\",\"next_renewal\"]},\"proration_behavior\":{\"kind\":\"enum\",\"values\":[\"invoice_now\",\"credit_next_invoice\",\"none\",\"provider_default\"]},\"metadata\":{\"kind\":\"object\",\"modelName\":\"ConfirmSubscriptionPlanChangeRequestApplicationJsonPropertyMetadata\",\"properties\":{},\"required\":[],\"additionalProperties\":true}},\"required\":[\"target_variant_id\",\"preview_token\"],\"additionalProperties\":true}")), nil, opts)
-	return err
-}
-
-func (s *SubscriptionService) ConfirmPlanChangeWithResponse(ctx context.Context, productSubscription int, params *SubscriptionsConfirmPlanChangeParams, opts ...RequestOption) (*RawResponse[struct{}], error) {
-	var metadata *responseMetadata
-	captureOpts := append(opts, withResponseMetadata(&metadata))
-	if err := s.ConfirmPlanChange(ctx, productSubscription, params, captureOpts...); err != nil {
+	var result SdkConfirmSubscriptionPlanChangeResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/subscriptions/%s/actions/change-plan/confirm", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkConfirmSubscriptionPlanChangeRequestApplicationJson\",\"properties\":{\"idempotency_key\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}}},\"target_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"preview_token\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}},\"effective_timing\":{\"kind\":\"enum\",\"values\":[\"immediate\",\"next_renewal\"]},\"proration_behavior\":{\"kind\":\"enum\",\"values\":[\"invoice_now\",\"credit_next_invoice\",\"none\",\"provider_default\"]},\"metadata\":{\"kind\":\"object\",\"modelName\":\"ConfirmSubscriptionPlanChangeRequestApplicationJsonPropertyMetadata\",\"properties\":{},\"required\":[],\"additionalProperties\":true}},\"required\":[\"target_variant_id\",\"preview_token\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
 		return nil, err
 	}
-	return rawResponse(struct{}{}, metadata), nil
+	return &result, nil
+}
+
+func (s *SubscriptionService) ConfirmPlanChangeWithResponse(ctx context.Context, productSubscription int, params *SubscriptionsConfirmPlanChangeParams, opts ...RequestOption) (*RawResponse[*SdkConfirmSubscriptionPlanChangeResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.ConfirmPlanChange(ctx, productSubscription, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
 }
 
 // SubscriptionsPreviewRenewalDateParams contains the parameters for PreviewRenewalDate.
@@ -544,7 +740,7 @@ func (p SubscriptionsPreviewRenewalDateParams) MarshalJSON() ([]byte, error) {
 }
 
 // PreviewRenewalDate preview a subscription renewal date change
-// Preview a new renewal date before confirmation when the subscription's billing-date policy requires a preview. The current Stripe and PayPal provider flows do not support renewal-date changes and return 422. Check shift_billing_date capabilities before sending a request. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Preview a new renewal date before confirmation when the subscription's billing-date policy requires one. No payment method supports renewal-date changes today: Stripe, PayPal, Razorpay, and subscriptions the store bills in house all report `shift_billing_date` as `unsupported`, so this returns `422` with the refusal sentence under `errors.subscription`. Read the capabilities response first. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *SubscriptionService) PreviewRenewalDate(ctx context.Context, productSubscription int, params *SubscriptionsPreviewRenewalDateParams, opts ...RequestOption) (*SdkPreviewSubscriptionRenewalDateChangeResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("previewSubscriptionRenewalDateChange", true)}, opts...)
 	var result SdkPreviewSubscriptionRenewalDateChangeResponseValue200ApplicationJSON
@@ -607,7 +803,7 @@ func (p SubscriptionsConfirmRenewalDateParams) MarshalJSON() ([]byte, error) {
 }
 
 // ConfirmRenewalDate confirm a subscription renewal date change
-// Confirm a subscription renewal date change. A preview token is required when the variant's billing-date policy requires previews. The current Stripe and PayPal provider flows do not support renewal-date changes and return 422. Check shift_billing_date capabilities before sending a request. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Confirm a subscription renewal date change, sending a `preview_token` when the variant's billing-date policy requires previews. No payment method supports renewal-date changes today: Stripe, PayPal, Razorpay, and subscriptions the store bills in house all report `shift_billing_date` as `unsupported`, so this returns `422` with the refusal sentence under `errors.subscription`. Read the capabilities response first. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *SubscriptionService) ConfirmRenewalDate(ctx context.Context, productSubscription int, params *SubscriptionsConfirmRenewalDateParams, opts ...RequestOption) (*SdkConfirmSubscriptionRenewalDateChangeResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("confirmSubscriptionRenewalDateChange", true)}, opts...)
 	var result SdkConfirmSubscriptionRenewalDateChangeResponseValue200ApplicationJSON
@@ -622,68 +818,6 @@ func (s *SubscriptionService) ConfirmRenewalDateWithResponse(ctx context.Context
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
 	value, err := s.ConfirmRenewalDate(ctx, productSubscription, params, captureOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return rawResponse(value, metadata), nil
-}
-
-// List subscriptions
-// List page-based subscriptions with canonical customer and deprecated provider aliases. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
-func (s *SubscriptionService) List(ctx context.Context, opts ...RequestOption) *Iterator[ListSubscriptionsResponseValue200ApplicationJSONPropertyDataItem] {
-	opts = append([]RequestOption{withOperation("listSubscriptions", false)}, opts...)
-	return newIterator[ListSubscriptionsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/subscriptions", nil, "after", "data", opts, nil)
-}
-
-func (s *SubscriptionService) ListWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*Iterator[ListSubscriptionsResponseValue200ApplicationJSONPropertyDataItem]], error) {
-	var metadata *responseMetadata
-	captureOpts := append(opts, withResponseMetadata(&metadata))
-	value := s.List(ctx, captureOpts...)
-	if err := value.Err(); err != nil {
-		return nil, err
-	}
-	return rawResponse(value, metadata), nil
-}
-
-// SubscriptionsSearchParams contains the parameters for Search.
-type SubscriptionsSearchParams struct {
-	Search *string `json:"search,omitempty" url:"-"`
-	Status *string `json:"status,omitempty" url:"-"`
-}
-
-// Search subscriptions
-// Search while preserving page-based pagination. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
-func (s *SubscriptionService) Search(ctx context.Context, params *SubscriptionsSearchParams, opts ...RequestOption) *Iterator[SearchSubscriptionsResponseValue200ApplicationJSONPropertyDataItem] {
-	opts = append([]RequestOption{withOperation("searchSubscriptions", false)}, opts...)
-	return newIterator[SearchSubscriptionsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", "/v2/subscriptions/search", nil, "after", "data", opts, nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkSearchSubscriptionsRequestApplicationJson\",\"properties\":{\"search\":{\"kind\":\"primitive\",\"type\":\"string\"},\"status\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[],\"additionalProperties\":true}")))
-}
-
-func (s *SubscriptionService) SearchWithResponse(ctx context.Context, params *SubscriptionsSearchParams, opts ...RequestOption) (*RawResponse[*Iterator[SearchSubscriptionsResponseValue200ApplicationJSONPropertyDataItem]], error) {
-	var metadata *responseMetadata
-	captureOpts := append(opts, withResponseMetadata(&metadata))
-	value := s.Search(ctx, params, captureOpts...)
-	if err := value.Err(); err != nil {
-		return nil, err
-	}
-	return rawResponse(value, metadata), nil
-}
-
-// Get retrieve a subscription
-// Retrieve by SellApp subscription record ID. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
-func (s *SubscriptionService) Get(ctx context.Context, productSubscription int, opts ...RequestOption) (*SdkGetSubscriptionResponseValue200ApplicationJSON, error) {
-	opts = append([]RequestOption{withOperation("getSubscription", false)}, opts...)
-	var result SdkGetSubscriptionResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "GET", fmt.Sprintf("/v2/subscriptions/%s", url.PathEscape(fmt.Sprint(productSubscription))), nil, nil, &result, opts)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-func (s *SubscriptionService) GetWithResponse(ctx context.Context, productSubscription int, opts ...RequestOption) (*RawResponse[*SdkGetSubscriptionResponseValue200ApplicationJSON], error) {
-	var metadata *responseMetadata
-	captureOpts := append(opts, withResponseMetadata(&metadata))
-	value, err := s.Get(ctx, productSubscription, captureOpts...)
 	if err != nil {
 		return nil, err
 	}

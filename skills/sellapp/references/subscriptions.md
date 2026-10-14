@@ -2,7 +2,7 @@
 
 Apply only the subscription action currently supported for its provider.
 
-Contract: `fe25fd396af7918889c08bfa13e4285af1bb53f0e9b2a0cadba604cdf7f33547`; workflow: `20a92459d3c39dddcce05c1f6de46904ccb042b126c5a3408bbaa16009409ef1`. Source: `content/docs/api/(guides)/handle-subscriptions.mdx`.
+Contract: `b9eb7046aa1e9bcd12c19188a0f2f4f4377ee48aa813bddaf984c3c58ea4e92e`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/handle-subscriptions.mdx`.
 
 ## Prerequisites
 
@@ -28,7 +28,7 @@ Recovery for this operation: Read again within finite pagination/polling bounds;
 
 ### 2. preparation
 
-Check the exact action. Stop for unsupported or customer_only; direct the customer to the documented path when applicable.
+Check the exact action. Stop for unsupported. A customer_only plan change or payment method update can still be requested on the customer's behalf; any other customer_only action goes to the customer through the documented path.
 
 Operation: `getSubscriptionCapabilities`. Effect: read. Target: store.
 

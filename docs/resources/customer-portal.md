@@ -6,21 +6,17 @@
 
 Cancel at period end
 
-Cancel at period end. Read capabilities first; state conflicts return 409.
+Schedule the subscription to end when the current period ends. The customer keeps access until then. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 
 [API reference](https://sell.app/docs/api/customer-portal) · Effect: **consequential**
 
 ```sh
-sellapp customer-portal cancel-customer-subscription-at-period-end 42 --reason 'Customer requested this change' --yes
+sellapp customer-portal cancel-customer-subscription-at-period-end 42 --reason 'Taking a break over the summer.' --yes
 ```
 
 | Input | Required | Meaning |
 | --- | --- | --- |
 | productSubscription (positional) | Yes | The productSubscription identifier. |
-| --preview-id | No | Value for preview id. |
-| --product-variant-id | No | Value for product variant id. |
-| --renewal-date | No | Value for renewal date. |
-| --return-url | No | Value for return url. |
 | --reason | No | Value for reason. |
 
 The request body is required.
@@ -46,21 +42,17 @@ Inspect the complete schema: `sellapp commands customer-portal cancel-customer-s
 
 Cancel immediately
 
-Cancel immediately. Read capabilities first; state conflicts return 409.
+End the subscription now. A customer session cannot request a refund. It is the one action left on a Stripe or PayPal subscription with a payment still owed, and one of two left on a Razorpay one alongside a payment method update. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 
 [API reference](https://sell.app/docs/api/customer-portal) · Effect: **consequential**
 
 ```sh
-sellapp customer-portal cancel-customer-subscription-immediately 42 --reason 'Customer requested this change' --yes
+sellapp customer-portal cancel-customer-subscription-immediately 42 --reason 'No longer needed.' --yes
 ```
 
 | Input | Required | Meaning |
 | --- | --- | --- |
 | productSubscription (positional) | Yes | The productSubscription identifier. |
-| --preview-id | No | Value for preview id. |
-| --product-variant-id | No | Value for product variant id. |
-| --renewal-date | No | Value for renewal date. |
-| --return-url | No | Value for return url. |
 | --reason | No | Value for reason. |
 
 The request body is required.
@@ -86,22 +78,22 @@ Inspect the complete schema: `sellapp commands customer-portal cancel-customer-s
 
 Confirm a plan change
 
-Confirm a plan change. Read capabilities first; state conflicts return 409.
+Confirm a previewed plan change, sending back its `preview_token`. When the change still needs the customer to approve it with the provider or pay for it, the action is `pending` and `redirect_url` says where. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 
 [API reference](https://sell.app/docs/api/customer-portal) · Effect: **consequential**
 
 ```sh
-sellapp customer-portal confirm-customer-subscription-plan-change 42 --preview-id preview_01K4 --yes
+sellapp customer-portal confirm-customer-subscription-plan-change 42 --target-variant-id 97 --preview-token subprev_portal_991 --yes
 ```
 
 | Input | Required | Meaning |
 | --- | --- | --- |
 | productSubscription (positional) | Yes | The productSubscription identifier. |
-| --preview-id | No | Value for preview id. |
-| --product-variant-id | No | Value for product variant id. |
-| --renewal-date | No | Value for renewal date. |
-| --return-url | No | Value for return url. |
-| --reason | No | Value for reason. |
+| --target-variant-id | Yes | Value for target variant id. |
+| --preview-token | Yes | Value for preview token. |
+| --effective-timing | No | Value for effective timing. |
+| --proration-behavior | No | Value for proration behavior. |
+| --metadata | No | Value for metadata. |
 
 The request body is required.
 
@@ -126,22 +118,21 @@ Inspect the complete schema: `sellapp commands customer-portal confirm-customer-
 
 Confirm a renewal-date change
 
-Confirm a renewal-date change. Read capabilities first; state conflicts return 409.
+Confirm a renewal-date change, sending the `preview_token` when the plan requires a preview. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 
 [API reference](https://sell.app/docs/api/customer-portal) · Effect: **consequential**
 
 ```sh
-sellapp customer-portal confirm-customer-subscription-renewal-date-change 42 --preview-id preview_01K4 --yes
+sellapp customer-portal confirm-customer-subscription-renewal-date-change 42 --renewal-date 2026-10-15T00:00:00Z --preview-token subprev_portal_renewal_991 --yes
 ```
 
 | Input | Required | Meaning |
 | --- | --- | --- |
 | productSubscription (positional) | Yes | The productSubscription identifier. |
-| --preview-id | No | Value for preview id. |
-| --product-variant-id | No | Value for product variant id. |
-| --renewal-date | No | Value for renewal date. |
-| --return-url | No | Value for return url. |
+| --renewal-date | Yes | Value for renewal date. |
+| --preview-token | No | Value for preview token. |
 | --reason | No | Value for reason. |
+| --metadata | No | Value for metadata. |
 
 The request body is required.
 
@@ -270,7 +261,7 @@ Inspect the complete schema: `sellapp commands customer-portal get-customer-port
 
 Retrieve subscription capabilities
 
-Read immediately before displaying lifecycle controls.
+Read immediately before displaying lifecycle controls. Each of the nine actions (`pause`, `resume`, `cancel_at_period_end`, `cancel_immediately`, `keep_subscription`, `update_payment_method`, `change_plan`, `shift_billing_date`, and `set_auto_renew`) reports a status and the reason to show the customer when it is not available. While a Stripe, PayPal, or Razorpay subscription has a payment still owed, every action except `cancel_immediately` and, on Razorpay, `update_payment_method`, is `unsupported`. `resume` is `unsupported` on a subscription on hold for an unpaid renewal, which the customer pays and resumes on the store's customer portal page. The example is abbreviated to three of the actions.
 
 [API reference](https://sell.app/docs/api/customer-portal) · Effect: **read**
 
@@ -373,7 +364,7 @@ Inspect the complete schema: `sellapp commands customer-portal list-customer-por
 
 List customer subscriptions
 
-List subscriptions belonging to the customer session.
+List subscriptions belonging to the customer session, newest first, 15 per page. `trial_ends_at` is only set while a subscription is `TRIALING`.
 
 [API reference](https://sell.app/docs/api/customer-portal) · Effect: **read**
 
@@ -407,21 +398,18 @@ Inspect the complete schema: `sellapp commands customer-portal list-customer-por
 
 Pause a subscription
 
-Pause a subscription. Read capabilities first; state conflicts return 409.
+Pause billing, optionally until `resume_at`. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 
 [API reference](https://sell.app/docs/api/customer-portal) · Effect: **consequential**
 
 ```sh
-sellapp customer-portal pause-customer-subscription 42 --reason 'Customer requested this change' --yes
+sellapp customer-portal pause-customer-subscription 42 --resume-at 2026-11-01T00:00:00Z --yes
 ```
 
 | Input | Required | Meaning |
 | --- | --- | --- |
 | productSubscription (positional) | Yes | The productSubscription identifier. |
-| --preview-id | No | Value for preview id. |
-| --product-variant-id | No | Value for product variant id. |
-| --renewal-date | No | Value for renewal date. |
-| --return-url | No | Value for return url. |
+| --resume-at | No | Value for resume at. |
 | --reason | No | Value for reason. |
 
 The request body is required.
@@ -447,22 +435,21 @@ Inspect the complete schema: `sellapp commands customer-portal pause-customer-su
 
 Preview a plan change
 
-Preview a plan change. Read capabilities first; state conflicts return 409.
+Preview a plan change before confirming it. On Stripe and in-house subscriptions, `preview.payment_required` says whether confirming charges `amount_due` today or leaves any amount to the next invoice, and `preview.renewal_date` says when the subscription renews next. A plan change during a trial never charges today. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 
 [API reference](https://sell.app/docs/api/customer-portal) · Effect: **consequential**
 
 ```sh
-sellapp customer-portal preview-customer-subscription-plan-change 42 --product-variant-id 84 --yes
+sellapp customer-portal preview-customer-subscription-plan-change 42 --target-variant-id 97 --yes
 ```
 
 | Input | Required | Meaning |
 | --- | --- | --- |
 | productSubscription (positional) | Yes | The productSubscription identifier. |
-| --preview-id | No | Value for preview id. |
-| --product-variant-id | No | Value for product variant id. |
-| --renewal-date | No | Value for renewal date. |
-| --return-url | No | Value for return url. |
-| --reason | No | Value for reason. |
+| --target-variant-id | Yes | Value for target variant id. |
+| --effective-timing | No | Value for effective timing. |
+| --proration-behavior | No | Value for proration behavior. |
+| --metadata | No | Value for metadata. |
 
 The request body is required.
 
@@ -487,22 +474,20 @@ Inspect the complete schema: `sellapp commands customer-portal preview-customer-
 
 Preview a renewal-date change
 
-Preview a renewal-date change. Read capabilities first; state conflicts return 409.
+Preview moving the next renewal to `renewal_date`. `preview` is the provider's own preview, so its keys differ per provider. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 
 [API reference](https://sell.app/docs/api/customer-portal) · Effect: **consequential**
 
 ```sh
-sellapp customer-portal preview-customer-subscription-renewal-date-change 42 --renewal-date 2026-10-15 --yes
+sellapp customer-portal preview-customer-subscription-renewal-date-change 42 --renewal-date 2026-10-15T00:00:00Z --yes
 ```
 
 | Input | Required | Meaning |
 | --- | --- | --- |
 | productSubscription (positional) | Yes | The productSubscription identifier. |
-| --preview-id | No | Value for preview id. |
-| --product-variant-id | No | Value for product variant id. |
-| --renewal-date | No | Value for renewal date. |
-| --return-url | No | Value for return url. |
+| --renewal-date | Yes | Value for renewal date. |
 | --reason | No | Value for reason. |
+| --metadata | No | Value for metadata. |
 
 The request body is required.
 
@@ -527,24 +512,19 @@ Inspect the complete schema: `sellapp commands customer-portal preview-customer-
 
 Resume a subscription
 
-Resume a subscription. Read capabilities first; state conflicts return 409.
+Resume a paused subscription. A subscription the store bills in house that is on hold for an unpaid renewal comes back only when the customer pays that renewal on the store's customer portal page, so it is refused. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 
 [API reference](https://sell.app/docs/api/customer-portal) · Effect: **consequential**
 
 ```sh
-sellapp customer-portal resume-customer-subscription 42 --reason 'Customer requested this change' --yes
+sellapp customer-portal resume-customer-subscription 42 --yes
 ```
 
 | Input | Required | Meaning |
 | --- | --- | --- |
 | productSubscription (positional) | Yes | The productSubscription identifier. |
-| --preview-id | No | Value for preview id. |
-| --product-variant-id | No | Value for product variant id. |
-| --renewal-date | No | Value for renewal date. |
-| --return-url | No | Value for return url. |
-| --reason | No | Value for reason. |
 
-The request body is required.
+A request body is optional or not used by this operation.
 
 Credential alternatives and scopes:
 
@@ -605,22 +585,18 @@ Inspect the complete schema: `sellapp commands customer-portal update-customer-p
 
 Update payment method
 
-Update payment method. Read capabilities first; state conflicts return 409.
+Start a payment method update. Send the customer to `redirect_url` to finish it with the provider. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 
 [API reference](https://sell.app/docs/api/customer-portal) · Effect: **consequential**
 
 ```sh
-sellapp customer-portal update-customer-subscription-payment-method 42 --reason 'Customer requested this change' --yes
+sellapp customer-portal update-customer-subscription-payment-method 42 --return-url https://acme.sell.app/customer-portal/subscriptions/991 --yes
 ```
 
 | Input | Required | Meaning |
 | --- | --- | --- |
 | productSubscription (positional) | Yes | The productSubscription identifier. |
-| --preview-id | No | Value for preview id. |
-| --product-variant-id | No | Value for product variant id. |
-| --renewal-date | No | Value for renewal date. |
 | --return-url | No | Value for return url. |
-| --reason | No | Value for reason. |
 
 The request body is required.
 

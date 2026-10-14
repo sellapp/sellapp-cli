@@ -2,7 +2,7 @@
 
 Queue an export, poll within finite bounds and retrieve the completed file.
 
-Contract: `fe25fd396af7918889c08bfa13e4285af1bb53f0e9b2a0cadba604cdf7f33547`; workflow: `20a92459d3c39dddcce05c1f6de46904ccb042b126c5a3408bbaa16009409ef1`. Source: `content/docs/api/(resources)/exports/index.mdx`.
+Contract: `b9eb7046aa1e9bcd12c19188a0f2f4f4377ee48aa813bddaf984c3c58ea4e92e`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(resources)/exports/index.mdx`.
 
 ## Prerequisites
 
@@ -10,7 +10,7 @@ The selected store and permission for the requested export category.
 
 ## Preparation
 
-Use sales, tax, customers or affiliate_payouts with CSV or JSON. Date ranges are limited to 366 inclusive days; omitted dates cover today and the preceding 365 days. Only one export per store and two per account may be queued or running. On HTTP 429, respect Retry-After and poll the existing export. Reports over 10,000 source rows, 5 MiB of source data or 10 MiB of output fail without a partial download; use a smaller date range.
+Use sales, tax, customers or affiliate_payouts with CSV or JSON. Date ranges are limited to 366 inclusive days; omitted dates cover today and the preceding 365 days. Only one export per store and two per account may be queued or running. On HTTP 429, respect Retry-After and poll the existing export. Reports over 100,000 source rows, 50 MiB of source data or 100 MiB of output fail without a partial download; use a smaller date range.
 
 ### 1. execution
 

@@ -54,6 +54,16 @@ type PromotionsCreateParams struct {
 	Priority       int     `json:"priority" url:"-"`
 	IsStackable    bool    `json:"is_stackable" url:"-"`
 	MaxRedemptions *int    `json:"max_redemptions,omitempty" url:"-"`
+	// AppliesTo is what the promotion discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new promotion defaults to `one_time`, and an update that leaves this out keeps the current kind. The promotion only discounts order lines of its kind.
+	AppliesTo *SdkCreatePromotionRequestApplicationJSONAppliesTo `json:"applies_to,omitempty" url:"-"`
+	// SubscriptionPayments is how many payments a `subscriptions` promotion discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` promotion needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` promotion, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` promotion always stores null here.
+	SubscriptionPayments *int `json:"subscription_payments,omitempty" url:"-"`
+	// StoreWide is send `false` with `products` to limit a `subscriptions` promotion to picked products and plans. Required whenever the request sends `products` or `product_variants`. A new promotion defaults to `true`, an update that leaves it out keeps the current scope, and switching a promotion to `one_time` makes it store-wide again. A `one_time` promotion with `false` returns `422` on `store_wide` with `A promotion for one-time purchases applies to the whole store.`
+	StoreWide *bool `json:"store_wide,omitempty" url:"-"`
+	// Products is product IDs a narrowed subscription promotion reaches. Each one must sell a subscription, or the request returns `422` on `products` with `Pick only products that sell a subscription.` A narrowed promotion left with no products returns `422` with `Pick at least one subscription product for this promotion.` An update replaces the picks with this list, or keeps them when it is left out.
+	Products []int `json:"products,omitempty" url:"-"`
+	// ProductVariants is subscription plan IDs to limit the picked products to. Each one must be a subscription plan of a product in `products`, or the request returns `422` on `product_variants` with `Pick only subscription plans of the picked products.` A picked product with none of its plans listed takes every plan, including plans added later. An update that leaves this out keeps the listed plans of products that stay picked.
+	ProductVariants []int `json:"product_variants,omitempty" url:"-"`
 	// Phases is the complete ordered phase set. Array order becomes phase position.
 	Phases []*CreatePromotionRequestApplicationJSONPropertyPhasesItem `json:"phases" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
@@ -68,17 +78,24 @@ func (p PromotionsCreateParams) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(p.NullFields) == 0 {
+	if len(p.NullFields) == 0 && p.Products == nil && p.ProductVariants == nil {
 		return data, nil
 	}
 	var m map[string]any
 	if err := json.Unmarshal(data, &m); err != nil {
 		return nil, err
 	}
+	if p.Products != nil {
+		m["products"] = p.Products
+	}
+	if p.ProductVariants != nil {
+		m["product_variants"] = p.ProductVariants
+	}
 	nullable := map[string]bool{
-		"starts_at":       true,
-		"ends_at":         true,
-		"max_redemptions": true,
+		"starts_at":             true,
+		"ends_at":               true,
+		"max_redemptions":       true,
+		"subscription_payments": true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -90,11 +107,11 @@ func (p PromotionsCreateParams) MarshalJSON() ([]byte, error) {
 }
 
 // Create a promotion
-// Create a promotion and its initial ordered phase set. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Create a promotion and its initial ordered phase set. `applies_to` chooses whether it discounts one-time purchases or the first `subscription_payments` payments of a subscription plan, and a subscription promotion can be limited to picked products and plans with `store_wide`, `products`, and `product_variants`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *PromotionService) Create(ctx context.Context, params *PromotionsCreateParams, opts ...RequestOption) (*SdkCreatePromotionResponseValue201ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("createPromotion", false)}, opts...)
 	var result SdkCreatePromotionResponseValue201ApplicationJSON
-	_, err := s.client.request(ctx, "POST", "/v2/promotions", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCreatePromotionRequestApplicationJson\",\"properties\":{\"name\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"status\":{\"kind\":\"enum\",\"values\":[\"active\",\"disabled\"]},\"starts_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"priority\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":2147483647}},\"is_stackable\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"phases\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"CreatePromotionRequestApplicationJsonPropertyPhasesItem\",\"properties\":{\"discount_type\":{\"kind\":\"enum\",\"values\":[\"percentage\",\"fixed\"]},\"discount_value\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[\"discount_type\",\"discount_value\"],\"additionalProperties\":true},\"constraints\":{\"minItems\":1}}},\"required\":[\"name\",\"status\",\"priority\",\"is_stackable\",\"phases\"],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", "/v2/promotions", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCreatePromotionRequestApplicationJson\",\"properties\":{\"name\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"status\":{\"kind\":\"enum\",\"values\":[\"active\",\"disabled\"]},\"starts_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"priority\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":2147483647}},\"is_stackable\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"phases\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"CreatePromotionRequestApplicationJsonPropertyPhasesItem\",\"properties\":{\"discount_type\":{\"kind\":\"enum\",\"values\":[\"percentage\",\"fixed\"]},\"discount_value\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[\"discount_type\",\"discount_value\"],\"additionalProperties\":true},\"constraints\":{\"minItems\":1}}},\"required\":[\"name\",\"status\",\"priority\",\"is_stackable\",\"phases\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -208,6 +225,16 @@ type PromotionsReplaceParams struct {
 	Priority       *int    `json:"priority,omitempty" url:"-"`
 	IsStackable    *bool   `json:"is_stackable,omitempty" url:"-"`
 	MaxRedemptions *int    `json:"max_redemptions,omitempty" url:"-"`
+	// AppliesTo is what the promotion discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new promotion defaults to `one_time`, and an update that leaves this out keeps the current kind. The promotion only discounts order lines of its kind.
+	AppliesTo *SdkReplacePromotionRequestApplicationJSONAppliesTo `json:"applies_to,omitempty" url:"-"`
+	// SubscriptionPayments is how many payments a `subscriptions` promotion discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` promotion needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` promotion, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` promotion always stores null here.
+	SubscriptionPayments *int `json:"subscription_payments,omitempty" url:"-"`
+	// StoreWide is send `false` with `products` to limit a `subscriptions` promotion to picked products and plans. Required whenever the request sends `products` or `product_variants`. A new promotion defaults to `true`, an update that leaves it out keeps the current scope, and switching a promotion to `one_time` makes it store-wide again. A `one_time` promotion with `false` returns `422` on `store_wide` with `A promotion for one-time purchases applies to the whole store.`
+	StoreWide *bool `json:"store_wide,omitempty" url:"-"`
+	// Products is product IDs a narrowed subscription promotion reaches. Each one must sell a subscription, or the request returns `422` on `products` with `Pick only products that sell a subscription.` A narrowed promotion left with no products returns `422` with `Pick at least one subscription product for this promotion.` An update replaces the picks with this list, or keeps them when it is left out.
+	Products []int `json:"products,omitempty" url:"-"`
+	// ProductVariants is subscription plan IDs to limit the picked products to. Each one must be a subscription plan of a product in `products`, or the request returns `422` on `product_variants` with `Pick only subscription plans of the picked products.` A picked product with none of its plans listed takes every plan, including plans added later. An update that leaves this out keeps the listed plans of products that stay picked.
+	ProductVariants []int `json:"product_variants,omitempty" url:"-"`
 	// Phases is the complete ordered phase set. Array order becomes phase position.
 	Phases []*ReplacePromotionRequestApplicationJSONPropertyPhasesItem `json:"phases,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
@@ -222,20 +249,27 @@ func (p PromotionsReplaceParams) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(p.NullFields) == 0 && p.Phases == nil {
+	if len(p.NullFields) == 0 && p.Products == nil && p.ProductVariants == nil && p.Phases == nil {
 		return data, nil
 	}
 	var m map[string]any
 	if err := json.Unmarshal(data, &m); err != nil {
 		return nil, err
 	}
+	if p.Products != nil {
+		m["products"] = p.Products
+	}
+	if p.ProductVariants != nil {
+		m["product_variants"] = p.ProductVariants
+	}
 	if p.Phases != nil {
 		m["phases"] = p.Phases
 	}
 	nullable := map[string]bool{
-		"starts_at":       true,
-		"ends_at":         true,
-		"max_redemptions": true,
+		"starts_at":             true,
+		"ends_at":               true,
+		"max_redemptions":       true,
+		"subscription_payments": true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -251,7 +285,7 @@ func (p PromotionsReplaceParams) MarshalJSON() ([]byte, error) {
 func (s *PromotionService) Replace(ctx context.Context, promotion int, params *PromotionsReplaceParams, opts ...RequestOption) (*SdkReplacePromotionResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("replacePromotion", false)}, opts...)
 	var result SdkReplacePromotionResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PUT", fmt.Sprintf("/v2/promotions/%s", url.PathEscape(fmt.Sprint(promotion))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReplacePromotionRequestApplicationJson\",\"properties\":{\"name\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"status\":{\"kind\":\"enum\",\"values\":[\"active\",\"disabled\"]},\"starts_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"priority\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":2147483647}},\"is_stackable\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"phases\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"ReplacePromotionRequestApplicationJsonPropertyPhasesItem\",\"properties\":{\"discount_type\":{\"kind\":\"enum\",\"values\":[\"percentage\",\"fixed\"]},\"discount_value\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[\"discount_type\",\"discount_value\"],\"additionalProperties\":true},\"constraints\":{\"minItems\":1}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PUT", fmt.Sprintf("/v2/promotions/%s", url.PathEscape(fmt.Sprint(promotion))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReplacePromotionRequestApplicationJson\",\"properties\":{\"name\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"status\":{\"kind\":\"enum\",\"values\":[\"active\",\"disabled\"]},\"starts_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"priority\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":2147483647}},\"is_stackable\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"phases\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"ReplacePromotionRequestApplicationJsonPropertyPhasesItem\",\"properties\":{\"discount_type\":{\"kind\":\"enum\",\"values\":[\"percentage\",\"fixed\"]},\"discount_value\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[\"discount_type\",\"discount_value\"],\"additionalProperties\":true},\"constraints\":{\"minItems\":1}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -278,6 +312,16 @@ type PromotionsUpdateParams struct {
 	Priority       *int    `json:"priority,omitempty" url:"-"`
 	IsStackable    *bool   `json:"is_stackable,omitempty" url:"-"`
 	MaxRedemptions *int    `json:"max_redemptions,omitempty" url:"-"`
+	// AppliesTo is what the promotion discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new promotion defaults to `one_time`, and an update that leaves this out keeps the current kind. The promotion only discounts order lines of its kind.
+	AppliesTo *SdkUpdatePromotionRequestApplicationJSONAppliesTo `json:"applies_to,omitempty" url:"-"`
+	// SubscriptionPayments is how many payments a `subscriptions` promotion discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` promotion needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` promotion, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` promotion always stores null here.
+	SubscriptionPayments *int `json:"subscription_payments,omitempty" url:"-"`
+	// StoreWide is send `false` with `products` to limit a `subscriptions` promotion to picked products and plans. Required whenever the request sends `products` or `product_variants`. A new promotion defaults to `true`, an update that leaves it out keeps the current scope, and switching a promotion to `one_time` makes it store-wide again. A `one_time` promotion with `false` returns `422` on `store_wide` with `A promotion for one-time purchases applies to the whole store.`
+	StoreWide *bool `json:"store_wide,omitempty" url:"-"`
+	// Products is product IDs a narrowed subscription promotion reaches. Each one must sell a subscription, or the request returns `422` on `products` with `Pick only products that sell a subscription.` A narrowed promotion left with no products returns `422` with `Pick at least one subscription product for this promotion.` An update replaces the picks with this list, or keeps them when it is left out.
+	Products []int `json:"products,omitempty" url:"-"`
+	// ProductVariants is subscription plan IDs to limit the picked products to. Each one must be a subscription plan of a product in `products`, or the request returns `422` on `product_variants` with `Pick only subscription plans of the picked products.` A picked product with none of its plans listed takes every plan, including plans added later. An update that leaves this out keeps the listed plans of products that stay picked.
+	ProductVariants []int `json:"product_variants,omitempty" url:"-"`
 	// Phases is the complete ordered phase set. Array order becomes phase position.
 	Phases []*UpdatePromotionRequestApplicationJSONPropertyPhasesItem `json:"phases,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
@@ -292,20 +336,27 @@ func (p PromotionsUpdateParams) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(p.NullFields) == 0 && p.Phases == nil {
+	if len(p.NullFields) == 0 && p.Products == nil && p.ProductVariants == nil && p.Phases == nil {
 		return data, nil
 	}
 	var m map[string]any
 	if err := json.Unmarshal(data, &m); err != nil {
 		return nil, err
 	}
+	if p.Products != nil {
+		m["products"] = p.Products
+	}
+	if p.ProductVariants != nil {
+		m["product_variants"] = p.ProductVariants
+	}
 	if p.Phases != nil {
 		m["phases"] = p.Phases
 	}
 	nullable := map[string]bool{
-		"starts_at":       true,
-		"ends_at":         true,
-		"max_redemptions": true,
+		"starts_at":             true,
+		"ends_at":               true,
+		"max_redemptions":       true,
+		"subscription_payments": true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -321,7 +372,7 @@ func (p PromotionsUpdateParams) MarshalJSON() ([]byte, error) {
 func (s *PromotionService) Update(ctx context.Context, promotion int, params *PromotionsUpdateParams, opts ...RequestOption) (*SdkUpdatePromotionResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("updatePromotion", false)}, opts...)
 	var result SdkUpdatePromotionResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v2/promotions/%s", url.PathEscape(fmt.Sprint(promotion))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdatePromotionRequestApplicationJson\",\"properties\":{\"name\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"status\":{\"kind\":\"enum\",\"values\":[\"active\",\"disabled\"]},\"starts_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"priority\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":2147483647}},\"is_stackable\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"phases\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"UpdatePromotionRequestApplicationJsonPropertyPhasesItem\",\"properties\":{\"discount_type\":{\"kind\":\"enum\",\"values\":[\"percentage\",\"fixed\"]},\"discount_value\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[\"discount_type\",\"discount_value\"],\"additionalProperties\":true},\"constraints\":{\"minItems\":1}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v2/promotions/%s", url.PathEscape(fmt.Sprint(promotion))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdatePromotionRequestApplicationJson\",\"properties\":{\"name\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"status\":{\"kind\":\"enum\",\"values\":[\"active\",\"disabled\"]},\"starts_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"priority\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":2147483647}},\"is_stackable\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"phases\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"UpdatePromotionRequestApplicationJsonPropertyPhasesItem\",\"properties\":{\"discount_type\":{\"kind\":\"enum\",\"values\":[\"percentage\",\"fixed\"]},\"discount_value\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[\"discount_type\",\"discount_value\"],\"additionalProperties\":true},\"constraints\":{\"minItems\":1}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -365,6 +416,16 @@ type PromotionsRestoreParams struct {
 	Priority       int     `json:"priority" url:"-"`
 	IsStackable    bool    `json:"is_stackable" url:"-"`
 	MaxRedemptions *int    `json:"max_redemptions,omitempty" url:"-"`
+	// AppliesTo is what the promotion discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new promotion defaults to `one_time`, and an update that leaves this out keeps the current kind. The promotion only discounts order lines of its kind.
+	AppliesTo *SdkRestorePromotionRequestApplicationJSONAppliesTo `json:"applies_to,omitempty" url:"-"`
+	// SubscriptionPayments is how many payments a `subscriptions` promotion discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` promotion needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` promotion, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` promotion always stores null here.
+	SubscriptionPayments *int `json:"subscription_payments,omitempty" url:"-"`
+	// StoreWide is send `false` with `products` to limit a `subscriptions` promotion to picked products and plans. Required whenever the request sends `products` or `product_variants`. A new promotion defaults to `true`, an update that leaves it out keeps the current scope, and switching a promotion to `one_time` makes it store-wide again. A `one_time` promotion with `false` returns `422` on `store_wide` with `A promotion for one-time purchases applies to the whole store.`
+	StoreWide *bool `json:"store_wide,omitempty" url:"-"`
+	// Products is product IDs a narrowed subscription promotion reaches. Each one must sell a subscription, or the request returns `422` on `products` with `Pick only products that sell a subscription.` A narrowed promotion left with no products returns `422` with `Pick at least one subscription product for this promotion.` An update replaces the picks with this list, or keeps them when it is left out.
+	Products []int `json:"products,omitempty" url:"-"`
+	// ProductVariants is subscription plan IDs to limit the picked products to. Each one must be a subscription plan of a product in `products`, or the request returns `422` on `product_variants` with `Pick only subscription plans of the picked products.` A picked product with none of its plans listed takes every plan, including plans added later. An update that leaves this out keeps the listed plans of products that stay picked.
+	ProductVariants []int `json:"product_variants,omitempty" url:"-"`
 	// Phases is the complete ordered phase set. Array order becomes phase position.
 	Phases []*RestorePromotionRequestApplicationJSONPropertyPhasesItem `json:"phases" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
@@ -379,17 +440,24 @@ func (p PromotionsRestoreParams) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(p.NullFields) == 0 {
+	if len(p.NullFields) == 0 && p.Products == nil && p.ProductVariants == nil {
 		return data, nil
 	}
 	var m map[string]any
 	if err := json.Unmarshal(data, &m); err != nil {
 		return nil, err
 	}
+	if p.Products != nil {
+		m["products"] = p.Products
+	}
+	if p.ProductVariants != nil {
+		m["product_variants"] = p.ProductVariants
+	}
 	nullable := map[string]bool{
-		"starts_at":       true,
-		"ends_at":         true,
-		"max_redemptions": true,
+		"starts_at":             true,
+		"ends_at":               true,
+		"max_redemptions":       true,
+		"subscription_payments": true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -405,7 +473,7 @@ func (p PromotionsRestoreParams) MarshalJSON() ([]byte, error) {
 func (s *PromotionService) Restore(ctx context.Context, promotion int, params *PromotionsRestoreParams, opts ...RequestOption) (*SdkRestorePromotionResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("restorePromotion", false)}, opts...)
 	var result SdkRestorePromotionResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/promotions/%s/restore", url.PathEscape(fmt.Sprint(promotion))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkRestorePromotionRequestApplicationJson\",\"properties\":{\"name\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"status\":{\"kind\":\"enum\",\"values\":[\"active\",\"disabled\"]},\"starts_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"priority\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":2147483647}},\"is_stackable\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"phases\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"RestorePromotionRequestApplicationJsonPropertyPhasesItem\",\"properties\":{\"discount_type\":{\"kind\":\"enum\",\"values\":[\"percentage\",\"fixed\"]},\"discount_value\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[\"discount_type\",\"discount_value\"],\"additionalProperties\":true},\"constraints\":{\"minItems\":1}}},\"required\":[\"name\",\"status\",\"priority\",\"is_stackable\",\"phases\"],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/promotions/%s/restore", url.PathEscape(fmt.Sprint(promotion))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkRestorePromotionRequestApplicationJson\",\"properties\":{\"name\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"status\":{\"kind\":\"enum\",\"values\":[\"active\",\"disabled\"]},\"starts_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"priority\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":2147483647}},\"is_stackable\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"phases\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"RestorePromotionRequestApplicationJsonPropertyPhasesItem\",\"properties\":{\"discount_type\":{\"kind\":\"enum\",\"values\":[\"percentage\",\"fixed\"]},\"discount_value\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"ends_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"max_redemptions\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":4294967295}}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[\"discount_type\",\"discount_value\"],\"additionalProperties\":true},\"constraints\":{\"minItems\":1}}},\"required\":[\"name\",\"status\",\"priority\",\"is_stackable\",\"phases\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}

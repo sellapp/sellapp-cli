@@ -11,7 +11,7 @@ jobs:
         with: {go-version: '1.25.x'}
       - run: go test ./...
       - run: go vet ./...
-      - run: test "$(jq '.operationCount' internal/catalog/commands.json)" = 434
+      - run: test "$(jq '.operationCount' internal/catalog/commands.json)" = 438
       - run: go build -o sellapp ./cmd/sellapp
       - run: for example in examples/*.sh; do sh -n "$example"; SELLAPP_AUDIT_DISABLED=1 sh "$example"; done
       - run: go run ./tools/release -output "$RUNNER_TEMP/release"

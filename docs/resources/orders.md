@@ -6,7 +6,7 @@
 
 Create an order
 
-Create an order with one or more product-variant line items and start checkout. This can create provider payment sessions, reserve stock or wallet funds, and begin fulfillment for a free or fully wallet-funded order. Requires the invoice ability or orders:write OAuth scope and current store permission. Use the same Idempotency-Key and identical body after a lost response; inspect the order before creating a new key. The payment.checkout_url is a handoff, not proof of payment. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Create an order with one or more product-variant line items and start checkout. This can create provider payment sessions, reserve stock or wallet funds, and begin fulfillment for a free or fully wallet-funded order. Requires the invoice ability or orders:write OAuth scope and current store permission. Use the same Idempotency-Key and identical body after a lost response; inspect the order before creating a new key. The payment.checkout_url is a handoff, not proof of payment. A subscription plan that offers a trial is priced at the trial, nothing for a free trial and the trial price for a paid one, unless the customer already had a trial of that product, matched by `customer_email` or a recent `customer_ip`; then it is priced at the plan price. Two requests racing for the same trial can be refused with a `422` on `invoice`. A cart carries at most one subscription plan and nothing else; a plan mixed with other products or with a second plan returns `422` on `product_variants.{variant_id}`, and a plan's `quantity` other than 1 returns `422` on `quantity`. A customer who already holds the plan, matched by `customer_email`, is refused with `422` on `invoice` while that subscription is active, trialing, past due, or unpaid, whichever payment method bills it. A subscription scheduled to end still blocks while it can be kept, and the message then tells the customer to keep it from the customer portal. One that can no longer be kept, such as a PayPal subscription cancelled at period end, does not block. For an in-house subscription on hold for an unpaid renewal, the message tells the customer to pay and resume it from the customer portal. A `coupon` discounts only the lines of its kind, set by the coupon's `applies_to`. A `subscriptions` coupon discounts the plan's first `subscription_payments` payments when the `payment_method` can carry the discount: Stripe, which carries more than one discounted payment only on a monthly or yearly plan, or a method the store bills in house. On PayPal, Razorpay, or a weekly or daily Stripe plan discounted for more than one payment, the plan sells at its full price and the coupon is left off the order without an error. A coupon for the other kind, a `subscriptions` coupon on a plan that starts with a trial, and a fixed amount that would make the plan free each return `422` on `coupon`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/orders/create-and-operate) · Effect: **consequential**
 
@@ -19,7 +19,7 @@ sellapp orders create --body '{"customer_email":"maya@example.com","payment_meth
 | --customer-email | Yes | Value for customer email. |
 | --payment-method | Yes | Value for payment method. |
 | --product-variants | Yes | Value for product variants. |
-| --customer-ip | No | Value for customer ip. |
+| --customer-ip | No | The IP address the customer is buying from. Send it when you sell a plan with a trial: a trial of the same product taken from this address in the last 30 days counts as the customer's. Without it, only `customer_email` is checked, so a customer could take another trial with a new email address. |
 | --coupon | No | Value for coupon. |
 | --vat-id | No | Value for vat id. |
 | --country | No | Value for country. |
@@ -62,7 +62,7 @@ Inspect the complete schema: `sellapp commands orders create --json`.
 
 Create order checkout
 
-Start or reuse checkout for a PENDING order. A new nonfree checkout returns 201; an existing payment session or free order returns 200. Free or fully wallet-funded checkout can mark the order paid. Failures can mark the order FAILED and release wallet reservations. Do not infer payment from a checkout URL or browser return. The optional expected_status field is validated but is not a checkout concurrency precondition. Requires the invoice ability or orders:write OAuth scope and current store permission. Idempotency-Key is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns 409. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Start or reuse checkout for a PENDING order. A new payment session returns 201; if the order already has one, that session is returned with 200. An order that costs nothing, or that the customer wallet covers in full, is marked as paid and returns 200 with a null payment.checkout_url. A free trial sold through Stripe, PayPal, or Razorpay is the exception: the customer still has to authorise the subscription with that provider, so checkout returns its payment.checkout_url and the order stays PENDING until they do. An unpaid order that sold a trial stops being payable after 72 hours, or on those three providers once the trial it sold is about to end; checkout then returns 422 on order.checkout, the order stays PENDING, and the customer has to start a new checkout. An order that is no longer PENDING also returns 422 on order.checkout. Other failures can mark the order FAILED and release wallet reservations. Do not infer payment from a checkout URL or browser return. The optional expected_status field is validated but is not a checkout concurrency precondition. Requires the invoice ability or orders:write OAuth scope and current store permission. Idempotency-Key is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns 409. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/orders/create-and-operate) · Effect: **consequential**
 
@@ -122,7 +122,7 @@ sellapp orders create-from-wallet --body '{"customer_email":"maya.chen@example.c
 | --- | --- | --- |
 | --customer-email | Yes | Value for customer email. |
 | --product-variants | Yes | Value for product variants. |
-| --customer-ip | No | Value for customer ip. |
+| --customer-ip | No | The IP address the customer is buying from. Send it when you sell a plan with a trial: a trial of the same product taken from this address in the last 30 days counts as the customer's. Without it, only `customer_email` is checked, so a customer could take another trial with a new email address. |
 | --coupon | No | Value for coupon. |
 | --vat-id | No | Value for vat id. |
 | --country | No | Value for country. |

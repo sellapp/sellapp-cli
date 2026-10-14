@@ -51,18 +51,22 @@ func (s *CouponService) ListWithResponse(ctx context.Context, params *CouponsLis
 type CouponsCreateParams struct {
 	Code string                                    `json:"code" url:"-"`
 	Type SdkCreateCouponRequestApplicationJSONType `json:"type" url:"-"`
-	// Discount is a decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit.
+	// Discount is a decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead.
 	Discount  interface{} `json:"discount" url:"-"`
 	StoreWide bool        `json:"store_wide" url:"-"`
-	// Products is product IDs the coupon applies to when store_wide is false.
+	// Products is product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`.
 	Products []int `json:"products,omitempty" url:"-"`
-	// ProductVariants is optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants.
+	// ProductVariants is optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`.
 	ProductVariants []int `json:"product_variants,omitempty" url:"-"`
 	Limit           *int  `json:"limit,omitempty" url:"-"`
 	// ExpiresAt is a future date and time, or null for no expiry.
 	ExpiresAt *string `json:"expires_at,omitempty" url:"-"`
-	// MinimumAmount is a decimal minimum order amount in the store currency's major unit, or null for no minimum.
+	// MinimumAmount is a decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum.
 	MinimumAmount *interface{} `json:"minimum_amount,omitempty" url:"-"`
+	// AppliesTo is what the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind.
+	AppliesTo *SdkCreateCouponRequestApplicationJSONAppliesTo `json:"applies_to,omitempty" url:"-"`
+	// SubscriptionPayments is how many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here.
+	SubscriptionPayments *int `json:"subscription_payments,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
 	// clearing the corresponding value (e.g. []string{"external_id"}).
 	NullFields []string `json:"-" url:"-"`
@@ -89,9 +93,10 @@ func (p CouponsCreateParams) MarshalJSON() ([]byte, error) {
 		m["product_variants"] = p.ProductVariants
 	}
 	nullable := map[string]bool{
-		"limit":          true,
-		"expires_at":     true,
-		"minimum_amount": true,
+		"limit":                 true,
+		"expires_at":            true,
+		"minimum_amount":        true,
+		"subscription_payments": true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -107,7 +112,7 @@ func (p CouponsCreateParams) MarshalJSON() ([]byte, error) {
 func (s *CouponService) Create(ctx context.Context, params *CouponsCreateParams, opts ...RequestOption) (*SdkCreateCouponResponseValue201ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("createCoupon", false)}, opts...)
 	var result SdkCreateCouponResponseValue201ApplicationJSON
-	_, err := s.client.request(ctx, "POST", "/v1/coupons", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCreateCouponRequestApplicationJson\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[\"code\",\"type\",\"discount\",\"store_wide\"],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", "/v1/coupons", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCreateCouponRequestApplicationJson\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}}},\"required\":[\"code\",\"type\",\"discount\",\"store_wide\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -160,18 +165,22 @@ func (s *CouponService) GetWithResponse(ctx context.Context, coupon int, params 
 type CouponsReplaceParams struct {
 	Code *string                                     `json:"code,omitempty" url:"-"`
 	Type *SdkReplaceCouponRequestApplicationJSONType `json:"type,omitempty" url:"-"`
-	// Discount is a decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit.
+	// Discount is a decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead.
 	Discount  *interface{} `json:"discount,omitempty" url:"-"`
 	StoreWide *bool        `json:"store_wide,omitempty" url:"-"`
-	// Products is product IDs the coupon applies to when store_wide is false.
+	// Products is product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`.
 	Products []int `json:"products,omitempty" url:"-"`
-	// ProductVariants is optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products.
+	// ProductVariants is optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`.
 	ProductVariants []int `json:"product_variants,omitempty" url:"-"`
 	Limit           *int  `json:"limit,omitempty" url:"-"`
 	// ExpiresAt is a future date and time, or null for no expiry.
 	ExpiresAt *string `json:"expires_at,omitempty" url:"-"`
-	// MinimumAmount is a decimal minimum order amount in the store currency's major unit, or null for no minimum.
+	// MinimumAmount is a decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum.
 	MinimumAmount *interface{} `json:"minimum_amount,omitempty" url:"-"`
+	// AppliesTo is what the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind.
+	AppliesTo *SdkReplaceCouponRequestApplicationJSONAppliesTo `json:"applies_to,omitempty" url:"-"`
+	// SubscriptionPayments is how many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here.
+	SubscriptionPayments *int `json:"subscription_payments,omitempty" url:"-"`
 	// WithTrashed is include soft-deleted resources in the result.
 	// Defaults to false.
 	WithTrashed *bool `url:"with_trashed,omitempty" json:"-"`
@@ -204,9 +213,10 @@ func (p CouponsReplaceParams) MarshalJSON() ([]byte, error) {
 		m["product_variants"] = p.ProductVariants
 	}
 	nullable := map[string]bool{
-		"limit":          true,
-		"expires_at":     true,
-		"minimum_amount": true,
+		"limit":                 true,
+		"expires_at":            true,
+		"minimum_amount":        true,
+		"subscription_payments": true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -222,7 +232,7 @@ func (p CouponsReplaceParams) MarshalJSON() ([]byte, error) {
 func (s *CouponService) Replace(ctx context.Context, coupon int, params *CouponsReplaceParams, opts ...RequestOption) (*SdkReplaceCouponResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("replaceCoupon", false)}, opts...)
 	var result SdkReplaceCouponResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PUT", fmt.Sprintf("/v1/coupons/%s", url.PathEscape(fmt.Sprint(coupon))), params, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReplaceCouponRequestApplicationJson\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PUT", fmt.Sprintf("/v1/coupons/%s", url.PathEscape(fmt.Sprint(coupon))), params, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReplaceCouponRequestApplicationJson\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -243,18 +253,22 @@ func (s *CouponService) ReplaceWithResponse(ctx context.Context, coupon int, par
 type CouponsUpdateParams struct {
 	Code *string                                    `json:"code,omitempty" url:"-"`
 	Type *SdkUpdateCouponRequestApplicationJSONType `json:"type,omitempty" url:"-"`
-	// Discount is a decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit.
+	// Discount is a decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead.
 	Discount  *interface{} `json:"discount,omitempty" url:"-"`
 	StoreWide *bool        `json:"store_wide,omitempty" url:"-"`
-	// Products is product IDs the coupon applies to when store_wide is false.
+	// Products is product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`.
 	Products []int `json:"products,omitempty" url:"-"`
-	// ProductVariants is optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products.
+	// ProductVariants is optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`.
 	ProductVariants []int `json:"product_variants,omitempty" url:"-"`
 	Limit           *int  `json:"limit,omitempty" url:"-"`
 	// ExpiresAt is a future date and time, or null for no expiry.
 	ExpiresAt *string `json:"expires_at,omitempty" url:"-"`
-	// MinimumAmount is a decimal minimum order amount in the store currency's major unit, or null for no minimum.
+	// MinimumAmount is a decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum.
 	MinimumAmount *interface{} `json:"minimum_amount,omitempty" url:"-"`
+	// AppliesTo is what the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind.
+	AppliesTo *SdkUpdateCouponRequestApplicationJSONAppliesTo `json:"applies_to,omitempty" url:"-"`
+	// SubscriptionPayments is how many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here.
+	SubscriptionPayments *int `json:"subscription_payments,omitempty" url:"-"`
 	// WithTrashed is include soft-deleted resources in the result.
 	// Defaults to false.
 	WithTrashed *bool `url:"with_trashed,omitempty" json:"-"`
@@ -287,9 +301,10 @@ func (p CouponsUpdateParams) MarshalJSON() ([]byte, error) {
 		m["product_variants"] = p.ProductVariants
 	}
 	nullable := map[string]bool{
-		"limit":          true,
-		"expires_at":     true,
-		"minimum_amount": true,
+		"limit":                 true,
+		"expires_at":            true,
+		"minimum_amount":        true,
+		"subscription_payments": true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -305,7 +320,7 @@ func (p CouponsUpdateParams) MarshalJSON() ([]byte, error) {
 func (s *CouponService) Update(ctx context.Context, coupon int, params *CouponsUpdateParams, opts ...RequestOption) (*SdkUpdateCouponResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("updateCoupon", false)}, opts...)
 	var result SdkUpdateCouponResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v1/coupons/%s", url.PathEscape(fmt.Sprint(coupon))), params, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateCouponRequestApplicationJson\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v1/coupons/%s", url.PathEscape(fmt.Sprint(coupon))), params, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateCouponRequestApplicationJson\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -421,7 +436,7 @@ type CouponsBatchCreateParams struct {
 func (s *CouponService) BatchCreate(ctx context.Context, params *CouponsBatchCreateParams, opts ...RequestOption) (*SdkBatchCreateCouponsResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("batchCreateCoupons", false)}, opts...)
 	var result SdkBatchCreateCouponsResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", "/v1/coupons/batch", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkBatchCreateCouponsRequestApplicationJson\",\"properties\":{\"resources\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"BatchCreateCouponsRequestApplicationJsonPropertyResourcesItem\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[\"code\",\"type\",\"discount\",\"store_wide\"],\"additionalProperties\":true}}},\"required\":[\"resources\"],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", "/v1/coupons/batch", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkBatchCreateCouponsRequestApplicationJson\",\"properties\":{\"resources\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"BatchCreateCouponsRequestApplicationJsonPropertyResourcesItem\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}}},\"required\":[\"code\",\"type\",\"discount\",\"store_wide\"],\"additionalProperties\":true}}},\"required\":[\"resources\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -454,7 +469,7 @@ type CouponsBatchUpdateParams struct {
 func (s *CouponService) BatchUpdate(ctx context.Context, params *CouponsBatchUpdateParams, opts ...RequestOption) (*SdkBatchUpdateCouponsResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("batchUpdateCoupons", false)}, opts...)
 	var result SdkBatchUpdateCouponsResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PATCH", "/v1/coupons/batch", params, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkBatchUpdateCouponsRequestApplicationJson\",\"properties\":{\"resources\":{\"kind\":\"object\",\"modelName\":\"BatchUpdateCouponsRequestApplicationJsonPropertyResources\",\"properties\":{},\"required\":[],\"additionalProperties\":{\"kind\":\"object\",\"modelName\":\"BatchUpdateCouponsRequestApplicationJsonPropertyResourcesMapValue\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[],\"additionalProperties\":true}}},\"required\":[\"resources\"],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PATCH", "/v1/coupons/batch", params, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkBatchUpdateCouponsRequestApplicationJson\",\"properties\":{\"resources\":{\"kind\":\"object\",\"modelName\":\"BatchUpdateCouponsRequestApplicationJsonPropertyResources\",\"properties\":{},\"required\":[],\"additionalProperties\":{\"kind\":\"object\",\"modelName\":\"BatchUpdateCouponsRequestApplicationJsonPropertyResourcesMapValue\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}}},\"required\":[],\"additionalProperties\":true}}},\"required\":[\"resources\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -536,18 +551,22 @@ func (s *CouponService) V2ListCouponsWithResponse(ctx context.Context, params *C
 type CouponsV2CreateCouponParams struct {
 	Code string                                      `json:"code" url:"-"`
 	Type SdkV2CreateCouponRequestApplicationJSONType `json:"type" url:"-"`
-	// Discount is a decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit.
+	// Discount is a decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead.
 	Discount  interface{} `json:"discount" url:"-"`
 	StoreWide bool        `json:"store_wide" url:"-"`
-	// Products is product IDs the coupon applies to when store_wide is false.
+	// Products is product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`.
 	Products []int `json:"products,omitempty" url:"-"`
-	// ProductVariants is optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants.
+	// ProductVariants is optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`.
 	ProductVariants []int `json:"product_variants,omitempty" url:"-"`
 	Limit           *int  `json:"limit,omitempty" url:"-"`
 	// ExpiresAt is a future date and time, or null for no expiry.
 	ExpiresAt *string `json:"expires_at,omitempty" url:"-"`
-	// MinimumAmount is a decimal minimum order amount in the store currency's major unit, or null for no minimum.
+	// MinimumAmount is a decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum.
 	MinimumAmount *interface{} `json:"minimum_amount,omitempty" url:"-"`
+	// AppliesTo is what the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind.
+	AppliesTo *SdkV2CreateCouponRequestApplicationJSONAppliesTo `json:"applies_to,omitempty" url:"-"`
+	// SubscriptionPayments is how many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here.
+	SubscriptionPayments *int `json:"subscription_payments,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
 	// clearing the corresponding value (e.g. []string{"external_id"}).
 	NullFields []string `json:"-" url:"-"`
@@ -574,9 +593,10 @@ func (p CouponsV2CreateCouponParams) MarshalJSON() ([]byte, error) {
 		m["product_variants"] = p.ProductVariants
 	}
 	nullable := map[string]bool{
-		"limit":          true,
-		"expires_at":     true,
-		"minimum_amount": true,
+		"limit":                 true,
+		"expires_at":            true,
+		"minimum_amount":        true,
+		"subscription_payments": true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -592,7 +612,7 @@ func (p CouponsV2CreateCouponParams) MarshalJSON() ([]byte, error) {
 func (s *CouponService) V2CreateCoupon(ctx context.Context, params *CouponsV2CreateCouponParams, opts ...RequestOption) (*SdkV2CreateCouponResponseValue201ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("v2CreateCoupon", true)}, opts...)
 	var result SdkV2CreateCouponResponseValue201ApplicationJSON
-	_, err := s.client.request(ctx, "POST", "/v2/coupons", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2CreateCouponRequestApplicationJson\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[\"code\",\"type\",\"discount\",\"store_wide\"],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", "/v2/coupons", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2CreateCouponRequestApplicationJson\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}}},\"required\":[\"code\",\"type\",\"discount\",\"store_wide\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -707,18 +727,22 @@ func (s *CouponService) V2GetCouponWithResponse(ctx context.Context, coupon int,
 type CouponsV2ReplaceCouponParams struct {
 	Code *string                                       `json:"code,omitempty" url:"-"`
 	Type *SdkV2ReplaceCouponRequestApplicationJSONType `json:"type,omitempty" url:"-"`
-	// Discount is a decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit.
+	// Discount is a decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead.
 	Discount  *interface{} `json:"discount,omitempty" url:"-"`
 	StoreWide *bool        `json:"store_wide,omitempty" url:"-"`
-	// Products is product IDs the coupon applies to when store_wide is false.
+	// Products is product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`.
 	Products []int `json:"products,omitempty" url:"-"`
-	// ProductVariants is optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products.
+	// ProductVariants is optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`.
 	ProductVariants []int `json:"product_variants,omitempty" url:"-"`
 	Limit           *int  `json:"limit,omitempty" url:"-"`
 	// ExpiresAt is a future date and time, or null for no expiry.
 	ExpiresAt *string `json:"expires_at,omitempty" url:"-"`
-	// MinimumAmount is a decimal minimum order amount in the store currency's major unit, or null for no minimum.
+	// MinimumAmount is a decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum.
 	MinimumAmount *interface{} `json:"minimum_amount,omitempty" url:"-"`
+	// AppliesTo is what the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind.
+	AppliesTo *SdkV2ReplaceCouponRequestApplicationJSONAppliesTo `json:"applies_to,omitempty" url:"-"`
+	// SubscriptionPayments is how many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here.
+	SubscriptionPayments *int `json:"subscription_payments,omitempty" url:"-"`
 	// WithTrashed is include soft-deleted resources in the result.
 	// Defaults to false.
 	WithTrashed *bool `url:"with_trashed,omitempty" json:"-"`
@@ -751,9 +775,10 @@ func (p CouponsV2ReplaceCouponParams) MarshalJSON() ([]byte, error) {
 		m["product_variants"] = p.ProductVariants
 	}
 	nullable := map[string]bool{
-		"limit":          true,
-		"expires_at":     true,
-		"minimum_amount": true,
+		"limit":                 true,
+		"expires_at":            true,
+		"minimum_amount":        true,
+		"subscription_payments": true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -769,7 +794,7 @@ func (p CouponsV2ReplaceCouponParams) MarshalJSON() ([]byte, error) {
 func (s *CouponService) V2ReplaceCoupon(ctx context.Context, coupon int, params *CouponsV2ReplaceCouponParams, opts ...RequestOption) (*SdkV2ReplaceCouponResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("v2ReplaceCoupon", false)}, opts...)
 	var result SdkV2ReplaceCouponResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PUT", fmt.Sprintf("/v2/coupons/%s", url.PathEscape(fmt.Sprint(coupon))), params, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2ReplaceCouponRequestApplicationJson\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PUT", fmt.Sprintf("/v2/coupons/%s", url.PathEscape(fmt.Sprint(coupon))), params, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2ReplaceCouponRequestApplicationJson\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -790,18 +815,22 @@ func (s *CouponService) V2ReplaceCouponWithResponse(ctx context.Context, coupon 
 type CouponsV2UpdateCouponParams struct {
 	Code *string                                      `json:"code,omitempty" url:"-"`
 	Type *SdkV2UpdateCouponRequestApplicationJSONType `json:"type,omitempty" url:"-"`
-	// Discount is a decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit.
+	// Discount is a decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead.
 	Discount  *interface{} `json:"discount,omitempty" url:"-"`
 	StoreWide *bool        `json:"store_wide,omitempty" url:"-"`
-	// Products is product IDs the coupon applies to when store_wide is false.
+	// Products is product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`.
 	Products []int `json:"products,omitempty" url:"-"`
-	// ProductVariants is optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products.
+	// ProductVariants is optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`.
 	ProductVariants []int `json:"product_variants,omitempty" url:"-"`
 	Limit           *int  `json:"limit,omitempty" url:"-"`
 	// ExpiresAt is a future date and time, or null for no expiry.
 	ExpiresAt *string `json:"expires_at,omitempty" url:"-"`
-	// MinimumAmount is a decimal minimum order amount in the store currency's major unit, or null for no minimum.
+	// MinimumAmount is a decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum.
 	MinimumAmount *interface{} `json:"minimum_amount,omitempty" url:"-"`
+	// AppliesTo is what the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind.
+	AppliesTo *SdkV2UpdateCouponRequestApplicationJSONAppliesTo `json:"applies_to,omitempty" url:"-"`
+	// SubscriptionPayments is how many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here.
+	SubscriptionPayments *int `json:"subscription_payments,omitempty" url:"-"`
 	// WithTrashed is include soft-deleted resources in the result.
 	// Defaults to false.
 	WithTrashed *bool `url:"with_trashed,omitempty" json:"-"`
@@ -834,9 +863,10 @@ func (p CouponsV2UpdateCouponParams) MarshalJSON() ([]byte, error) {
 		m["product_variants"] = p.ProductVariants
 	}
 	nullable := map[string]bool{
-		"limit":          true,
-		"expires_at":     true,
-		"minimum_amount": true,
+		"limit":                 true,
+		"expires_at":            true,
+		"minimum_amount":        true,
+		"subscription_payments": true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -852,7 +882,7 @@ func (p CouponsV2UpdateCouponParams) MarshalJSON() ([]byte, error) {
 func (s *CouponService) V2UpdateCoupon(ctx context.Context, coupon int, params *CouponsV2UpdateCouponParams, opts ...RequestOption) (*SdkV2UpdateCouponResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("v2UpdateCoupon", false)}, opts...)
 	var result SdkV2UpdateCouponResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v2/coupons/%s", url.PathEscape(fmt.Sprint(coupon))), params, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2UpdateCouponRequestApplicationJson\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v2/coupons/%s", url.PathEscape(fmt.Sprint(coupon))), params, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2UpdateCouponRequestApplicationJson\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -906,7 +936,7 @@ type CouponsV2BatchCreateCouponsParams struct {
 func (s *CouponService) V2BatchCreateCoupons(ctx context.Context, params *CouponsV2BatchCreateCouponsParams, opts ...RequestOption) (*SdkV2BatchCreateCouponsResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("v2BatchCreateCoupons", true)}, opts...)
 	var result SdkV2BatchCreateCouponsResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", "/v2/coupons/batch", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2BatchCreateCouponsRequestApplicationJson\",\"properties\":{\"resources\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2BatchCreateCouponsRequestApplicationJsonPropertyResourcesItem\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[\"code\",\"type\",\"discount\",\"store_wide\"],\"additionalProperties\":true}}},\"required\":[\"resources\"],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", "/v2/coupons/batch", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2BatchCreateCouponsRequestApplicationJson\",\"properties\":{\"resources\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2BatchCreateCouponsRequestApplicationJsonPropertyResourcesItem\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}}},\"required\":[\"code\",\"type\",\"discount\",\"store_wide\"],\"additionalProperties\":true}}},\"required\":[\"resources\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -939,7 +969,7 @@ type CouponsV2BatchUpdateCouponsParams struct {
 func (s *CouponService) V2BatchUpdateCoupons(ctx context.Context, params *CouponsV2BatchUpdateCouponsParams, opts ...RequestOption) (*SdkV2BatchUpdateCouponsResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("v2BatchUpdateCoupons", true)}, opts...)
 	var result SdkV2BatchUpdateCouponsResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PATCH", "/v2/coupons/batch", params, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2BatchUpdateCouponsRequestApplicationJson\",\"properties\":{\"resources\":{\"kind\":\"object\",\"modelName\":\"V2BatchUpdateCouponsRequestApplicationJsonPropertyResources\",\"properties\":{},\"required\":[],\"additionalProperties\":{\"kind\":\"object\",\"modelName\":\"V2BatchUpdateCouponsRequestApplicationJsonPropertyResourcesMapValue\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}}},\"required\":[],\"additionalProperties\":true}}},\"required\":[\"resources\"],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PATCH", "/v2/coupons/batch", params, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2BatchUpdateCouponsRequestApplicationJson\",\"properties\":{\"resources\":{\"kind\":\"object\",\"modelName\":\"V2BatchUpdateCouponsRequestApplicationJsonPropertyResources\",\"properties\":{},\"required\":[],\"additionalProperties\":{\"kind\":\"object\",\"modelName\":\"V2BatchUpdateCouponsRequestApplicationJsonPropertyResourcesMapValue\",\"properties\":{\"code\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"type\":{\"kind\":\"enum\",\"values\":[\"PERCENTAGE\",\"AMOUNT\"]},\"discount\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]},\"store_wide\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"products\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"minItems\":1}},\"product_variants\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"expires_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"minimum_amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"number\",\"constraints\":{\"minimum\":1,\"maxLength\":255}},{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minimum\":1,\"maxLength\":255}}]}},\"applies_to\":{\"kind\":\"enum\",\"values\":[\"one_time\",\"subscriptions\"]},\"subscription_payments\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":36}}}},\"required\":[],\"additionalProperties\":true}}},\"required\":[\"resources\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}

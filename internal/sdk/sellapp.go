@@ -37,6 +37,7 @@ type Client struct {
 	productVariantsPricing      *ProductVariantsPricingService
 	productVariantsBooking      *ProductVariantsBookingService
 	subscriptions               *SubscriptionService
+	subscriptionsActions        *SubscriptionsActionService
 	bookings                    *BookingService
 	bookingsCalendarEvents      *BookingsCalendarEventService
 	bundleItems                 *BundleItemService
@@ -133,6 +134,7 @@ func NewClient(apiKey, store string, opts ...ClientOption) *Client {
 	c.productVariantsPricing = &ProductVariantsPricingService{client: c}
 	c.productVariantsBooking = &ProductVariantsBookingService{client: c}
 	c.subscriptions = &SubscriptionService{client: c}
+	c.subscriptionsActions = &SubscriptionsActionService{client: c}
 	c.bookings = &BookingService{client: c}
 	c.bookingsCalendarEvents = &BookingsCalendarEventService{client: c}
 	c.bundleItems = &BundleItemService{client: c}
@@ -258,6 +260,11 @@ func (c *Client) ProductVariantsBooking() *ProductVariantsBookingService {
 // Subscriptions returns the Subscriptions service.
 func (c *Client) Subscriptions() *SubscriptionService {
 	return c.subscriptions
+}
+
+// SubscriptionsActions returns the SubscriptionsActions service.
+func (c *Client) SubscriptionsActions() *SubscriptionsActionService {
+	return c.subscriptionsActions
 }
 
 // Bookings returns the Bookings service.

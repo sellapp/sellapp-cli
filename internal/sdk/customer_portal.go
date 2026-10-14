@@ -136,22 +136,17 @@ func (s *CustomerPortalService) GetOrderWithResponse(ctx context.Context, order 
 }
 
 // ListSubscriptions list customer subscriptions
-// List subscriptions belonging to the customer session.
-func (s *CustomerPortalService) ListSubscriptions(ctx context.Context, opts ...RequestOption) (*SdkListCustomerPortalSubscriptionsResponseValue200ApplicationJSON, error) {
+// List subscriptions belonging to the customer session, newest first, 15 per page. `trial_ends_at` is only set while a subscription is `TRIALING`.
+func (s *CustomerPortalService) ListSubscriptions(ctx context.Context, opts ...RequestOption) *Iterator[CustomerPortalSubscription] {
 	opts = append([]RequestOption{withOperation("listCustomerPortalSubscriptions", false)}, opts...)
-	var result SdkListCustomerPortalSubscriptionsResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "GET", "/v2/customer-portal/subscriptions", nil, nil, &result, opts)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
+	return newIterator[CustomerPortalSubscription](ctx, s.client, "GET", "/v2/customer-portal/subscriptions", nil, "after", "data", opts, nil)
 }
 
-func (s *CustomerPortalService) ListSubscriptionsWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*SdkListCustomerPortalSubscriptionsResponseValue200ApplicationJSON], error) {
+func (s *CustomerPortalService) ListSubscriptionsWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*Iterator[CustomerPortalSubscription]], error) {
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
-	value, err := s.ListSubscriptions(ctx, captureOpts...)
-	if err != nil {
+	value := s.ListSubscriptions(ctx, captureOpts...)
+	if err := value.Err(); err != nil {
 		return nil, err
 	}
 	return rawResponse(value, metadata), nil
@@ -180,7 +175,7 @@ func (s *CustomerPortalService) GetSubscriptionWithResponse(ctx context.Context,
 }
 
 // GetSubscriptionCapabilities retrieve subscription capabilities
-// Read immediately before displaying lifecycle controls.
+// Read immediately before displaying lifecycle controls. Each of the nine actions (`pause`, `resume`, `cancel_at_period_end`, `cancel_immediately`, `keep_subscription`, `update_payment_method`, `change_plan`, `shift_billing_date`, and `set_auto_renew`) reports a status and the reason to show the customer when it is not available. While a Stripe, PayPal, or Razorpay subscription has a payment still owed, every action except `cancel_immediately` and, on Razorpay, `update_payment_method`, is `unsupported`. `resume` is `unsupported` on a subscription on hold for an unpaid renewal, which the customer pays and resumes on the store's customer portal page. The example is abbreviated to three of the actions.
 func (s *CustomerPortalService) GetSubscriptionCapabilities(ctx context.Context, subscription int, opts ...RequestOption) (*SdkGetCustomerPortalSubscriptionCapabilitiesResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("getCustomerPortalSubscriptionCapabilities", false)}, opts...)
 	var result SdkGetCustomerPortalSubscriptionCapabilitiesResponseValue200ApplicationJSON
@@ -225,19 +220,44 @@ func (s *CustomerPortalService) ListEntitlementsWithResponse(ctx context.Context
 
 // CustomerPortalCancelSubscriptionAtPeriodEndParams contains the parameters for CancelSubscriptionAtPeriodEnd.
 type CustomerPortalCancelSubscriptionAtPeriodEndParams struct {
-	PreviewID        *string `json:"preview_id,omitempty" url:"-"`
-	ProductVariantID *int    `json:"product_variant_id,omitempty" url:"-"`
-	RenewalDate      *string `json:"renewal_date,omitempty" url:"-"`
-	ReturnURL        *string `json:"return_url,omitempty" url:"-"`
-	Reason           *string `json:"reason,omitempty" url:"-"`
+	Reason *string `json:"reason,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for CustomerPortalCancelSubscriptionAtPeriodEndParams.
+func (p CustomerPortalCancelSubscriptionAtPeriodEndParams) MarshalJSON() ([]byte, error) {
+	type Alias CustomerPortalCancelSubscriptionAtPeriodEndParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"reason": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("CustomerPortalCancelSubscriptionAtPeriodEndParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
 }
 
 // CancelSubscriptionAtPeriodEnd cancel at period end
-// Cancel at period end. Read capabilities first; state conflicts return 409.
+// Schedule the subscription to end when the current period ends. The customer keeps access until then. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 func (s *CustomerPortalService) CancelSubscriptionAtPeriodEnd(ctx context.Context, productSubscription int, params *CustomerPortalCancelSubscriptionAtPeriodEndParams, opts ...RequestOption) (*SdkCancelCustomerSubscriptionAtPeriodEndResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("cancelCustomerSubscriptionAtPeriodEnd", true)}, opts...)
 	var result SdkCancelCustomerSubscriptionAtPeriodEndResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/cancel-period-end", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCancelCustomerSubscriptionAtPeriodEndRequestApplicationJson\",\"properties\":{\"preview_id\":{\"kind\":\"primitive\",\"type\":\"string\"},\"product_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"renewal_date\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date\"},\"return_url\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\"},\"reason\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/cancel-period-end", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCancelCustomerSubscriptionAtPeriodEndRequestApplicationJson\",\"properties\":{\"reason\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":500}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -256,19 +276,44 @@ func (s *CustomerPortalService) CancelSubscriptionAtPeriodEndWithResponse(ctx co
 
 // CustomerPortalCancelSubscriptionImmediatelyParams contains the parameters for CancelSubscriptionImmediately.
 type CustomerPortalCancelSubscriptionImmediatelyParams struct {
-	PreviewID        *string `json:"preview_id,omitempty" url:"-"`
-	ProductVariantID *int    `json:"product_variant_id,omitempty" url:"-"`
-	RenewalDate      *string `json:"renewal_date,omitempty" url:"-"`
-	ReturnURL        *string `json:"return_url,omitempty" url:"-"`
-	Reason           *string `json:"reason,omitempty" url:"-"`
+	Reason *string `json:"reason,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for CustomerPortalCancelSubscriptionImmediatelyParams.
+func (p CustomerPortalCancelSubscriptionImmediatelyParams) MarshalJSON() ([]byte, error) {
+	type Alias CustomerPortalCancelSubscriptionImmediatelyParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"reason": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("CustomerPortalCancelSubscriptionImmediatelyParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
 }
 
 // CancelSubscriptionImmediately cancel immediately
-// Cancel immediately. Read capabilities first; state conflicts return 409.
+// End the subscription now. A customer session cannot request a refund. It is the one action left on a Stripe or PayPal subscription with a payment still owed, and one of two left on a Razorpay one alongside a payment method update. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 func (s *CustomerPortalService) CancelSubscriptionImmediately(ctx context.Context, productSubscription int, params *CustomerPortalCancelSubscriptionImmediatelyParams, opts ...RequestOption) (*SdkCancelCustomerSubscriptionImmediatelyResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("cancelCustomerSubscriptionImmediately", true)}, opts...)
 	var result SdkCancelCustomerSubscriptionImmediatelyResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/cancel-immediately", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCancelCustomerSubscriptionImmediatelyRequestApplicationJson\",\"properties\":{\"preview_id\":{\"kind\":\"primitive\",\"type\":\"string\"},\"product_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"renewal_date\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date\"},\"return_url\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\"},\"reason\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/cancel-immediately", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCancelCustomerSubscriptionImmediatelyRequestApplicationJson\",\"properties\":{\"reason\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":500}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -287,19 +332,46 @@ func (s *CustomerPortalService) CancelSubscriptionImmediatelyWithResponse(ctx co
 
 // CustomerPortalPauseSubscriptionParams contains the parameters for PauseSubscription.
 type CustomerPortalPauseSubscriptionParams struct {
-	PreviewID        *string `json:"preview_id,omitempty" url:"-"`
-	ProductVariantID *int    `json:"product_variant_id,omitempty" url:"-"`
-	RenewalDate      *string `json:"renewal_date,omitempty" url:"-"`
-	ReturnURL        *string `json:"return_url,omitempty" url:"-"`
-	Reason           *string `json:"reason,omitempty" url:"-"`
+	ResumeAt *string `json:"resume_at,omitempty" url:"-"`
+	Reason   *string `json:"reason,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for CustomerPortalPauseSubscriptionParams.
+func (p CustomerPortalPauseSubscriptionParams) MarshalJSON() ([]byte, error) {
+	type Alias CustomerPortalPauseSubscriptionParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"resume_at": true,
+		"reason":    true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("CustomerPortalPauseSubscriptionParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
 }
 
 // PauseSubscription pause a subscription
-// Pause a subscription. Read capabilities first; state conflicts return 409.
+// Pause billing, optionally until `resume_at`. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 func (s *CustomerPortalService) PauseSubscription(ctx context.Context, productSubscription int, params *CustomerPortalPauseSubscriptionParams, opts ...RequestOption) (*SdkPauseCustomerSubscriptionResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("pauseCustomerSubscription", true)}, opts...)
 	var result SdkPauseCustomerSubscriptionResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/pause", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkPauseCustomerSubscriptionRequestApplicationJson\",\"properties\":{\"preview_id\":{\"kind\":\"primitive\",\"type\":\"string\"},\"product_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"renewal_date\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date\"},\"return_url\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\"},\"reason\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/pause", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkPauseCustomerSubscriptionRequestApplicationJson\",\"properties\":{\"resume_at\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"reason\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":500}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -316,31 +388,22 @@ func (s *CustomerPortalService) PauseSubscriptionWithResponse(ctx context.Contex
 	return rawResponse(value, metadata), nil
 }
 
-// CustomerPortalResumeSubscriptionParams contains the parameters for ResumeSubscription.
-type CustomerPortalResumeSubscriptionParams struct {
-	PreviewID        *string `json:"preview_id,omitempty" url:"-"`
-	ProductVariantID *int    `json:"product_variant_id,omitempty" url:"-"`
-	RenewalDate      *string `json:"renewal_date,omitempty" url:"-"`
-	ReturnURL        *string `json:"return_url,omitempty" url:"-"`
-	Reason           *string `json:"reason,omitempty" url:"-"`
-}
-
 // ResumeSubscription resume a subscription
-// Resume a subscription. Read capabilities first; state conflicts return 409.
-func (s *CustomerPortalService) ResumeSubscription(ctx context.Context, productSubscription int, params *CustomerPortalResumeSubscriptionParams, opts ...RequestOption) (*SdkResumeCustomerSubscriptionResponseValue200ApplicationJSON, error) {
+// Resume a paused subscription. A subscription the store bills in house that is on hold for an unpaid renewal comes back only when the customer pays that renewal on the store's customer portal page, so it is refused. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
+func (s *CustomerPortalService) ResumeSubscription(ctx context.Context, productSubscription int, opts ...RequestOption) (*SdkResumeCustomerSubscriptionResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("resumeCustomerSubscription", true)}, opts...)
 	var result SdkResumeCustomerSubscriptionResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/resume", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkResumeCustomerSubscriptionRequestApplicationJson\",\"properties\":{\"preview_id\":{\"kind\":\"primitive\",\"type\":\"string\"},\"product_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"renewal_date\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date\"},\"return_url\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\"},\"reason\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/resume", url.PathEscape(fmt.Sprint(productSubscription))), nil, nil, &result, opts)
 	if err != nil {
 		return nil, err
 	}
 	return &result, nil
 }
 
-func (s *CustomerPortalService) ResumeSubscriptionWithResponse(ctx context.Context, productSubscription int, params *CustomerPortalResumeSubscriptionParams, opts ...RequestOption) (*RawResponse[*SdkResumeCustomerSubscriptionResponseValue200ApplicationJSON], error) {
+func (s *CustomerPortalService) ResumeSubscriptionWithResponse(ctx context.Context, productSubscription int, opts ...RequestOption) (*RawResponse[*SdkResumeCustomerSubscriptionResponseValue200ApplicationJSON], error) {
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
-	value, err := s.ResumeSubscription(ctx, productSubscription, params, captureOpts...)
+	value, err := s.ResumeSubscription(ctx, productSubscription, captureOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -349,19 +412,44 @@ func (s *CustomerPortalService) ResumeSubscriptionWithResponse(ctx context.Conte
 
 // CustomerPortalUpdateSubscriptionPaymentMethodParams contains the parameters for UpdateSubscriptionPaymentMethod.
 type CustomerPortalUpdateSubscriptionPaymentMethodParams struct {
-	PreviewID        *string `json:"preview_id,omitempty" url:"-"`
-	ProductVariantID *int    `json:"product_variant_id,omitempty" url:"-"`
-	RenewalDate      *string `json:"renewal_date,omitempty" url:"-"`
-	ReturnURL        *string `json:"return_url,omitempty" url:"-"`
-	Reason           *string `json:"reason,omitempty" url:"-"`
+	ReturnURL *string `json:"return_url,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for CustomerPortalUpdateSubscriptionPaymentMethodParams.
+func (p CustomerPortalUpdateSubscriptionPaymentMethodParams) MarshalJSON() ([]byte, error) {
+	type Alias CustomerPortalUpdateSubscriptionPaymentMethodParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"return_url": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("CustomerPortalUpdateSubscriptionPaymentMethodParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
 }
 
 // UpdateSubscriptionPaymentMethod update payment method
-// Update payment method. Read capabilities first; state conflicts return 409.
+// Start a payment method update. Send the customer to `redirect_url` to finish it with the provider. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 func (s *CustomerPortalService) UpdateSubscriptionPaymentMethod(ctx context.Context, productSubscription int, params *CustomerPortalUpdateSubscriptionPaymentMethodParams, opts ...RequestOption) (*SdkUpdateCustomerSubscriptionPaymentMethodResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("updateCustomerSubscriptionPaymentMethod", true)}, opts...)
 	var result SdkUpdateCustomerSubscriptionPaymentMethodResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/update-payment-method", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateCustomerSubscriptionPaymentMethodRequestApplicationJson\",\"properties\":{\"preview_id\":{\"kind\":\"primitive\",\"type\":\"string\"},\"product_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"renewal_date\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date\"},\"return_url\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\"},\"reason\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/update-payment-method", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateCustomerSubscriptionPaymentMethodRequestApplicationJson\",\"properties\":{\"return_url\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\",\"constraints\":{\"maxLength\":2000}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -380,19 +468,18 @@ func (s *CustomerPortalService) UpdateSubscriptionPaymentMethodWithResponse(ctx 
 
 // CustomerPortalPreviewSubscriptionPlanChangeParams contains the parameters for PreviewSubscriptionPlanChange.
 type CustomerPortalPreviewSubscriptionPlanChangeParams struct {
-	PreviewID        *string `json:"preview_id,omitempty" url:"-"`
-	ProductVariantID *int    `json:"product_variant_id,omitempty" url:"-"`
-	RenewalDate      *string `json:"renewal_date,omitempty" url:"-"`
-	ReturnURL        *string `json:"return_url,omitempty" url:"-"`
-	Reason           *string `json:"reason,omitempty" url:"-"`
+	TargetVariantID   int                                                                              `json:"target_variant_id" url:"-"`
+	EffectiveTiming   *SdkPreviewCustomerSubscriptionPlanChangeRequestApplicationJSONEffectiveTiming   `json:"effective_timing,omitempty" url:"-"`
+	ProrationBehavior *SdkPreviewCustomerSubscriptionPlanChangeRequestApplicationJSONProrationBehavior `json:"proration_behavior,omitempty" url:"-"`
+	Metadata          *PreviewCustomerSubscriptionPlanChangeRequestApplicationJSONPropertyMetadata     `json:"metadata,omitempty" url:"-"`
 }
 
 // PreviewSubscriptionPlanChange preview a plan change
-// Preview a plan change. Read capabilities first; state conflicts return 409.
+// Preview a plan change before confirming it. On Stripe and in-house subscriptions, `preview.payment_required` says whether confirming charges `amount_due` today or leaves any amount to the next invoice, and `preview.renewal_date` says when the subscription renews next. A plan change during a trial never charges today. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 func (s *CustomerPortalService) PreviewSubscriptionPlanChange(ctx context.Context, productSubscription int, params *CustomerPortalPreviewSubscriptionPlanChangeParams, opts ...RequestOption) (*SdkPreviewCustomerSubscriptionPlanChangeResponseValue200ApplicationJSON, error) {
-	opts = append([]RequestOption{withOperation("previewCustomerSubscriptionPlanChange", true)}, opts...)
+	opts = append([]RequestOption{withOperation("previewCustomerSubscriptionPlanChange", false)}, opts...)
 	var result SdkPreviewCustomerSubscriptionPlanChangeResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/change-plan/preview", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkPreviewCustomerSubscriptionPlanChangeRequestApplicationJson\",\"properties\":{\"preview_id\":{\"kind\":\"primitive\",\"type\":\"string\"},\"product_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"renewal_date\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date\"},\"return_url\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\"},\"reason\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/change-plan/preview", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkPreviewCustomerSubscriptionPlanChangeRequestApplicationJson\",\"properties\":{\"target_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"effective_timing\":{\"kind\":\"enum\",\"values\":[\"immediate\",\"next_renewal\"]},\"proration_behavior\":{\"kind\":\"enum\",\"values\":[\"invoice_now\",\"credit_next_invoice\",\"none\",\"provider_default\"]},\"metadata\":{\"kind\":\"object\",\"modelName\":\"PreviewCustomerSubscriptionPlanChangeRequestApplicationJsonPropertyMetadata\",\"properties\":{},\"required\":[],\"additionalProperties\":true}},\"required\":[\"target_variant_id\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -411,19 +498,19 @@ func (s *CustomerPortalService) PreviewSubscriptionPlanChangeWithResponse(ctx co
 
 // CustomerPortalConfirmSubscriptionPlanChangeParams contains the parameters for ConfirmSubscriptionPlanChange.
 type CustomerPortalConfirmSubscriptionPlanChangeParams struct {
-	PreviewID        *string `json:"preview_id,omitempty" url:"-"`
-	ProductVariantID *int    `json:"product_variant_id,omitempty" url:"-"`
-	RenewalDate      *string `json:"renewal_date,omitempty" url:"-"`
-	ReturnURL        *string `json:"return_url,omitempty" url:"-"`
-	Reason           *string `json:"reason,omitempty" url:"-"`
+	TargetVariantID   int                                                                              `json:"target_variant_id" url:"-"`
+	PreviewToken      string                                                                           `json:"preview_token" url:"-"`
+	EffectiveTiming   *SdkConfirmCustomerSubscriptionPlanChangeRequestApplicationJSONEffectiveTiming   `json:"effective_timing,omitempty" url:"-"`
+	ProrationBehavior *SdkConfirmCustomerSubscriptionPlanChangeRequestApplicationJSONProrationBehavior `json:"proration_behavior,omitempty" url:"-"`
+	Metadata          *ConfirmCustomerSubscriptionPlanChangeRequestApplicationJSONPropertyMetadata     `json:"metadata,omitempty" url:"-"`
 }
 
 // ConfirmSubscriptionPlanChange confirm a plan change
-// Confirm a plan change. Read capabilities first; state conflicts return 409.
+// Confirm a previewed plan change, sending back its `preview_token`. When the change still needs the customer to approve it with the provider or pay for it, the action is `pending` and `redirect_url` says where. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 func (s *CustomerPortalService) ConfirmSubscriptionPlanChange(ctx context.Context, productSubscription int, params *CustomerPortalConfirmSubscriptionPlanChangeParams, opts ...RequestOption) (*SdkConfirmCustomerSubscriptionPlanChangeResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("confirmCustomerSubscriptionPlanChange", true)}, opts...)
 	var result SdkConfirmCustomerSubscriptionPlanChangeResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/change-plan/confirm", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkConfirmCustomerSubscriptionPlanChangeRequestApplicationJson\",\"properties\":{\"preview_id\":{\"kind\":\"primitive\",\"type\":\"string\"},\"product_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"renewal_date\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date\"},\"return_url\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\"},\"reason\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/change-plan/confirm", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkConfirmCustomerSubscriptionPlanChangeRequestApplicationJson\",\"properties\":{\"target_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"preview_token\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}},\"effective_timing\":{\"kind\":\"enum\",\"values\":[\"immediate\",\"next_renewal\"]},\"proration_behavior\":{\"kind\":\"enum\",\"values\":[\"invoice_now\",\"credit_next_invoice\",\"none\",\"provider_default\"]},\"metadata\":{\"kind\":\"object\",\"modelName\":\"ConfirmCustomerSubscriptionPlanChangeRequestApplicationJsonPropertyMetadata\",\"properties\":{},\"required\":[],\"additionalProperties\":true}},\"required\":[\"target_variant_id\",\"preview_token\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -442,19 +529,46 @@ func (s *CustomerPortalService) ConfirmSubscriptionPlanChangeWithResponse(ctx co
 
 // CustomerPortalPreviewSubscriptionRenewalDateChangeParams contains the parameters for PreviewSubscriptionRenewalDateChange.
 type CustomerPortalPreviewSubscriptionRenewalDateChangeParams struct {
-	PreviewID        *string `json:"preview_id,omitempty" url:"-"`
-	ProductVariantID *int    `json:"product_variant_id,omitempty" url:"-"`
-	RenewalDate      *string `json:"renewal_date,omitempty" url:"-"`
-	ReturnURL        *string `json:"return_url,omitempty" url:"-"`
-	Reason           *string `json:"reason,omitempty" url:"-"`
+	RenewalDate string                                                                              `json:"renewal_date" url:"-"`
+	Reason      *string                                                                             `json:"reason,omitempty" url:"-"`
+	Metadata    *PreviewCustomerSubscriptionRenewalDateChangeRequestApplicationJSONPropertyMetadata `json:"metadata,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for CustomerPortalPreviewSubscriptionRenewalDateChangeParams.
+func (p CustomerPortalPreviewSubscriptionRenewalDateChangeParams) MarshalJSON() ([]byte, error) {
+	type Alias CustomerPortalPreviewSubscriptionRenewalDateChangeParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"reason": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("CustomerPortalPreviewSubscriptionRenewalDateChangeParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
 }
 
 // PreviewSubscriptionRenewalDateChange preview a renewal-date change
-// Preview a renewal-date change. Read capabilities first; state conflicts return 409.
+// Preview moving the next renewal to `renewal_date`. `preview` is the provider's own preview, so its keys differ per provider. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 func (s *CustomerPortalService) PreviewSubscriptionRenewalDateChange(ctx context.Context, productSubscription int, params *CustomerPortalPreviewSubscriptionRenewalDateChangeParams, opts ...RequestOption) (*SdkPreviewCustomerSubscriptionRenewalDateChangeResponseValue200ApplicationJSON, error) {
-	opts = append([]RequestOption{withOperation("previewCustomerSubscriptionRenewalDateChange", true)}, opts...)
+	opts = append([]RequestOption{withOperation("previewCustomerSubscriptionRenewalDateChange", false)}, opts...)
 	var result SdkPreviewCustomerSubscriptionRenewalDateChangeResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/change-renewal-date/preview", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkPreviewCustomerSubscriptionRenewalDateChangeRequestApplicationJson\",\"properties\":{\"preview_id\":{\"kind\":\"primitive\",\"type\":\"string\"},\"product_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"renewal_date\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date\"},\"return_url\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\"},\"reason\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/change-renewal-date/preview", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkPreviewCustomerSubscriptionRenewalDateChangeRequestApplicationJson\",\"properties\":{\"renewal_date\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"},\"reason\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":500}}},\"metadata\":{\"kind\":\"object\",\"modelName\":\"PreviewCustomerSubscriptionRenewalDateChangeRequestApplicationJsonPropertyMetadata\",\"properties\":{},\"required\":[],\"additionalProperties\":true}},\"required\":[\"renewal_date\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -473,19 +587,48 @@ func (s *CustomerPortalService) PreviewSubscriptionRenewalDateChangeWithResponse
 
 // CustomerPortalConfirmSubscriptionRenewalDateChangeParams contains the parameters for ConfirmSubscriptionRenewalDateChange.
 type CustomerPortalConfirmSubscriptionRenewalDateChangeParams struct {
-	PreviewID        *string `json:"preview_id,omitempty" url:"-"`
-	ProductVariantID *int    `json:"product_variant_id,omitempty" url:"-"`
-	RenewalDate      *string `json:"renewal_date,omitempty" url:"-"`
-	ReturnURL        *string `json:"return_url,omitempty" url:"-"`
-	Reason           *string `json:"reason,omitempty" url:"-"`
+	RenewalDate  string                                                                              `json:"renewal_date" url:"-"`
+	PreviewToken *string                                                                             `json:"preview_token,omitempty" url:"-"`
+	Reason       *string                                                                             `json:"reason,omitempty" url:"-"`
+	Metadata     *ConfirmCustomerSubscriptionRenewalDateChangeRequestApplicationJSONPropertyMetadata `json:"metadata,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for CustomerPortalConfirmSubscriptionRenewalDateChangeParams.
+func (p CustomerPortalConfirmSubscriptionRenewalDateChangeParams) MarshalJSON() ([]byte, error) {
+	type Alias CustomerPortalConfirmSubscriptionRenewalDateChangeParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"preview_token": true,
+		"reason":        true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("CustomerPortalConfirmSubscriptionRenewalDateChangeParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
 }
 
 // ConfirmSubscriptionRenewalDateChange confirm a renewal-date change
-// Confirm a renewal-date change. Read capabilities first; state conflicts return 409.
+// Confirm a renewal-date change, sending the `preview_token` when the plan requires a preview. Read capabilities first. A refusal returns 422 with the sentence to show the customer under `errors.subscription`.
 func (s *CustomerPortalService) ConfirmSubscriptionRenewalDateChange(ctx context.Context, productSubscription int, params *CustomerPortalConfirmSubscriptionRenewalDateChangeParams, opts ...RequestOption) (*SdkConfirmCustomerSubscriptionRenewalDateChangeResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("confirmCustomerSubscriptionRenewalDateChange", true)}, opts...)
 	var result SdkConfirmCustomerSubscriptionRenewalDateChangeResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/change-renewal-date/confirm", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkConfirmCustomerSubscriptionRenewalDateChangeRequestApplicationJson\",\"properties\":{\"preview_id\":{\"kind\":\"primitive\",\"type\":\"string\"},\"product_variant_id\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"renewal_date\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date\"},\"return_url\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\"},\"reason\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/customer-portal/subscriptions/%s/actions/change-renewal-date/confirm", url.PathEscape(fmt.Sprint(productSubscription))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkConfirmCustomerSubscriptionRenewalDateChangeRequestApplicationJson\",\"properties\":{\"renewal_date\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"},\"preview_token\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}}},\"reason\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":500}}},\"metadata\":{\"kind\":\"object\",\"modelName\":\"ConfirmCustomerSubscriptionRenewalDateChangeRequestApplicationJsonPropertyMetadata\",\"properties\":{},\"required\":[],\"additionalProperties\":true}},\"required\":[\"renewal_date\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}

@@ -139,13 +139,15 @@ sellapp coupons create --body '{"code":"PLAN10","type":"PERCENTAGE","discount":1
 | --- | --- | --- |
 | --code | Yes | Value for code. |
 | --type | Yes | Value for type. |
-| --discount | Yes | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. |
+| --discount | Yes | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead. |
 | --store-wide | Yes | Value for store wide. |
-| --products | No | Product IDs the coupon applies to when store_wide is false. |
-| --product-variants | No | Optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants. |
+| --products | No | Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`. |
+| --product-variants | No | Optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`. |
 | --limit | No | Value for limit. |
 | --expires-at | No | A future date and time, or null for no expiry. |
-| --minimum-amount | No | A decimal minimum order amount in the store currency's major unit, or null for no minimum. |
+| --minimum-amount | No | A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum. |
+| --applies-to | No | What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind. |
+| --subscription-payments | No | How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here. |
 
 The request body is required.
 
@@ -313,13 +315,15 @@ sellapp coupons replace 1 --body '{"store_wide":false,"products":[123],"product_
 | --only-trashed | No | Return only soft-deleted resources. Ignored when with_trashed is true. |
 | --code | No | Value for code. |
 | --type | No | Value for type. |
-| --discount | No | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. |
+| --discount | No | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead. |
 | --store-wide | No | Value for store wide. |
-| --products | No | Product IDs the coupon applies to when store_wide is false. |
-| --product-variants | No | Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. |
+| --products | No | Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`. |
+| --product-variants | No | Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`. |
 | --limit | No | Value for limit. |
 | --expires-at | No | A future date and time, or null for no expiry. |
-| --minimum-amount | No | A decimal minimum order amount in the store currency's major unit, or null for no minimum. |
+| --minimum-amount | No | A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum. |
+| --applies-to | No | What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind. |
+| --subscription-payments | No | How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here. |
 
 The request body is required.
 
@@ -407,13 +411,15 @@ sellapp coupons update 1 --body '{"store_wide":false,"products":[123],"product_v
 | --only-trashed | No | Return only soft-deleted resources. Ignored when with_trashed is true. |
 | --code | No | Value for code. |
 | --type | No | Value for type. |
-| --discount | No | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. |
+| --discount | No | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead. |
 | --store-wide | No | Value for store wide. |
-| --products | No | Product IDs the coupon applies to when store_wide is false. |
-| --product-variants | No | Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. |
+| --products | No | Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`. |
+| --product-variants | No | Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`. |
 | --limit | No | Value for limit. |
 | --expires-at | No | A future date and time, or null for no expiry. |
-| --minimum-amount | No | A decimal minimum order amount in the store currency's major unit, or null for no minimum. |
+| --minimum-amount | No | A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum. |
+| --applies-to | No | What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind. |
+| --subscription-payments | No | How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here. |
 
 The request body is required.
 
@@ -599,13 +605,15 @@ sellapp coupons v-2-create-coupon --body '{"code":"PLAN10","type":"PERCENTAGE","
 | --- | --- | --- |
 | --code | Yes | Value for code. |
 | --type | Yes | Value for type. |
-| --discount | Yes | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. |
+| --discount | Yes | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead. |
 | --store-wide | Yes | Value for store wide. |
-| --products | No | Product IDs the coupon applies to when store_wide is false. |
-| --product-variants | No | Optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants. |
+| --products | No | Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`. |
+| --product-variants | No | Optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`. |
 | --limit | No | Value for limit. |
 | --expires-at | No | A future date and time, or null for no expiry. |
-| --minimum-amount | No | A decimal minimum order amount in the store currency's major unit, or null for no minimum. |
+| --minimum-amount | No | A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum. |
+| --applies-to | No | What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind. |
+| --subscription-payments | No | How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here. |
 
 The request body is required.
 
@@ -805,13 +813,15 @@ sellapp coupons v-2-replace-coupon 1 --body '{"store_wide":false,"products":[123
 | --only-trashed | No | Return only soft-deleted resources. Ignored when with_trashed is true. |
 | --code | No | Value for code. |
 | --type | No | Value for type. |
-| --discount | No | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. |
+| --discount | No | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead. |
 | --store-wide | No | Value for store wide. |
-| --products | No | Product IDs the coupon applies to when store_wide is false. |
-| --product-variants | No | Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. |
+| --products | No | Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`. |
+| --product-variants | No | Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`. |
 | --limit | No | Value for limit. |
 | --expires-at | No | A future date and time, or null for no expiry. |
-| --minimum-amount | No | A decimal minimum order amount in the store currency's major unit, or null for no minimum. |
+| --minimum-amount | No | A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum. |
+| --applies-to | No | What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind. |
+| --subscription-payments | No | How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here. |
 
 The request body is required.
 
@@ -915,13 +925,15 @@ sellapp coupons v-2-update-coupon 1 --body '{"store_wide":false,"products":[123]
 | --only-trashed | No | Return only soft-deleted resources. Ignored when with_trashed is true. |
 | --code | No | Value for code. |
 | --type | No | Value for type. |
-| --discount | No | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. |
+| --discount | No | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead. |
 | --store-wide | No | Value for store wide. |
-| --products | No | Product IDs the coupon applies to when store_wide is false. |
-| --product-variants | No | Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. |
+| --products | No | Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`. |
+| --product-variants | No | Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`. |
 | --limit | No | Value for limit. |
 | --expires-at | No | A future date and time, or null for no expiry. |
-| --minimum-amount | No | A decimal minimum order amount in the store currency's major unit, or null for no minimum. |
+| --minimum-amount | No | A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum. |
+| --applies-to | No | What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind. |
+| --subscription-payments | No | How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here. |
 
 The request body is required.
 

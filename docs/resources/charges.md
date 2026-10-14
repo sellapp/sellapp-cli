@@ -31,7 +31,7 @@ sellapp charges create --email 'sofia.rivera@example.com' --return-url https://e
 | --use-all-payment-methods | No | Value for use all payment methods. |
 | --deliverable | No | Value for deliverable. |
 | --metadata | No | Value for metadata. |
-| --coupon-code | No | Value for coupon code. |
+| --coupon-code | No | Optional coupon code. A charge takes a store-wide coupon for one-time purchases only: a coupon whose `applies_to` is `subscriptions` returns `422` with `Coupon code {code} only applies to subscriptions.` |
 
 The request body is required.
 
