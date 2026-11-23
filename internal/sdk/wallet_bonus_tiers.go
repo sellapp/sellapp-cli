@@ -15,7 +15,7 @@ type WalletBonusTierService struct {
 }
 
 // List wallet bonus tiers
-// List current and archived store records. Requires the `wallet` or `wallet:write` API ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List current and archived store records. Requires the `wallet` or `wallet:write` API-key ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WalletBonusTierService) List(ctx context.Context, opts ...RequestOption) (*SdkListWalletBonusTiersResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("listWalletBonusTiers", false)}, opts...)
 	var result SdkListWalletBonusTiersResponseValue200ApplicationJSON
@@ -48,7 +48,7 @@ type WalletBonusTiersCreateParams struct {
 }
 
 // Create a wallet bonus tier
-// Create a wallet bonus tier. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Create a wallet bonus tier. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WalletBonusTierService) Create(ctx context.Context, params *WalletBonusTiersCreateParams, opts ...RequestOption) (*SdkCreateWalletBonusTierResponseValue201ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("createWalletBonusTier", false)}, opts...)
 	var result SdkCreateWalletBonusTierResponseValue201ApplicationJSON
@@ -81,7 +81,7 @@ type WalletBonusTiersReplaceParams struct {
 }
 
 // Replace update a wallet bonus tier
-// Update a wallet bonus tier. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Update a wallet bonus tier. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WalletBonusTierService) Replace(ctx context.Context, bonusTier int, params *WalletBonusTiersReplaceParams, opts ...RequestOption) (*SdkReplaceWalletBonusTierResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("replaceWalletBonusTier", false)}, opts...)
 	var result SdkReplaceWalletBonusTierResponseValue200ApplicationJSON
@@ -145,7 +145,7 @@ func (p WalletBonusTiersUpdateParams) MarshalJSON() ([]byte, error) {
 }
 
 // Update a wallet bonus tier
-// Update a wallet bonus tier. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Update a wallet bonus tier. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WalletBonusTierService) Update(ctx context.Context, bonusTier int, params *WalletBonusTiersUpdateParams, opts ...RequestOption) (*SdkUpdateWalletBonusTierResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("updateWalletBonusTier", false)}, opts...)
 	var result SdkUpdateWalletBonusTierResponseValue200ApplicationJSON
@@ -167,7 +167,7 @@ func (s *WalletBonusTierService) UpdateWithResponse(ctx context.Context, bonusTi
 }
 
 // Archive a wallet bonus tier
-// Archive a wallet bonus tier. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Archive a wallet bonus tier. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WalletBonusTierService) Archive(ctx context.Context, bonusTier int, opts ...RequestOption) error {
 	opts = append([]RequestOption{withOperation("archiveWalletBonusTier", false)}, opts...)
 	_, err := s.client.request(ctx, "DELETE", fmt.Sprintf("/v2/wallet-bonus-tiers/%s", url.PathEscape(fmt.Sprint(bonusTier))), nil, nil, nil, opts)
@@ -184,7 +184,7 @@ func (s *WalletBonusTierService) ArchiveWithResponse(ctx context.Context, bonusT
 }
 
 // Restore a wallet bonus tier
-// Restore a wallet bonus tier. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Restore a wallet bonus tier. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WalletBonusTierService) Restore(ctx context.Context, bonusTier int, opts ...RequestOption) (*SdkRestoreWalletBonusTierResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("restoreWalletBonusTier", false)}, opts...)
 	var result SdkRestoreWalletBonusTierResponseValue200ApplicationJSON
@@ -199,6 +199,34 @@ func (s *WalletBonusTierService) RestoreWithResponse(ctx context.Context, bonusT
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
 	value, err := s.Restore(ctx, bonusTier, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// WalletBonusTiersQuoteParams contains the parameters for Quote.
+type WalletBonusTiersQuoteParams struct {
+	// TopUpCents is the top-up amount to quote, in integer USD cents.
+	TopUpCents int `url:"top_up_cents" json:"-"`
+}
+
+// Quote a wallet bonus tier
+// See which bonus tier a top-up of a given amount would earn right now, and how much bonus it would add, without creating anything. Amounts are integer USD cents: `top_up_cents=20000` asks about a $200.00 top-up. Requires the `wallet` or `wallet:write` API-key ability and the wallet permission in your team role. A missing amount, `0`, or an amount above 999999999999 returns `422` on `top_up_cents`. Only your store's active tiers are considered. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *WalletBonusTierService) Quote(ctx context.Context, params *WalletBonusTiersQuoteParams, opts ...RequestOption) (*SdkQuoteWalletBonusTierResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("quoteWalletBonusTier", false)}, opts...)
+	var result SdkQuoteWalletBonusTierResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", "/v2/wallet-bonus-tiers/quote", params, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *WalletBonusTierService) QuoteWithResponse(ctx context.Context, params *WalletBonusTiersQuoteParams, opts ...RequestOption) (*RawResponse[*SdkQuoteWalletBonusTierResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Quote(ctx, params, captureOpts...)
 	if err != nil {
 		return nil, err
 	}

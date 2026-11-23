@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "apiVersion": "2026-08-30",
-  "operationCount": 438,
-  "executableCount": 438,
-  "embeddedSdkSha256": "48e58971a38037d64c4705bd507840c27c161fab0071eef988292250ec945736"
+  "operationCount": 548,
+  "executableCount": 548,
+  "embeddedSdkSha256": "5e2651060018c2b77591e235463277fa0af92d8dd48214c92fbc06d9eb60f840"
 }

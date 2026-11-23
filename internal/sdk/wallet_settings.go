@@ -12,7 +12,7 @@ type WalletSettingService struct {
 }
 
 // Get retrieve wallet settings
-// Retrieve wallet settings for the authenticated store. Requires the `wallet` or `wallet:write` API ability. Payment methods are returned as their effective configurable values when no explicit restriction is stored. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Retrieve wallet settings for the authenticated store. Requires the `wallet` or `wallet:write` API-key ability. Payment methods are returned as their effective configurable values when no explicit restriction is stored. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WalletSettingService) Get(ctx context.Context, opts ...RequestOption) (*SdkGetWalletSettingsResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("getWalletSettings", false)}, opts...)
 	var result SdkGetWalletSettingsResponseValue200ApplicationJSON
@@ -44,7 +44,7 @@ type WalletSettingsReplaceParams struct {
 }
 
 // Replace update wallet settings
-// Update wallet settings. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Update wallet settings. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WalletSettingService) Replace(ctx context.Context, params *WalletSettingsReplaceParams, opts ...RequestOption) (*SdkReplaceWalletSettingsResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("replaceWalletSettings", false)}, opts...)
 	var result SdkReplaceWalletSettingsResponseValue200ApplicationJSON

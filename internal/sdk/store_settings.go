@@ -340,3 +340,683 @@ func (s *StoreSettingService) UpdateMarketingWithResponse(ctx context.Context, p
 	}
 	return rawResponse(value, metadata), nil
 }
+
+// GetCheckout retrieve checkout settings
+// Get your store's checkout settings: the shopping cart, whether checkout asks for an email, fraud controls, the minimum order total, the billing descriptor, the checkout rate limits, and the crypto checkout values when the store takes crypto through SellApp's crypto processor. The response body can be sent back to `PUT /v2/store/settings/checkout` unchanged. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) GetCheckout(ctx context.Context, opts ...RequestOption) (*SdkGetCheckoutSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("getCheckoutSettings", false)}, opts...)
+	var result SdkGetCheckoutSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", "/v2/store/settings/checkout", nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) GetCheckoutWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*SdkGetCheckoutSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.GetCheckout(ctx, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// StoreSettingsReplaceCheckoutParams contains the parameters for ReplaceCheckout.
+type StoreSettingsReplaceCheckoutParams struct {
+	// ShoppingCartEnabled is whether customers can add several products to a cart and buy them in one checkout. `false` turns the storefront cart off.
+	ShoppingCartEnabled bool `json:"shopping_cart_enabled" url:"-"`
+	// CustomerEmailRequired is whether checkout asks customers for an email address. With `false`, checkout does not ask, and delivery and payment emails cannot reach a customer who left none.
+	CustomerEmailRequired bool `json:"customer_email_required" url:"-"`
+	// AllowVpnPurchases is whether customers who use a VPN or a proxy can buy.
+	AllowVpnPurchases bool `json:"allow_vpn_purchases" url:"-"`
+	// BlacklistOnDispute is whether a customer's email address and IP address are added to your blacklist when they open a payment dispute.
+	BlacklistOnDispute bool `json:"blacklist_on_dispute" url:"-"`
+	// MinimumSpend is the smallest order total, VAT included, that customers can check out with, as a decimal string in the order's currency: `"12.50"` on a USD order means $12.50. At least `1`; digits with an optional decimal part, no sign or exponent. Send `null` or `"0"` to remove the minimum; it then reads `null`.
+	MinimumSpend *string `json:"minimum_spend" url:"-"`
+	// BillingDescriptor is the purchase name customers see while they check out, up to 20 characters. `null` uses the default, `SellApp Order`.
+	BillingDescriptor *string `json:"billing_descriptor" url:"-"`
+	// AttemptsPerCustomer is how many checkout attempts one customer can make within the window, counted per IP address and email pair, or per checkout session fingerprint when checkout does not ask for an email. 1 to 100000; the default is `5`. This limit cannot be removed.
+	AttemptsPerCustomer int `json:"attempts_per_customer" url:"-"`
+	// AttemptsPerIP is how many checkout attempts can come from one IP address within the window. 1 to 100000; `null` turns this limit off.
+	AttemptsPerIP *int `json:"attempts_per_ip" url:"-"`
+	// AttemptsPerEmail is how many checkout attempts can use one customer email address within the window. 1 to 100000; `null` turns this limit off.
+	AttemptsPerEmail *int `json:"attempts_per_email" url:"-"`
+	// AttemptsPerFingerprint is how many checkout attempts can come from one checkout session fingerprint (a browser identifier) within the window. 1 to 100000; `null` turns this limit off.
+	AttemptsPerFingerprint *int `json:"attempts_per_fingerprint" url:"-"`
+	// RateLimitWindowSeconds is how long each checkout limit counts attempts before allowing them again, in seconds: 60 (one minute) to 604800 (seven days). The default is `3600` (one hour). Attempts are counted per store.
+	RateLimitWindowSeconds int                                                          `json:"rate_limit_window_seconds" url:"-"`
+	Crypto                 *ReplaceCheckoutSettingsRequestApplicationJSONPropertyCrypto `json:"crypto,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for StoreSettingsReplaceCheckoutParams.
+func (p StoreSettingsReplaceCheckoutParams) MarshalJSON() ([]byte, error) {
+	type Alias StoreSettingsReplaceCheckoutParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"crypto": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("StoreSettingsReplaceCheckoutParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
+}
+
+// ReplaceCheckout update checkout settings
+// Replace all eleven checkout settings. Every field except `crypto` is required; send `null` to remove a nullable one. A missing field returns `422` and nothing is saved. The body of `GET /v2/store/settings/checkout`, including `crypto`, can be sent back unchanged. Sending the same body again is safe. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) ReplaceCheckout(ctx context.Context, params *StoreSettingsReplaceCheckoutParams, opts ...RequestOption) (*SdkReplaceCheckoutSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("replaceCheckoutSettings", false)}, opts...)
+	var result SdkReplaceCheckoutSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PUT", "/v2/store/settings/checkout", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReplaceCheckoutSettingsRequestApplicationJson\",\"properties\":{\"shopping_cart_enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"customer_email_required\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"allow_vpn_purchases\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"blacklist_on_dispute\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"minimum_spend\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"pattern\":\"^\\\\d+(\\\\.\\\\d+)?$\"}}},\"billing_descriptor\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":20}}},\"attempts_per_customer\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":100000}},\"attempts_per_ip\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":100000}}},\"attempts_per_email\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":100000}}},\"attempts_per_fingerprint\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":100000}}},\"rate_limit_window_seconds\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":60,\"maximum\":604800}},\"crypto\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"object\",\"modelName\":\"ReplaceCheckoutSettingsRequestApplicationJsonPropertyCrypto\",\"properties\":{\"underpaid_percentage\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":100}},\"minimum_confirmations\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":25}}},\"required\":[\"underpaid_percentage\",\"minimum_confirmations\"],\"additionalProperties\":true}}},\"required\":[\"shopping_cart_enabled\",\"customer_email_required\",\"allow_vpn_purchases\",\"blacklist_on_dispute\",\"minimum_spend\",\"billing_descriptor\",\"attempts_per_customer\",\"attempts_per_ip\",\"attempts_per_email\",\"attempts_per_fingerprint\",\"rate_limit_window_seconds\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) ReplaceCheckoutWithResponse(ctx context.Context, params *StoreSettingsReplaceCheckoutParams, opts ...RequestOption) (*RawResponse[*SdkReplaceCheckoutSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.ReplaceCheckout(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// StoreSettingsUpdateCheckoutParams contains the parameters for UpdateCheckout.
+type StoreSettingsUpdateCheckoutParams struct {
+	// ShoppingCartEnabled is whether customers can add several products to a cart and buy them in one checkout. `false` turns the storefront cart off.
+	ShoppingCartEnabled *bool `json:"shopping_cart_enabled,omitempty" url:"-"`
+	// CustomerEmailRequired is whether checkout asks customers for an email address. With `false`, checkout does not ask, and delivery and payment emails cannot reach a customer who left none.
+	CustomerEmailRequired *bool `json:"customer_email_required,omitempty" url:"-"`
+	// AllowVpnPurchases is whether customers who use a VPN or a proxy can buy.
+	AllowVpnPurchases *bool `json:"allow_vpn_purchases,omitempty" url:"-"`
+	// BlacklistOnDispute is whether a customer's email address and IP address are added to your blacklist when they open a payment dispute.
+	BlacklistOnDispute *bool `json:"blacklist_on_dispute,omitempty" url:"-"`
+	// MinimumSpend is the smallest order total, VAT included, that customers can check out with, as a decimal string in the order's currency: `"12.50"` on a USD order means $12.50. At least `1`; digits with an optional decimal part, no sign or exponent. Send `null` or `"0"` to remove the minimum; it then reads `null`.
+	MinimumSpend *string `json:"minimum_spend,omitempty" url:"-"`
+	// BillingDescriptor is the purchase name customers see while they check out, up to 20 characters. `null` uses the default, `SellApp Order`.
+	BillingDescriptor *string `json:"billing_descriptor,omitempty" url:"-"`
+	// AttemptsPerCustomer is how many checkout attempts one customer can make within the window, counted per IP address and email pair, or per checkout session fingerprint when checkout does not ask for an email. 1 to 100000; the default is `5`. This limit cannot be removed.
+	AttemptsPerCustomer *int `json:"attempts_per_customer,omitempty" url:"-"`
+	// AttemptsPerIP is how many checkout attempts can come from one IP address within the window. 1 to 100000; `null` turns this limit off.
+	AttemptsPerIP *int `json:"attempts_per_ip,omitempty" url:"-"`
+	// AttemptsPerEmail is how many checkout attempts can use one customer email address within the window. 1 to 100000; `null` turns this limit off.
+	AttemptsPerEmail *int `json:"attempts_per_email,omitempty" url:"-"`
+	// AttemptsPerFingerprint is how many checkout attempts can come from one checkout session fingerprint (a browser identifier) within the window. 1 to 100000; `null` turns this limit off.
+	AttemptsPerFingerprint *int `json:"attempts_per_fingerprint,omitempty" url:"-"`
+	// RateLimitWindowSeconds is how long each checkout limit counts attempts before allowing them again, in seconds: 60 (one minute) to 604800 (seven days). The default is `3600` (one hour). Attempts are counted per store.
+	RateLimitWindowSeconds *int                                                        `json:"rate_limit_window_seconds,omitempty" url:"-"`
+	Crypto                 *UpdateCheckoutSettingsRequestApplicationJSONPropertyCrypto `json:"crypto,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for StoreSettingsUpdateCheckoutParams.
+func (p StoreSettingsUpdateCheckoutParams) MarshalJSON() ([]byte, error) {
+	type Alias StoreSettingsUpdateCheckoutParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"minimum_spend":            true,
+		"billing_descriptor":       true,
+		"attempts_per_ip":          true,
+		"attempts_per_email":       true,
+		"attempts_per_fingerprint": true,
+		"crypto":                   true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("StoreSettingsUpdateCheckoutParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
+}
+
+// UpdateCheckout settings
+// Change only the checkout settings you send and keep the others, including one someone else saved while your request was in flight. Send `null` to remove `minimum_spend`, `billing_descriptor`, `attempts_per_ip`, `attempts_per_email` or `attempts_per_fingerprint`. `crypto` is read-only here; change it with `PATCH /v2/store/settings/checkout/crypto`. A refused value returns `422` on the field name of this endpoint, such as `rate_limit_window_seconds`, and nothing is saved. Sending the same change again is safe. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) UpdateCheckout(ctx context.Context, params *StoreSettingsUpdateCheckoutParams, opts ...RequestOption) (*SdkUpdateCheckoutSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("updateCheckoutSettings", false)}, opts...)
+	var result SdkUpdateCheckoutSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PATCH", "/v2/store/settings/checkout", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateCheckoutSettingsRequestApplicationJson\",\"properties\":{\"shopping_cart_enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"customer_email_required\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"allow_vpn_purchases\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"blacklist_on_dispute\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"minimum_spend\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"pattern\":\"^\\\\d+(\\\\.\\\\d+)?$\"}}},\"billing_descriptor\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":20}}},\"attempts_per_customer\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":100000}},\"attempts_per_ip\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":100000}}},\"attempts_per_email\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":100000}}},\"attempts_per_fingerprint\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":100000}}},\"rate_limit_window_seconds\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":60,\"maximum\":604800}},\"crypto\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"object\",\"modelName\":\"UpdateCheckoutSettingsRequestApplicationJsonPropertyCrypto\",\"properties\":{\"underpaid_percentage\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":100}},\"minimum_confirmations\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":25}}},\"required\":[\"underpaid_percentage\",\"minimum_confirmations\"],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) UpdateCheckoutWithResponse(ctx context.Context, params *StoreSettingsUpdateCheckoutParams, opts ...RequestOption) (*RawResponse[*SdkUpdateCheckoutSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.UpdateCheckout(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// GetTaxes retrieve tax settings
+// Get whether checkout collects VAT, whether your prices include it, and whether checkout asks for billing details. The response body can be sent back to `PUT /v2/store/settings/taxes` unchanged. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) GetTaxes(ctx context.Context, opts ...RequestOption) (*SdkGetTaxSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("getTaxSettings", false)}, opts...)
+	var result SdkGetTaxSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", "/v2/store/settings/taxes", nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) GetTaxesWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*SdkGetTaxSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.GetTaxes(ctx, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// StoreSettingsReplaceTaxesParams contains the parameters for ReplaceTaxes.
+type StoreSettingsReplaceTaxesParams struct {
+	// VatEnabled is whether checkout collects VAT from customers. VAT and Stripe Tax cannot both be on: turning VAT on while Stripe Tax is on returns `422` on `vat_enabled` with `Disable Stripe Tax before enabling Sell VAT.` and saves nothing. Turn Stripe Tax off in **Settings > Taxes** in the dashboard first. If Stripe Tax was turned on but Stripe is now turned off as a payment method, turning VAT on succeeds and turns Stripe Tax off as well.
+	VatEnabled bool `json:"vat_enabled" url:"-"`
+	// VatInclusivePricing is whether your product prices already include VAT instead of VAT being added on top. Always `false` while VAT is off, and turning `vat_enabled` off turns it off too. `true` while VAT stays off returns `422` on `vat_inclusive_pricing`: send `"vat_enabled": true` in the same request.
+	VatInclusivePricing bool `json:"vat_inclusive_pricing" url:"-"`
+	// CollectBillingDetails is whether checkout asks customers for their billing details.
+	CollectBillingDetails bool `json:"collect_billing_details" url:"-"`
+}
+
+// ReplaceTaxes update tax settings
+// Replace all three tax settings; every field is required. A missing field returns `422` and nothing is saved. `vat_enabled: true` while Stripe Tax is on returns `422` on `vat_enabled` and saves nothing: turn Stripe Tax off in the dashboard first. When Stripe Tax was turned on but Stripe is now turned off as a payment method, turning VAT on also turns Stripe Tax off. Sending the same body again is safe. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) ReplaceTaxes(ctx context.Context, params *StoreSettingsReplaceTaxesParams, opts ...RequestOption) (*SdkReplaceTaxSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("replaceTaxSettings", false)}, opts...)
+	var result SdkReplaceTaxSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PUT", "/v2/store/settings/taxes", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReplaceTaxSettingsRequestApplicationJson\",\"properties\":{\"vat_enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"vat_inclusive_pricing\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"collect_billing_details\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[\"vat_enabled\",\"vat_inclusive_pricing\",\"collect_billing_details\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) ReplaceTaxesWithResponse(ctx context.Context, params *StoreSettingsReplaceTaxesParams, opts ...RequestOption) (*RawResponse[*SdkReplaceTaxSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.ReplaceTaxes(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// StoreSettingsUpdateTaxesParams contains the parameters for UpdateTaxes.
+type StoreSettingsUpdateTaxesParams struct {
+	// VatEnabled is whether checkout collects VAT from customers. VAT and Stripe Tax cannot both be on: turning VAT on while Stripe Tax is on returns `422` on `vat_enabled` with `Disable Stripe Tax before enabling Sell VAT.` and saves nothing. Turn Stripe Tax off in **Settings > Taxes** in the dashboard first. If Stripe Tax was turned on but Stripe is now turned off as a payment method, turning VAT on succeeds and turns Stripe Tax off as well.
+	VatEnabled *bool `json:"vat_enabled,omitempty" url:"-"`
+	// VatInclusivePricing is whether your product prices already include VAT instead of VAT being added on top. Always `false` while VAT is off, and turning `vat_enabled` off turns it off too. `true` while VAT stays off returns `422` on `vat_inclusive_pricing`: send `"vat_enabled": true` in the same request.
+	VatInclusivePricing *bool `json:"vat_inclusive_pricing,omitempty" url:"-"`
+	// CollectBillingDetails is whether checkout asks customers for their billing details.
+	CollectBillingDetails *bool `json:"collect_billing_details,omitempty" url:"-"`
+}
+
+// UpdateTaxes update tax settings
+// Change only the tax settings you send and keep the others. Turning VAT off also turns VAT-inclusive pricing off. Asking for VAT-inclusive pricing while VAT stays off returns `422` on `vat_inclusive_pricing` and saves nothing. Turning VAT on while Stripe Tax is on returns `422` on `vat_enabled` and saves nothing: turn Stripe Tax off in the dashboard first. When Stripe Tax was turned on but Stripe is now turned off as a payment method, turning VAT on also turns Stripe Tax off. Sending the same change again is safe. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) UpdateTaxes(ctx context.Context, params *StoreSettingsUpdateTaxesParams, opts ...RequestOption) (*SdkUpdateTaxSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("updateTaxSettings", false)}, opts...)
+	var result SdkUpdateTaxSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PATCH", "/v2/store/settings/taxes", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateTaxSettingsRequestApplicationJson\",\"properties\":{\"vat_enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"vat_inclusive_pricing\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"collect_billing_details\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) UpdateTaxesWithResponse(ctx context.Context, params *StoreSettingsUpdateTaxesParams, opts ...RequestOption) (*RawResponse[*SdkUpdateTaxSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.UpdateTaxes(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// GetCustomerEmails retrieve customer email settings
+// Get which automatic emails your customers get: the delivery email after they pay, and the email asking them to pay when a subscription payment cannot be collected. The address these emails come from is managed with `/v2/store/settings/sender-email`. The response body can be sent back to `PUT /v2/store/settings/customer-emails` unchanged. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) GetCustomerEmails(ctx context.Context, opts ...RequestOption) (*SdkGetCustomerEmailSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("getCustomerEmailSettings", false)}, opts...)
+	var result SdkGetCustomerEmailSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", "/v2/store/settings/customer-emails", nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) GetCustomerEmailsWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*SdkGetCustomerEmailSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.GetCustomerEmails(ctx, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// StoreSettingsReplaceCustomerEmailsParams contains the parameters for ReplaceCustomerEmails.
+type StoreSettingsReplaceCustomerEmailsParams struct {
+	// SendDeliveryEmail is whether customers automatically get an email with what they bought after paying. Turn it off when you deliver to customers yourself.
+	SendDeliveryEmail bool `json:"send_delivery_email" url:"-"`
+	// SendPaymentFailureEmail is whether customers get an email with a way to pay when your payment processor cannot collect a subscription payment. Turn it off when your processor already emails them.
+	SendPaymentFailureEmail bool `json:"send_payment_failure_email" url:"-"`
+}
+
+// ReplaceCustomerEmails update customer email settings
+// Set both customer emails; both fields are required. A missing field returns `422` and nothing is saved. Sending the same body again is safe. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) ReplaceCustomerEmails(ctx context.Context, params *StoreSettingsReplaceCustomerEmailsParams, opts ...RequestOption) (*SdkReplaceCustomerEmailSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("replaceCustomerEmailSettings", false)}, opts...)
+	var result SdkReplaceCustomerEmailSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PUT", "/v2/store/settings/customer-emails", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReplaceCustomerEmailSettingsRequestApplicationJson\",\"properties\":{\"send_delivery_email\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"send_payment_failure_email\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[\"send_delivery_email\",\"send_payment_failure_email\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) ReplaceCustomerEmailsWithResponse(ctx context.Context, params *StoreSettingsReplaceCustomerEmailsParams, opts ...RequestOption) (*RawResponse[*SdkReplaceCustomerEmailSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.ReplaceCustomerEmails(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// StoreSettingsUpdateCustomerEmailsParams contains the parameters for UpdateCustomerEmails.
+type StoreSettingsUpdateCustomerEmailsParams struct {
+	// SendDeliveryEmail is whether customers automatically get an email with what they bought after paying. Turn it off when you deliver to customers yourself.
+	SendDeliveryEmail *bool `json:"send_delivery_email,omitempty" url:"-"`
+	// SendPaymentFailureEmail is whether customers get an email with a way to pay when your payment processor cannot collect a subscription payment. Turn it off when your processor already emails them.
+	SendPaymentFailureEmail *bool `json:"send_payment_failure_email,omitempty" url:"-"`
+}
+
+// UpdateCustomerEmails update customer email settings
+// Turn the customer emails you send on or off and keep the other one. Takes effect for emails sent after the change. Sending the same change again is safe. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) UpdateCustomerEmails(ctx context.Context, params *StoreSettingsUpdateCustomerEmailsParams, opts ...RequestOption) (*SdkUpdateCustomerEmailSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("updateCustomerEmailSettings", false)}, opts...)
+	var result SdkUpdateCustomerEmailSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PATCH", "/v2/store/settings/customer-emails", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateCustomerEmailSettingsRequestApplicationJson\",\"properties\":{\"send_delivery_email\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"send_payment_failure_email\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) UpdateCustomerEmailsWithResponse(ctx context.Context, params *StoreSettingsUpdateCustomerEmailsParams, opts ...RequestOption) (*RawResponse[*SdkUpdateCustomerEmailSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.UpdateCustomerEmails(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// GetAlerts retrieve store alert settings
+// Get whether the store owner gets an email for each sale. Other alerts go to notification channels (`/v2/store/notification-channels`) and to the dashboard notifications (`/v2/notifications`). The response body can be sent back to `PUT /v2/store/settings/store-alerts` unchanged. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) GetAlerts(ctx context.Context, opts ...RequestOption) (*SdkGetStoreAlertSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("getStoreAlertSettings", false)}, opts...)
+	var result SdkGetStoreAlertSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", "/v2/store/settings/store-alerts", nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) GetAlertsWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*SdkGetStoreAlertSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.GetAlerts(ctx, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// StoreSettingsReplaceAlertsParams contains the parameters for ReplaceAlerts.
+type StoreSettingsReplaceAlertsParams struct {
+	// SaleEmailsEnabled is whether the store owner gets an email for each sale.
+	SaleEmailsEnabled bool `json:"sale_emails_enabled" url:"-"`
+}
+
+// ReplaceAlerts update store alert settings
+// Set the sale emails to the store owner; `sale_emails_enabled` is required. Sending the same body again is safe. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) ReplaceAlerts(ctx context.Context, params *StoreSettingsReplaceAlertsParams, opts ...RequestOption) (*SdkReplaceStoreAlertSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("replaceStoreAlertSettings", false)}, opts...)
+	var result SdkReplaceStoreAlertSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PUT", "/v2/store/settings/store-alerts", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReplaceStoreAlertSettingsRequestApplicationJson\",\"properties\":{\"sale_emails_enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[\"sale_emails_enabled\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) ReplaceAlertsWithResponse(ctx context.Context, params *StoreSettingsReplaceAlertsParams, opts ...RequestOption) (*RawResponse[*SdkReplaceStoreAlertSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.ReplaceAlerts(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// StoreSettingsUpdateAlertsParams contains the parameters for UpdateAlerts.
+type StoreSettingsUpdateAlertsParams struct {
+	// SaleEmailsEnabled is whether the store owner gets an email for each sale.
+	SaleEmailsEnabled *bool `json:"sale_emails_enabled,omitempty" url:"-"`
+}
+
+// UpdateAlerts update store alert settings
+// Turn the sale emails to the store owner on or off. Sending the same change again is safe. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) UpdateAlerts(ctx context.Context, params *StoreSettingsUpdateAlertsParams, opts ...RequestOption) (*SdkUpdateStoreAlertSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("updateStoreAlertSettings", false)}, opts...)
+	var result SdkUpdateStoreAlertSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PATCH", "/v2/store/settings/store-alerts", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateStoreAlertSettingsRequestApplicationJson\",\"properties\":{\"sale_emails_enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) UpdateAlertsWithResponse(ctx context.Context, params *StoreSettingsUpdateAlertsParams, opts ...RequestOption) (*RawResponse[*SdkUpdateStoreAlertSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.UpdateAlerts(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// GetPersonalization retrieve personalization settings
+// Get the details customers see from your store: the support and Trustpilot addresses, the sender name and custom sender email of customer emails, the business details printed on invoices, and the Back button link of product and checkout pages. The response body can be sent back to `PUT /v2/store/settings/personalization` unchanged. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) GetPersonalization(ctx context.Context, opts ...RequestOption) (*SdkGetPersonalizationSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("getPersonalizationSettings", false)}, opts...)
+	var result SdkGetPersonalizationSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", "/v2/store/settings/personalization", nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) GetPersonalizationWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*SdkGetPersonalizationSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.GetPersonalization(ctx, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// StoreSettingsReplacePersonalizationParams contains the parameters for ReplacePersonalization.
+type StoreSettingsReplacePersonalizationParams struct {
+	// SupportEmail is the address customers can write to for support.
+	SupportEmail *string `json:"support_email" url:"-"`
+	// TrustpilotEmail is your Trustpilot invitation address. It receives a blind copy of every delivery email, including the link to what the customer bought, so Trustpilot can invite the customer to leave a review.
+	TrustpilotEmail *string `json:"trustpilot_email" url:"-"`
+	// SenderName is the name customer emails are sent from: letters, digits, spaces and `. - _ +`, up to 75 characters. It is used only while the store sends from its own verified sender email. A store without a custom sender email cannot keep one: sent with other changes it is ignored, and sent alone it returns `422` on `sender_name`.
+	SenderName *string `json:"sender_name" url:"-"`
+	// SenderEmail is the store's custom sender email, or `null` when it has none. Read-only here: send it back unchanged or leave it out. A different value returns `422` on `sender_email`; set it up or remove it with `/v2/store/settings/sender-email`.
+	SenderEmail *string `json:"sender_email,omitempty" url:"-"`
+	// StoreAddress is street address printed on invoices.
+	StoreAddress *string `json:"store_address" url:"-"`
+	// StoreCity is city printed on invoices.
+	StoreCity *string `json:"store_city" url:"-"`
+	// StoreState is state or region printed on invoices.
+	StoreState *string `json:"store_state" url:"-"`
+	// StoreZip is postal code printed on invoices.
+	StoreZip *string `json:"store_zip" url:"-"`
+	// StoreCountry is country printed on invoices, as text.
+	StoreCountry *string `json:"store_country" url:"-"`
+	// StoreTax is tax or VAT details printed on invoices, such as `VAT GB123456789`.
+	StoreTax *string `json:"store_tax" url:"-"`
+	// BackLinkLabel is text of the Back button on product and checkout pages. A return link needs both a label and a URL: a change that leaves one of them empty returns `422` on the empty one. Send `null` for both to remove the link; the Back button then goes to the store's home page.
+	BackLinkLabel *string `json:"back_link_label" url:"-"`
+	// BackLinkURL is where the Back button on product and checkout pages goes, as a full URL. Needs `back_link_label`.
+	BackLinkURL *string `json:"back_link_url" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for StoreSettingsReplacePersonalizationParams.
+func (p StoreSettingsReplacePersonalizationParams) MarshalJSON() ([]byte, error) {
+	type Alias StoreSettingsReplacePersonalizationParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"sender_email": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("StoreSettingsReplacePersonalizationParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
+}
+
+// ReplacePersonalization update personalization settings
+// Replace every personalization setting. All fields except `sender_email` are required; send `null` to remove one. A missing field returns `422` and nothing is saved. The body of `GET /v2/store/settings/personalization`, including `sender_email`, can be sent back unchanged. Sending the same body again is safe. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) ReplacePersonalization(ctx context.Context, params *StoreSettingsReplacePersonalizationParams, opts ...RequestOption) (*SdkReplacePersonalizationSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("replacePersonalizationSettings", false)}, opts...)
+	var result SdkReplacePersonalizationSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PUT", "/v2/store/settings/personalization", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReplacePersonalizationSettingsRequestApplicationJson\",\"properties\":{\"support_email\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"email\"}},\"trustpilot_email\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"email\"}},\"sender_name\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":75,\"pattern\":\"^[a-zA-Z0-9 .\\\\-_+]*$\"}}},\"sender_email\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"email\"}},\"store_address\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"store_city\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"store_state\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"store_zip\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"store_country\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"store_tax\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"back_link_label\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"back_link_url\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\",\"constraints\":{\"maxLength\":255}}}},\"required\":[\"support_email\",\"trustpilot_email\",\"sender_name\",\"store_address\",\"store_city\",\"store_state\",\"store_zip\",\"store_country\",\"store_tax\",\"back_link_label\",\"back_link_url\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) ReplacePersonalizationWithResponse(ctx context.Context, params *StoreSettingsReplacePersonalizationParams, opts ...RequestOption) (*RawResponse[*SdkReplacePersonalizationSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.ReplacePersonalization(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// StoreSettingsUpdatePersonalizationParams contains the parameters for UpdatePersonalization.
+type StoreSettingsUpdatePersonalizationParams struct {
+	// SupportEmail is the address customers can write to for support.
+	SupportEmail *string `json:"support_email,omitempty" url:"-"`
+	// TrustpilotEmail is your Trustpilot invitation address. It receives a blind copy of every delivery email, including the link to what the customer bought, so Trustpilot can invite the customer to leave a review.
+	TrustpilotEmail *string `json:"trustpilot_email,omitempty" url:"-"`
+	// SenderName is the name customer emails are sent from: letters, digits, spaces and `. - _ +`, up to 75 characters. It is used only while the store sends from its own verified sender email. A store without a custom sender email cannot keep one: sent with other changes it is ignored, and sent alone it returns `422` on `sender_name`.
+	SenderName *string `json:"sender_name,omitempty" url:"-"`
+	// SenderEmail is the store's custom sender email, or `null` when it has none. Read-only here: send it back unchanged or leave it out. A different value returns `422` on `sender_email`; set it up or remove it with `/v2/store/settings/sender-email`.
+	SenderEmail *string `json:"sender_email,omitempty" url:"-"`
+	// StoreAddress is street address printed on invoices.
+	StoreAddress *string `json:"store_address,omitempty" url:"-"`
+	// StoreCity is city printed on invoices.
+	StoreCity *string `json:"store_city,omitempty" url:"-"`
+	// StoreState is state or region printed on invoices.
+	StoreState *string `json:"store_state,omitempty" url:"-"`
+	// StoreZip is postal code printed on invoices.
+	StoreZip *string `json:"store_zip,omitempty" url:"-"`
+	// StoreCountry is country printed on invoices, as text.
+	StoreCountry *string `json:"store_country,omitempty" url:"-"`
+	// StoreTax is tax or VAT details printed on invoices, such as `VAT GB123456789`.
+	StoreTax *string `json:"store_tax,omitempty" url:"-"`
+	// BackLinkLabel is text of the Back button on product and checkout pages. A return link needs both a label and a URL: a change that leaves one of them empty returns `422` on the empty one. Send `null` for both to remove the link; the Back button then goes to the store's home page.
+	BackLinkLabel *string `json:"back_link_label,omitempty" url:"-"`
+	// BackLinkURL is where the Back button on product and checkout pages goes, as a full URL. Needs `back_link_label`.
+	BackLinkURL *string `json:"back_link_url,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for StoreSettingsUpdatePersonalizationParams.
+func (p StoreSettingsUpdatePersonalizationParams) MarshalJSON() ([]byte, error) {
+	type Alias StoreSettingsUpdatePersonalizationParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"support_email":    true,
+		"trustpilot_email": true,
+		"sender_name":      true,
+		"sender_email":     true,
+		"store_address":    true,
+		"store_city":       true,
+		"store_state":      true,
+		"store_zip":        true,
+		"store_country":    true,
+		"store_tax":        true,
+		"back_link_label":  true,
+		"back_link_url":    true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("StoreSettingsUpdatePersonalizationParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
+}
+
+// UpdatePersonalization settings
+// Change only the personalization settings you send and keep the others. Send `null` to remove one. A request with no field this endpoint knows returns `200` with the current settings and saves nothing. A return link needs both `back_link_label` and `back_link_url`: a change that leaves one empty returns `422` on that field. `sender_email` is read-only here. Sending the same change again is safe. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) UpdatePersonalization(ctx context.Context, params *StoreSettingsUpdatePersonalizationParams, opts ...RequestOption) (*SdkUpdatePersonalizationSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("updatePersonalizationSettings", false)}, opts...)
+	var result SdkUpdatePersonalizationSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PATCH", "/v2/store/settings/personalization", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdatePersonalizationSettingsRequestApplicationJson\",\"properties\":{\"support_email\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"email\"}},\"trustpilot_email\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"email\"}},\"sender_name\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":75,\"pattern\":\"^[a-zA-Z0-9 .\\\\-_+]*$\"}}},\"sender_email\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"email\"}},\"store_address\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"store_city\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"store_state\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"store_zip\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"store_country\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"store_tax\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"back_link_label\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"back_link_url\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"uri\",\"constraints\":{\"maxLength\":255}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) UpdatePersonalizationWithResponse(ctx context.Context, params *StoreSettingsUpdatePersonalizationParams, opts ...RequestOption) (*RawResponse[*SdkUpdatePersonalizationSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.UpdatePersonalization(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// StoreSettingsReplaceCryptoCheckoutParams contains the parameters for ReplaceCryptoCheckout.
+type StoreSettingsReplaceCryptoCheckoutParams struct {
+	// UnderpaidPercentage is how far short of the amount due, in percent, a crypto payment can be and still count as paid: `2` accepts a payment up to 2% short. 0 to 100.
+	UnderpaidPercentage int `json:"underpaid_percentage" url:"-"`
+	// MinimumConfirmations is how many blockchain confirmations a crypto payment needs before the order is processed. 1 to 25.
+	MinimumConfirmations int `json:"minimum_confirmations" url:"-"`
+}
+
+// ReplaceCryptoCheckout update crypto checkout settings
+// Replace both crypto checkout values, for a store that takes crypto through SellApp's crypto processor; `underpaid_percentage` and `minimum_confirmations` are required. SellApp sends the changed values to the crypto processor and saves them only once it accepts them; an unchanged value is not sent. Returns the checkout settings with the new `crypto` values. `422` on `crypto` when the store does not take crypto through SellApp's crypto processor, or when the processor refuses the values; nothing is saved then. `422` on `underpaid_percentage` or `minimum_confirmations` for a value out of range. Sending the same change again is safe. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) ReplaceCryptoCheckout(ctx context.Context, params *StoreSettingsReplaceCryptoCheckoutParams, opts ...RequestOption) (*SdkReplaceCryptoCheckoutSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("replaceCryptoCheckoutSettings", false)}, opts...)
+	var result SdkReplaceCryptoCheckoutSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PUT", "/v2/store/settings/checkout/crypto", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReplaceCryptoCheckoutSettingsRequestApplicationJson\",\"properties\":{\"underpaid_percentage\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":100}},\"minimum_confirmations\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":25}}},\"required\":[\"underpaid_percentage\",\"minimum_confirmations\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) ReplaceCryptoCheckoutWithResponse(ctx context.Context, params *StoreSettingsReplaceCryptoCheckoutParams, opts ...RequestOption) (*RawResponse[*SdkReplaceCryptoCheckoutSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.ReplaceCryptoCheckout(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// StoreSettingsUpdateCryptoCheckoutParams contains the parameters for UpdateCryptoCheckout.
+type StoreSettingsUpdateCryptoCheckoutParams struct {
+	// UnderpaidPercentage is how far short of the amount due, in percent, a crypto payment can be and still count as paid: `2` accepts a payment up to 2% short. 0 to 100.
+	UnderpaidPercentage *int `json:"underpaid_percentage,omitempty" url:"-"`
+	// MinimumConfirmations is how many blockchain confirmations a crypto payment needs before the order is processed. 1 to 25.
+	MinimumConfirmations *int `json:"minimum_confirmations,omitempty" url:"-"`
+}
+
+// UpdateCryptoCheckout settings
+// Change the crypto checkout values you send, for a store that takes crypto through SellApp's crypto processor. SellApp sends the changed values to the crypto processor and saves them only once it accepts them; an unchanged value is not sent. Returns the checkout settings with the new `crypto` values. `422` on `crypto` when the store does not take crypto through SellApp's crypto processor, or when the processor refuses the values; nothing is saved then. `422` on `underpaid_percentage` or `minimum_confirmations` for a value out of range. Sending the same change again is safe. Requires the `store` API-key ability and the `store` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *StoreSettingService) UpdateCryptoCheckout(ctx context.Context, params *StoreSettingsUpdateCryptoCheckoutParams, opts ...RequestOption) (*SdkUpdateCryptoCheckoutSettingsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("updateCryptoCheckoutSettings", false)}, opts...)
+	var result SdkUpdateCryptoCheckoutSettingsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PATCH", "/v2/store/settings/checkout/crypto", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateCryptoCheckoutSettingsRequestApplicationJson\",\"properties\":{\"underpaid_percentage\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":100}},\"minimum_confirmations\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":25}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *StoreSettingService) UpdateCryptoCheckoutWithResponse(ctx context.Context, params *StoreSettingsUpdateCryptoCheckoutParams, opts ...RequestOption) (*RawResponse[*SdkUpdateCryptoCheckoutSettingsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.UpdateCryptoCheckout(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}

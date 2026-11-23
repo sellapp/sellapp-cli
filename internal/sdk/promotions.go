@@ -489,3 +489,35 @@ func (s *PromotionService) RestoreWithResponse(ctx context.Context, promotion in
 	}
 	return rawResponse(value, metadata), nil
 }
+
+// PromotionsGetUsageParams contains the parameters for GetUsage.
+type PromotionsGetUsageParams struct {
+	// WithTrashed is set to `true` to also find a deleted promotion.
+	// Defaults to false.
+	WithTrashed *bool `url:"with_trashed,omitempty" json:"-"`
+	// OnlyTrashed is set to `true` to find only a deleted promotion. Ignored when `with_trashed` is `true`.
+	// Defaults to false.
+	OnlyTrashed *bool `url:"only_trashed,omitempty" json:"-"`
+}
+
+// GetUsage retrieve promotion usage
+// Count the completed orders that used a promotion, across all of its phases and its whole life, and list the newest of them. Only orders whose status is `COMPLETED` count; pending and refunded orders do not. A promotion from another store returns `404`, and so does a deleted one unless you send `with_trashed=true`. Requires the `promotion` API-key ability and the promotion permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *PromotionService) GetUsage(ctx context.Context, promotion int, params *PromotionsGetUsageParams, opts ...RequestOption) (*SdkGetPromotionUsageResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("getPromotionUsage", false)}, opts...)
+	var result SdkGetPromotionUsageResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", fmt.Sprintf("/v2/promotions/%s/usage", url.PathEscape(fmt.Sprint(promotion))), params, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *PromotionService) GetUsageWithResponse(ctx context.Context, promotion int, params *PromotionsGetUsageParams, opts ...RequestOption) (*RawResponse[*SdkGetPromotionUsageResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.GetUsage(ctx, promotion, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}

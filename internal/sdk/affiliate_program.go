@@ -4,6 +4,8 @@ package sellapp
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 )
 
 // AffiliateProgramService handles AffiliateProgram operations.
@@ -41,7 +43,7 @@ type AffiliateProgramReplaceParams struct {
 }
 
 // Replace affiliate program configuration
-// Replace the complete affiliate-program configuration. The products array is authoritative: enabled entries replace existing store-level product restrictions, and every variant ID must belong to the authenticated store. Requires the `affiliate` token ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Replace the complete affiliate-program configuration. The products array is authoritative: enabled entries replace existing store-level product restrictions, and every variant ID must belong to the authenticated store. Requires the `affiliate` token ability, and the staff member who owns the key also needs the `store` permission, the same permission that changing the program in the dashboard requires. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *AffiliateProgramService) Replace(ctx context.Context, params *AffiliateProgramReplaceParams, opts ...RequestOption) (*SdkReplaceAffiliateProgramConfigurationResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("replaceAffiliateProgramConfiguration", false)}, opts...)
 	var result SdkReplaceAffiliateProgramConfigurationResponseValue200ApplicationJSON
@@ -95,7 +97,7 @@ type AffiliateProgramInviteParams struct {
 }
 
 // Invite an affiliate
-// Create a pending affiliate invitation and email a single-use onboarding link. Duplicate invitations are rejected and invites are rate limited per store. The affiliate program must be enabled. Requires the `affiliate` token ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Create a pending affiliate invitation and email a single-use onboarding link. Duplicate invitations are rejected and invites are rate limited per store. The affiliate program must be enabled. Requires the `affiliate` token ability, and the staff member who owns the key also needs the `store` permission, the same permission that inviting affiliates in the dashboard requires. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *AffiliateProgramService) Invite(ctx context.Context, params *AffiliateProgramInviteParams, opts ...RequestOption) (*SdkInviteAffiliateResponseValue201ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("inviteAffiliate", false)}, opts...)
 	var result SdkInviteAffiliateResponseValue201ApplicationJSON
@@ -110,6 +112,28 @@ func (s *AffiliateProgramService) InviteWithResponse(ctx context.Context, params
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
 	value, err := s.Invite(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// Resend an affiliate invitation
+// Email a pending affiliate invitation again, with a new sign-in link that expires after 6 hours, to the address it was created for. The invitation itself does not change: `invited_at` keeps the original date. Send no body. Requires the `affiliate` API-key ability, and the staff member who owns the key needs the affiliate and `store` permissions, the same as inviting an affiliate. Every refusal returns `422` on `invitation` and sends nothing: the invitation was already answered or is no longer pending, the affiliate program is not configured or turned off, the same invitation was sent within the last minute, your store reached its limit of 10 invitation emails per hour (new invitations and resends count together; the message says how many seconds to wait), or the email could not be sent. An invitation from another store returns `404`. Not safe to retry blindly: each successful call sends another email. A repeat within a minute is refused, so a quick retry after a lost response cannot send twice; after that, check with the invitee or wait for them to answer before sending again. If sending failed, wait a minute and try again. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *AffiliateProgramService) Resend(ctx context.Context, invitation int, opts ...RequestOption) (*SdkResendAffiliateInvitationResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("resendAffiliateInvitation", false)}, opts...)
+	var result SdkResendAffiliateInvitationResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/affiliate-invitations/%s/resend", url.PathEscape(fmt.Sprint(invitation))), nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *AffiliateProgramService) ResendWithResponse(ctx context.Context, invitation int, opts ...RequestOption) (*RawResponse[*SdkResendAffiliateInvitationResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Resend(ctx, invitation, captureOpts...)
 	if err != nil {
 		return nil, err
 	}

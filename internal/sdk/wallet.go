@@ -24,7 +24,7 @@ type WalletListParams struct {
 }
 
 // List customer wallets
-// List customer wallet balances for the authenticated store. Requires the `wallet` or `wallet:write` API ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List customer wallet balances for the authenticated store. Requires the `wallet` or `wallet:write` API-key ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WalletService) List(ctx context.Context, params *WalletListParams, opts ...RequestOption) *Iterator[ListCustomerWalletsResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("listCustomerWallets", false)}, opts...)
 	return newIterator[ListCustomerWalletsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/wallets", params, "after", "data", opts, map[string]string{"limit": "15"})
@@ -64,19 +64,22 @@ func (s *WalletService) GetWithResponse(ctx context.Context, customer int, opts 
 
 // WalletAdjustParams contains the parameters for Adjust.
 type WalletAdjustParams struct {
-	// AmountCents is the signed adjustment amount in cents. Must not be zero.
+	// AmountCents is the signed change in integer USD cents: positive adds money, negative takes it away. Must not be zero.
 	AmountCents int `json:"amount_cents" url:"-"`
-	// IdempotencyKey is required body key, at most 128 characters. Keep the customer, amount, staff actor and trimmed note unchanged when retrying this intended adjustment.
+	// IdempotencyKey is your key for this one adjustment, in printable ASCII characters and unique across all stores. Reuse it only to retry the same customer, amount, and note as the same staff member.
 	IdempotencyKey string `json:"idempotency_key" url:"-"`
-	Note           string `json:"note" url:"-"`
+	// Note is why the balance changed, with at least one character that is not a space. Leading and trailing spaces are removed. Saved on the entry and shown in the wallet history.
+	Note string `json:"note" url:"-"`
+	// ExpectedBalanceCents is optional. The wallet balance in integer USD cents that you read before deciding on this change. If the balance is different now, nothing is written and the request returns `422` on `expected_balance_cents`. Use `0` for a customer who has no wallet yet.
+	ExpectedBalanceCents *int `json:"expected_balance_cents,omitempty" url:"-"`
 }
 
 // Adjust a customer wallet
-// Add or subtract a nonzero amount from a customer wallet. Requires the wallet:write API ability and store wallet permission. Use signed integer cents and a nonblank note. Positive adjustments can create a wallet and follow the store's credit-expiration policy; negative adjustments need an existing eligible wallet and sufficient balance. Wallets must be enabled. Send idempotency_key in the body. Replaying the same key returns the original entry only for the same store, customer, staff actor, amount and trimmed note; changed input returns 422. Keep that identity unchanged across retries. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Add money to or take money from a customer's wallet and save the change as a `MANUAL_ADJUSTMENT` entry with your note. Amounts are integer USD cents: `2500` adds $25.00 and `-2500` takes $25.00 away. A first write returns `201`. The customer is not emailed. Adding money opens a wallet for a customer who has none yet. When the store's wallet settings have `expiration_days`, money you add expires after that many days, shown in the entry's `expires_at`. Requires the `wallet:write` API-key ability and the wallet permission in your team role. Send `expected_balance_cents` with the balance you last read to apply the change only while the wallet still holds exactly that balance. If the balance changed, the request returns `422` on `expected_balance_cents` and nothing is written; read the wallet again before deciding. A customer without a wallet counts as a balance of `0`. For safe retries, `idempotency_key` identifies one adjustment. Repeating the same key with the same customer, amount, and note (compared without leading and trailing spaces), made by the same staff member, returns `200` with the original entry and writes nothing, even when the balance has moved on since (the expected balance is not compared again). The same key with a different amount, note, or customer returns `422` on `wallet` and changes nothing. Keys are unique across all stores, are kept permanently, and cannot start with a reserved internal prefix such as `cashback:` or `topup_bonus:` (`422` on `idempotency_key`), so use a random value such as a UUID. Other refusals return `422` on `wallet` without writing: wallets are turned off for the store, the wallet is frozen, a debit is larger than the balance left after checkout holds, or a debit targets a customer who has no wallet yet. To undo an adjustment, reverse it with `POST /v2/wallets/{customer}/transactions/{transaction}/reverse`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WalletService) Adjust(ctx context.Context, customer int, params *WalletAdjustParams, opts ...RequestOption) (*SdkAdjustCustomerWalletResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("adjustCustomerWallet", false)}, opts...)
 	var result SdkAdjustCustomerWalletResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/wallets/%s/adjustments", url.PathEscape(fmt.Sprint(customer))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkAdjustCustomerWalletRequestApplicationJson\",\"properties\":{\"amount_cents\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":-999999999999,\"maximum\":999999999999}},\"idempotency_key\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}},\"note\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minLength\":1,\"maxLength\":255,\"pattern\":\"\\\\S\"}}},\"required\":[\"amount_cents\",\"idempotency_key\",\"note\"],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/wallets/%s/adjustments", url.PathEscape(fmt.Sprint(customer))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkAdjustCustomerWalletRequestApplicationJson\",\"properties\":{\"amount_cents\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":-999999999999,\"maximum\":999999999999}},\"idempotency_key\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":128}},\"note\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minLength\":1,\"maxLength\":255,\"pattern\":\"\\\\S\"}},\"expected_balance_cents\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":999999999999}}},\"required\":[\"amount_cents\",\"idempotency_key\",\"note\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +102,7 @@ type WalletUpdateStatusParams struct {
 }
 
 // UpdateStatus update a customer wallet status
-// Freeze or activate an existing customer wallet. Requires wallet:write and the store wallet permission, with wallets enabled. Activating a frozen wallet expires eligible credits before returning, so its balance may decrease. Read balance_cents from the returned wallet. Repeating the current status leaves the wallet unchanged. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Freeze or activate a customer's existing wallet. A frozen wallet cannot be adjusted. Activating a frozen wallet first expires any credit whose expiry date has passed, so the returned `balance_cents` can be lower than before. Sending the status the wallet already has changes nothing, so a retry is safe. Requires the `wallet:write` API-key ability and the wallet permission in your team role. Refusals return `422` on `wallet` without writing: wallets are turned off for the store, or the customer has no wallet yet. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WalletService) UpdateStatus(ctx context.Context, customer int, params *WalletUpdateStatusParams, opts ...RequestOption) (*SdkUpdateCustomerWalletStatusResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("updateCustomerWalletStatus", false)}, opts...)
 	var result SdkUpdateCustomerWalletStatusResponseValue200ApplicationJSON

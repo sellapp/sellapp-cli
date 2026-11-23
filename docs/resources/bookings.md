@@ -152,6 +152,74 @@ Response data is printed to stdout; diagnostics go to stderr. Use `--output json
 
 Inspect the complete schema: `sellapp commands bookings cancel --json`.
 
+## create
+
+Create a booking product
+
+Create a draft booking product with one draft option that customers book as a timed appointment, one per purchase and one customer per time slot. Nothing can be booked until you publish it, whatever `visibility` you send: `visibility`, `PRIVATE` by default, applies once the product is published. Publish it with `POST /v2/products/{product}/publish`. Schedule fields you leave out take their defaults; read the result with `GET /v2/products/{product}/variants/{variant}/booking`. Each successful call creates another product, so do not retry blindly after a lost response: list your products first. Requires the `listing` API-key ability and the `listing` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/bookings/create-a-booking-product) · Effect: **consequential**
+
+```sh
+sellapp bookings create --body '{"title":"Strategy consultation","description":"<p>A private strategy session for your next launch.</p>","variant_title":"60 minute session","price_cents":2500,"currency":"USD","payment_methods":["STRIPE"],"timezone":"Europe/London","duration_minutes":60,"availability":[{"day":1,"enabled":true,"start":"09:00","end":"12:00"},{"day":3,"enabled":true,"start":"13:00","end":"17:00"}]}' --yes
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --title | Yes | The product name customers see. The URL slug is made from it. |
+| --price-cents | Yes | The price of one appointment in the smallest unit of `currency`: `2500` means $25.00 in USD, and `0` makes it free. A paid price outside the currency's limits, such as below 0.50 in USD, returns `422` on `price_cents`. |
+| --description | No | The product description as HTML, 5 to 5000 characters. Leave it out to start without one. |
+| --visibility | No | Value for visibility. |
+| --variant-title | No | The name of the bookable option. |
+| --variant-description | No | The option's description. Defaults to the product description, or to `Book an appointment for` and the title when there is none. |
+| --compare-at-price-cents | No | An optional crossed-out price shown next to the real one, in the same unit. It must be higher than `price_cents` and within the currency's limits; otherwise the request returns `422` on `compare_at_price_cents`. |
+| --currency | No | The currency of both prices. |
+| --payment-methods | No | How customers can pay. Each must be enabled for the store, or the request returns `422` on `payment_methods`. Leave it out to use the store's default payment methods for the currency; a paid booking with none available returns `422` on `payment_methods`. |
+| --timezone | No | The IANA timezone the weekly availability is read in. Defaults to the store's timezone. |
+| --duration-minutes | No | Value for duration minutes. |
+| --min-notice-minutes | No | Value for min notice minutes. |
+| --max-advance-days | No | Value for max advance days. |
+| --buffer-before-minutes | No | Value for buffer before minutes. |
+| --buffer-after-minutes | No | Value for buffer after minutes. |
+| --provider-connection-ids | No | Value for provider connection ids. |
+| --video-provider | No | Value for video provider. |
+| --video-provider-connection-id | No | Value for video provider connection id. |
+| --reminders-enabled | No | Value for reminders enabled. |
+| --reminder-offset-value | No | Value for reminder offset value. |
+| --reminder-offset-unit | No | Value for reminder offset unit. |
+| --availability | No | Weekly opening hours, one entry per day from `1` to `7`, in 30-minute steps. Days you leave out are closed. Leave the whole list out to open days `1` to `5` from 09:00 to 17:00. |
+
+The request body is required.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands bookings create --json`.
+
 ## get
 
 Retrieve an appointment

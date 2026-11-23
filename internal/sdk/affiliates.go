@@ -19,6 +19,12 @@ type AffiliatesListParams struct {
 	Status *AffiliatesStatus `url:"status,omitempty" json:"-"`
 	// Search is search affiliate email addresses and profile identifiers.
 	Search *string `url:"search,omitempty" json:"-"`
+	// CustomRatesOnly is send `true` to list only affiliates with custom per-product commission rates (see `GET /v2/affiliates/{affiliate}/products`). `false` lists everyone. Accepts `true`, `false`, `1`, or `0`.
+	CustomRatesOnly *bool `url:"custom_rates_only,omitempty" json:"-"`
+	// PayoutMethod is list only affiliates who chose this payout method. Uppercase, as returned in `payout_method`.
+	PayoutMethod *AffiliatesPayoutMethod `url:"payout_method,omitempty" json:"-"`
+	// Sort is send `-earnings` to list the affiliates who earned the most first: available, pending, and paid balances added together, largest first. Without it, or with any other value, the newest affiliates come first.
+	Sort *string `url:"sort,omitempty" json:"-"`
 	// Limit is number of items to return per page.
 	// Defaults to 15.
 	Limit *int `url:"limit,omitempty" json:"-"`
@@ -28,7 +34,7 @@ type AffiliatesListParams struct {
 }
 
 // List affiliates
-// List store affiliate memberships, approved profile details, referral counts, and integer USD-cent balances. Requires the `affiliate` ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List store affiliate memberships, approved profile details, referral counts, and integer USD-cent balances, newest first, 15 per page by default. Requires the `affiliate` ability. Filter by `status`, `search`, `custom_rates_only`, and `payout_method`, and send `sort=-earnings` to list the top earners first. A `status`, `custom_rates_only`, or `payout_method` value the API does not know returns `422`; an unknown `sort` value is ignored. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *AffiliateService) List(ctx context.Context, params *AffiliatesListParams, opts ...RequestOption) *Iterator[ListAffiliatesResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("listAffiliates", false)}, opts...)
 	return newIterator[ListAffiliatesResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/affiliates", params, "after", "data", opts, map[string]string{"limit": "15"})

@@ -15,6 +15,8 @@ type AffiliateReferralService struct {
 
 // AffiliateReferralsListParams contains the parameters for List.
 type AffiliateReferralsListParams struct {
+	// Search is text to look for in the affiliate's email address and the product and variant titles. A number also matches the referral ID or the order ID exactly. `%` and `_` match themselves.
+	Search *string `url:"search,omitempty" json:"-"`
 	// AffiliateID is filter by store affiliate ID.
 	AffiliateID *int `url:"affiliate_id,omitempty" json:"-"`
 	// OrderID is filter by attributed Order ID.
@@ -30,7 +32,7 @@ type AffiliateReferralsListParams struct {
 }
 
 // List affiliate referrals
-// List store referrals with their attributed order and purchase line item. Requires the `affiliate` credential ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List store referrals with their attributed order and purchase line item, newest first, 15 per page by default. Requires the `affiliate` credential ability. Use `search` to find referrals by affiliate email, product or variant title, or an exact referral or order ID. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *AffiliateReferralService) List(ctx context.Context, params *AffiliateReferralsListParams, opts ...RequestOption) *Iterator[ListAffiliateReferralsResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("listAffiliateReferrals", false)}, opts...)
 	return newIterator[ListAffiliateReferralsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/affiliate-referrals", params, "after", "data", opts, map[string]string{"limit": "15"})

@@ -25,7 +25,7 @@ type WebhookChannelsListParams struct {
 }
 
 // List webhook channels
-// Retrieve the authenticated store's outbound developer webhook destinations. Signing secrets and delivery headers are never included. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List your store's outbound webhook destinations, 15 per page by default. Each result includes `health`, which says whether deliveries to the destination are working, and `last_delivery`, the most recent delivery recorded for it; retrieving one channel does not include them. Signing secrets and delivery headers are never included. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WebhookChannelService) List(ctx context.Context, params *WebhookChannelsListParams, opts ...RequestOption) *Iterator[ListWebhookChannelsResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("listWebhookChannels", false)}, opts...)
 	return newIterator[ListWebhookChannelsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/webhook-channels", params, "after", "data", opts, map[string]string{"limit": "15"})
@@ -141,7 +141,7 @@ func (p WebhookChannelsSearchParams) MarshalJSON() ([]byte, error) {
 }
 
 // Search webhook channels
-// Search destinations by name or URL and optionally filter by a subscribed event. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Search destinations by name or URL and optionally filter by a subscribed event. Each result includes the same `health` and `last_delivery` as the list. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *WebhookChannelService) Search(ctx context.Context, params *WebhookChannelsSearchParams, opts ...RequestOption) *Iterator[SearchWebhookChannelsResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("searchWebhookChannels", false)}, opts...)
 	return newIterator[SearchWebhookChannelsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", "/v2/webhook-channels/search", nil, "after", "data", opts, nil, func() any {

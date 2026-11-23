@@ -151,7 +151,7 @@ Inspect the complete schema: `sellapp commands exports get-export --json`.
 
 List exports
 
-List permitted exports, 50 per page. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request. Sales, tax and customer reports require invoice store permission. Affiliate payout reports require affiliate and affiliate:payout permissions. The category selects the applicable permission checks; listing returns only authorized categories.
+List permitted exports, newest first, 50 per page. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request. Sales, tax and customer reports require invoice store permission. Affiliate payout reports require affiliate and affiliate:payout permissions. The category selects the applicable permission checks; listing returns only authorized categories.
 
 [API reference](https://sell.app/docs/api/exports) · Effect: **read**
 
@@ -161,6 +161,7 @@ sellapp exports list-exports
 
 | Input | Required | Meaning |
 | --- | --- | --- |
+| --page | No | Page number, starting at 1. |
 
 A request body is optional or not used by this operation.
 

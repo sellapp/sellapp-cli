@@ -35,17 +35,31 @@ func (s *WebhookPlatformService) ListEventTypesWithResponse(ctx context.Context,
 	return rawResponse(value, metadata), nil
 }
 
-// ListDeliveries list webhook deliveries
-// Destination origin only; response bodies are redacted and capped. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
-func (s *WebhookPlatformService) ListDeliveries(ctx context.Context, opts ...RequestOption) *Iterator[ListWebhookDeliveriesResponseValue200ApplicationJSONPropertyDataItem] {
-	opts = append([]RequestOption{withOperation("listWebhookDeliveries", false)}, opts...)
-	return newIterator[ListWebhookDeliveriesResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/webhook-deliveries", nil, "after", "data", opts, nil)
+// WebhookPlatformListDeliveriesParams contains the parameters for ListDeliveries.
+type WebhookPlatformListDeliveriesParams struct {
+	// Page is page number, starting at 1.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
+	// Limit is deliveries per page. Values below 1 are read as 1 and values above 100 as 100.
+	// Defaults to 25.
+	Limit *int `url:"limit,omitempty" json:"-"`
+	// EventType is keep deliveries of this event type, as listed by `GET /v2/webhook-event-types`.
+	EventType *string `url:"event_type,omitempty" json:"-"`
+	// Status is keep deliveries in this state: `pending`, `retrying`, `succeeded`, `failed`, or `disabled`.
+	Status *WebhookPlatformStatus `url:"status,omitempty" json:"-"`
 }
 
-func (s *WebhookPlatformService) ListDeliveriesWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*Iterator[ListWebhookDeliveriesResponseValue200ApplicationJSONPropertyDataItem]], error) {
+// ListDeliveries list webhook deliveries
+// List your store's outbound webhook deliveries, newest first, 25 per page by default. Each delivery shows only the destination origin; response bodies are redacted and capped. Filter by `event_type` or `status`; both must match exactly, and a value that matches nothing returns an empty page rather than an error. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *WebhookPlatformService) ListDeliveries(ctx context.Context, params *WebhookPlatformListDeliveriesParams, opts ...RequestOption) *Iterator[ListWebhookDeliveriesResponseValue200ApplicationJSONPropertyDataItem] {
+	opts = append([]RequestOption{withOperation("listWebhookDeliveries", false)}, opts...)
+	return newIterator[ListWebhookDeliveriesResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/webhook-deliveries", params, "after", "data", opts, map[string]string{"limit": "25"})
+}
+
+func (s *WebhookPlatformService) ListDeliveriesWithResponse(ctx context.Context, params *WebhookPlatformListDeliveriesParams, opts ...RequestOption) (*RawResponse[*Iterator[ListWebhookDeliveriesResponseValue200ApplicationJSONPropertyDataItem]], error) {
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
-	value := s.ListDeliveries(ctx, captureOpts...)
+	value := s.ListDeliveries(ctx, params, captureOpts...)
 	if err := value.Err(); err != nil {
 		return nil, err
 	}

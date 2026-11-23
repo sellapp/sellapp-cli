@@ -25,83 +25,104 @@ type Client struct {
 	configErr                                                            error
 	hook                                                                 RequestHook
 
-	charges                     *ChargeService
-	groups                      *GroupService
-	groupsProducts              *GroupsProductService
-	invoices                    *InvoiceService
-	licenses                    *LicenseService
-	licensesInstances           *LicensesInstanceService
-	licenseInstances            *LicenseInstanceService
-	products                    *ProductService
-	productVariants             *ProductVariantService
-	productVariantsPricing      *ProductVariantsPricingService
-	productVariantsBooking      *ProductVariantsBookingService
-	subscriptions               *SubscriptionService
-	subscriptionsActions        *SubscriptionsActionService
-	bookings                    *BookingService
-	bookingsCalendarEvents      *BookingsCalendarEventService
-	bundleItems                 *BundleItemService
-	promotions                  *PromotionService
-	promotionsPhases            *PromotionsPhaseService
-	addOns                      *AddOnService
-	addOnsParentProducts        *AddOnsParentProductService
-	productsAddons              *ProductsAddonService
-	highlights                  *HighlightService
-	highlightsMedia             *HighlightsMediaService
-	webhookChannels             *WebhookChannelService
-	customers                   *CustomerService
-	orders                      *OrderService
-	lineItems                   *LineItemService
-	ordersLineItems             *OrdersLineItemService
-	variantDeliverables         *VariantDeliverableService
-	variantDeliverableFiles     *VariantDeliverableFileService
-	variantDeliverableFolders   *VariantDeliverableFolderService
-	variantSerials              *VariantSerialService
-	affiliateProgram            *AffiliateProgramService
-	rewardRules                 *RewardRuleService
-	rewardCouponTemplates       *RewardCouponTemplateService
-	rewardGrants                *RewardGrantService
-	upsellOffers                *UpsellOfferService
-	communityConnections        *CommunityConnectionService
-	walletSettings              *WalletSettingService
-	wallet                      *WalletService
-	walletTransactions          *WalletTransactionService
-	walletTopups                *WalletTopupService
-	cashbackRules               *CashbackRuleService
-	walletBonusTiers            *WalletBonusTierService
-	courses                     *CourseService
-	coursesSections             *CoursesSectionService
-	coursesLessons              *CoursesLessonService
-	paymentMethods              *PaymentMethodService
-	paymentMethodsCustom        *PaymentMethodsCustomService
-	storeSettings               *StoreSettingService
-	storeNotificationChannels   *StoreNotificationChannelService
-	storeCustomDomains          *StoreCustomDomainService
-	creditsProducts             *CreditsProductService
-	creditsBalances             *CreditsBalanceService
-	credits                     *CreditService
-	creditsBalancesTransactions *CreditsBalancesTransactionService
-	affiliates                  *AffiliateService
-	affiliateReferrals          *AffiliateReferralService
-	affiliateReferralSessions   *AffiliateReferralSessionService
-	affiliatePayouts            *AffiliatePayoutService
-	refunds                     *RefundService
-	exports                     *ExportService
-	disputes                    *DisputeService
-	entitlements                *EntitlementService
-	customerSessions            *CustomerSessionService
-	customerPortal              *CustomerPortalService
-	events                      *EventService
-	webhookPlatform             *WebhookPlatformService
-	account                     *AccountService
-	oAuthManagement             *OAuthManagementService
-	blacklists                  *BlacklistService
-	coupons                     *CouponService
-	feedback                    *FeedbackService
-	sections                    *SectionService
-	tickets                     *TicketService
-	ticketsMessages             *TicketsMessageService
-	oAuth                       *OAuthService
+	charges                             *ChargeService
+	groups                              *GroupService
+	groupsProducts                      *GroupsProductService
+	invoices                            *InvoiceService
+	licenses                            *LicenseService
+	licensesInstances                   *LicensesInstanceService
+	licenseInstances                    *LicenseInstanceService
+	products                            *ProductService
+	productsFeaturedVariant             *ProductsFeaturedVariantService
+	productsSimilarProducts             *ProductsSimilarProductService
+	productVariants                     *ProductVariantService
+	productVariantsPricing              *ProductVariantsPricingService
+	productVariantsBooking              *ProductVariantsBookingService
+	productVariantsSubscriptionSettings *ProductVariantsSubscriptionSettingService
+	productVariantsCommunityAccess      *ProductVariantsCommunityAccessService
+	subscriptions                       *SubscriptionService
+	subscriptionsActions                *SubscriptionsActionService
+	bookings                            *BookingService
+	bookingsCalendarEvents              *BookingsCalendarEventService
+	bundleItems                         *BundleItemService
+	variantDeliverables                 *VariantDeliverableService
+	promotions                          *PromotionService
+	promotionsPhases                    *PromotionsPhaseService
+	addOns                              *AddOnService
+	addOnsParentProducts                *AddOnsParentProductService
+	productsAddons                      *ProductsAddonService
+	highlights                          *HighlightService
+	highlightsMedia                     *HighlightsMediaService
+	webhookChannels                     *WebhookChannelService
+	supportReplyTemplates               *SupportReplyTemplateService
+	supportReasons                      *SupportReasonService
+	supportAutomationRules              *SupportAutomationRuleService
+	supportAutomationSettings           *SupportAutomationSettingService
+	customers                           *CustomerService
+	orders                              *OrderService
+	lineItems                           *LineItemService
+	ordersLineItems                     *OrdersLineItemService
+	variantDeliverableFiles             *VariantDeliverableFileService
+	variantDeliverableFolders           *VariantDeliverableFolderService
+	variantSerials                      *VariantSerialService
+	affiliateProgram                    *AffiliateProgramService
+	rewardRules                         *RewardRuleService
+	rewardCouponTemplates               *RewardCouponTemplateService
+	rewardGrants                        *RewardGrantService
+	upsellOffers                        *UpsellOfferService
+	communityConnections                *CommunityConnectionService
+	communityConnectionsServers         *CommunityConnectionsServerService
+	communityConnectionsSlack           *CommunityConnectionsSlackService
+	walletSettings                      *WalletSettingService
+	wallet                              *WalletService
+	walletTransactions                  *WalletTransactionService
+	walletLedger                        *WalletLedgerService
+	walletOverview                      *WalletOverviewService
+	walletTopups                        *WalletTopupService
+	cashbackRules                       *CashbackRuleService
+	walletBonusTiers                    *WalletBonusTierService
+	courses                             *CourseService
+	coursesSections                     *CoursesSectionService
+	coursesLessons                      *CoursesLessonService
+	checkoutFieldTemplates              *CheckoutFieldTemplateService
+	paymentMethods                      *PaymentMethodService
+	paymentMethodsModifier              *PaymentMethodsModifierService
+	paymentMethodsCustom                *PaymentMethodsCustomService
+	storeSettings                       *StoreSettingService
+	storeSenderEmail                    *StoreSenderEmailService
+	storeIntegrations                   *StoreIntegrationService
+	storeNotificationChannels           *StoreNotificationChannelService
+	storeCustomDomains                  *StoreCustomDomainService
+	notifications                       *NotificationService
+	creditsProducts                     *CreditsProductService
+	creditsBalances                     *CreditsBalanceService
+	credits                             *CreditService
+	creditsBalancesTransactions         *CreditsBalancesTransactionService
+	affiliates                          *AffiliateService
+	affiliatesProducts                  *AffiliatesProductService
+	affiliatesCoupon                    *AffiliatesCouponService
+	affiliateReferrals                  *AffiliateReferralService
+	affiliateReferralSessions           *AffiliateReferralSessionService
+	affiliatePayouts                    *AffiliatePayoutService
+	refunds                             *RefundService
+	exports                             *ExportService
+	disputes                            *DisputeService
+	entitlements                        *EntitlementService
+	customerSessions                    *CustomerSessionService
+	customerPortal                      *CustomerPortalService
+	events                              *EventService
+	webhookPlatform                     *WebhookPlatformService
+	account                             *AccountService
+	oAuthManagement                     *OAuthManagementService
+	blacklists                          *BlacklistService
+	coupons                             *CouponService
+	feedback                            *FeedbackService
+	sections                            *SectionService
+	tickets                             *TicketService
+	ticketsMessages                     *TicketsMessageService
+	ticketsWalletRefunds                *TicketsWalletRefundService
+	ticketsAnalytics                    *TicketsAnalyticService
+	oAuth                               *OAuthService
 }
 
 // NewClient creates a new SellApp API client.
@@ -130,14 +151,19 @@ func NewClient(apiKey, store string, opts ...ClientOption) *Client {
 	c.licensesInstances = &LicensesInstanceService{client: c}
 	c.licenseInstances = &LicenseInstanceService{client: c}
 	c.products = &ProductService{client: c}
+	c.productsFeaturedVariant = &ProductsFeaturedVariantService{client: c}
+	c.productsSimilarProducts = &ProductsSimilarProductService{client: c}
 	c.productVariants = &ProductVariantService{client: c}
 	c.productVariantsPricing = &ProductVariantsPricingService{client: c}
 	c.productVariantsBooking = &ProductVariantsBookingService{client: c}
+	c.productVariantsSubscriptionSettings = &ProductVariantsSubscriptionSettingService{client: c}
+	c.productVariantsCommunityAccess = &ProductVariantsCommunityAccessService{client: c}
 	c.subscriptions = &SubscriptionService{client: c}
 	c.subscriptionsActions = &SubscriptionsActionService{client: c}
 	c.bookings = &BookingService{client: c}
 	c.bookingsCalendarEvents = &BookingsCalendarEventService{client: c}
 	c.bundleItems = &BundleItemService{client: c}
+	c.variantDeliverables = &VariantDeliverableService{client: c}
 	c.promotions = &PromotionService{client: c}
 	c.promotionsPhases = &PromotionsPhaseService{client: c}
 	c.addOns = &AddOnService{client: c}
@@ -146,11 +172,14 @@ func NewClient(apiKey, store string, opts ...ClientOption) *Client {
 	c.highlights = &HighlightService{client: c}
 	c.highlightsMedia = &HighlightsMediaService{client: c}
 	c.webhookChannels = &WebhookChannelService{client: c}
+	c.supportReplyTemplates = &SupportReplyTemplateService{client: c}
+	c.supportReasons = &SupportReasonService{client: c}
+	c.supportAutomationRules = &SupportAutomationRuleService{client: c}
+	c.supportAutomationSettings = &SupportAutomationSettingService{client: c}
 	c.customers = &CustomerService{client: c}
 	c.orders = &OrderService{client: c}
 	c.lineItems = &LineItemService{client: c}
 	c.ordersLineItems = &OrdersLineItemService{client: c}
-	c.variantDeliverables = &VariantDeliverableService{client: c}
 	c.variantDeliverableFiles = &VariantDeliverableFileService{client: c}
 	c.variantDeliverableFolders = &VariantDeliverableFolderService{client: c}
 	c.variantSerials = &VariantSerialService{client: c}
@@ -160,25 +189,36 @@ func NewClient(apiKey, store string, opts ...ClientOption) *Client {
 	c.rewardGrants = &RewardGrantService{client: c}
 	c.upsellOffers = &UpsellOfferService{client: c}
 	c.communityConnections = &CommunityConnectionService{client: c}
+	c.communityConnectionsServers = &CommunityConnectionsServerService{client: c}
+	c.communityConnectionsSlack = &CommunityConnectionsSlackService{client: c}
 	c.walletSettings = &WalletSettingService{client: c}
 	c.wallet = &WalletService{client: c}
 	c.walletTransactions = &WalletTransactionService{client: c}
+	c.walletLedger = &WalletLedgerService{client: c}
+	c.walletOverview = &WalletOverviewService{client: c}
 	c.walletTopups = &WalletTopupService{client: c}
 	c.cashbackRules = &CashbackRuleService{client: c}
 	c.walletBonusTiers = &WalletBonusTierService{client: c}
 	c.courses = &CourseService{client: c}
 	c.coursesSections = &CoursesSectionService{client: c}
 	c.coursesLessons = &CoursesLessonService{client: c}
+	c.checkoutFieldTemplates = &CheckoutFieldTemplateService{client: c}
 	c.paymentMethods = &PaymentMethodService{client: c}
+	c.paymentMethodsModifier = &PaymentMethodsModifierService{client: c}
 	c.paymentMethodsCustom = &PaymentMethodsCustomService{client: c}
 	c.storeSettings = &StoreSettingService{client: c}
+	c.storeSenderEmail = &StoreSenderEmailService{client: c}
+	c.storeIntegrations = &StoreIntegrationService{client: c}
 	c.storeNotificationChannels = &StoreNotificationChannelService{client: c}
 	c.storeCustomDomains = &StoreCustomDomainService{client: c}
+	c.notifications = &NotificationService{client: c}
 	c.creditsProducts = &CreditsProductService{client: c}
 	c.creditsBalances = &CreditsBalanceService{client: c}
 	c.credits = &CreditService{client: c}
 	c.creditsBalancesTransactions = &CreditsBalancesTransactionService{client: c}
 	c.affiliates = &AffiliateService{client: c}
+	c.affiliatesProducts = &AffiliatesProductService{client: c}
+	c.affiliatesCoupon = &AffiliatesCouponService{client: c}
 	c.affiliateReferrals = &AffiliateReferralService{client: c}
 	c.affiliateReferralSessions = &AffiliateReferralSessionService{client: c}
 	c.affiliatePayouts = &AffiliatePayoutService{client: c}
@@ -198,6 +238,8 @@ func NewClient(apiKey, store string, opts ...ClientOption) *Client {
 	c.sections = &SectionService{client: c}
 	c.tickets = &TicketService{client: c}
 	c.ticketsMessages = &TicketsMessageService{client: c}
+	c.ticketsWalletRefunds = &TicketsWalletRefundService{client: c}
+	c.ticketsAnalytics = &TicketsAnalyticService{client: c}
 	c.oAuth = &OAuthService{client: c}
 	return c
 }
@@ -242,6 +284,16 @@ func (c *Client) Products() *ProductService {
 	return c.products
 }
 
+// ProductsFeaturedVariant returns the ProductsFeaturedVariant service.
+func (c *Client) ProductsFeaturedVariant() *ProductsFeaturedVariantService {
+	return c.productsFeaturedVariant
+}
+
+// ProductsSimilarProducts returns the ProductsSimilarProducts service.
+func (c *Client) ProductsSimilarProducts() *ProductsSimilarProductService {
+	return c.productsSimilarProducts
+}
+
 // ProductVariants returns the ProductVariants service.
 func (c *Client) ProductVariants() *ProductVariantService {
 	return c.productVariants
@@ -255,6 +307,16 @@ func (c *Client) ProductVariantsPricing() *ProductVariantsPricingService {
 // ProductVariantsBooking returns the ProductVariantsBooking service.
 func (c *Client) ProductVariantsBooking() *ProductVariantsBookingService {
 	return c.productVariantsBooking
+}
+
+// ProductVariantsSubscriptionSettings returns the ProductVariantsSubscriptionSettings service.
+func (c *Client) ProductVariantsSubscriptionSettings() *ProductVariantsSubscriptionSettingService {
+	return c.productVariantsSubscriptionSettings
+}
+
+// ProductVariantsCommunityAccess returns the ProductVariantsCommunityAccess service.
+func (c *Client) ProductVariantsCommunityAccess() *ProductVariantsCommunityAccessService {
+	return c.productVariantsCommunityAccess
 }
 
 // Subscriptions returns the Subscriptions service.
@@ -280,6 +342,11 @@ func (c *Client) BookingsCalendarEvents() *BookingsCalendarEventService {
 // BundleItems returns the BundleItems service.
 func (c *Client) BundleItems() *BundleItemService {
 	return c.bundleItems
+}
+
+// VariantDeliverables returns the VariantDeliverables service.
+func (c *Client) VariantDeliverables() *VariantDeliverableService {
+	return c.variantDeliverables
 }
 
 // Promotions returns the Promotions service.
@@ -322,6 +389,26 @@ func (c *Client) WebhookChannels() *WebhookChannelService {
 	return c.webhookChannels
 }
 
+// SupportReplyTemplates returns the SupportReplyTemplates service.
+func (c *Client) SupportReplyTemplates() *SupportReplyTemplateService {
+	return c.supportReplyTemplates
+}
+
+// SupportReasons returns the SupportReasons service.
+func (c *Client) SupportReasons() *SupportReasonService {
+	return c.supportReasons
+}
+
+// SupportAutomationRules returns the SupportAutomationRules service.
+func (c *Client) SupportAutomationRules() *SupportAutomationRuleService {
+	return c.supportAutomationRules
+}
+
+// SupportAutomationSettings returns the SupportAutomationSettings service.
+func (c *Client) SupportAutomationSettings() *SupportAutomationSettingService {
+	return c.supportAutomationSettings
+}
+
 // Customers returns the Customers service.
 func (c *Client) Customers() *CustomerService {
 	return c.customers
@@ -340,11 +427,6 @@ func (c *Client) LineItems() *LineItemService {
 // OrdersLineItems returns the OrdersLineItems service.
 func (c *Client) OrdersLineItems() *OrdersLineItemService {
 	return c.ordersLineItems
-}
-
-// VariantDeliverables returns the VariantDeliverables service.
-func (c *Client) VariantDeliverables() *VariantDeliverableService {
-	return c.variantDeliverables
 }
 
 // VariantDeliverableFiles returns the VariantDeliverableFiles service.
@@ -392,6 +474,16 @@ func (c *Client) CommunityConnections() *CommunityConnectionService {
 	return c.communityConnections
 }
 
+// CommunityConnectionsServers returns the CommunityConnectionsServers service.
+func (c *Client) CommunityConnectionsServers() *CommunityConnectionsServerService {
+	return c.communityConnectionsServers
+}
+
+// CommunityConnectionsSlack returns the CommunityConnectionsSlack service.
+func (c *Client) CommunityConnectionsSlack() *CommunityConnectionsSlackService {
+	return c.communityConnectionsSlack
+}
+
 // WalletSettings returns the WalletSettings service.
 func (c *Client) WalletSettings() *WalletSettingService {
 	return c.walletSettings
@@ -405,6 +497,16 @@ func (c *Client) Wallet() *WalletService {
 // WalletTransactions returns the WalletTransactions service.
 func (c *Client) WalletTransactions() *WalletTransactionService {
 	return c.walletTransactions
+}
+
+// WalletLedger returns the WalletLedger service.
+func (c *Client) WalletLedger() *WalletLedgerService {
+	return c.walletLedger
+}
+
+// WalletOverview returns the WalletOverview service.
+func (c *Client) WalletOverview() *WalletOverviewService {
+	return c.walletOverview
 }
 
 // WalletTopups returns the WalletTopups service.
@@ -437,9 +539,19 @@ func (c *Client) CoursesLessons() *CoursesLessonService {
 	return c.coursesLessons
 }
 
+// CheckoutFieldTemplates returns the CheckoutFieldTemplates service.
+func (c *Client) CheckoutFieldTemplates() *CheckoutFieldTemplateService {
+	return c.checkoutFieldTemplates
+}
+
 // PaymentMethods returns the PaymentMethods service.
 func (c *Client) PaymentMethods() *PaymentMethodService {
 	return c.paymentMethods
+}
+
+// PaymentMethodsModifier returns the PaymentMethodsModifier service.
+func (c *Client) PaymentMethodsModifier() *PaymentMethodsModifierService {
+	return c.paymentMethodsModifier
 }
 
 // PaymentMethodsCustom returns the PaymentMethodsCustom service.
@@ -452,6 +564,16 @@ func (c *Client) StoreSettings() *StoreSettingService {
 	return c.storeSettings
 }
 
+// StoreSenderEmail returns the StoreSenderEmail service.
+func (c *Client) StoreSenderEmail() *StoreSenderEmailService {
+	return c.storeSenderEmail
+}
+
+// StoreIntegrations returns the StoreIntegrations service.
+func (c *Client) StoreIntegrations() *StoreIntegrationService {
+	return c.storeIntegrations
+}
+
 // StoreNotificationChannels returns the StoreNotificationChannels service.
 func (c *Client) StoreNotificationChannels() *StoreNotificationChannelService {
 	return c.storeNotificationChannels
@@ -460,6 +582,11 @@ func (c *Client) StoreNotificationChannels() *StoreNotificationChannelService {
 // StoreCustomDomains returns the StoreCustomDomains service.
 func (c *Client) StoreCustomDomains() *StoreCustomDomainService {
 	return c.storeCustomDomains
+}
+
+// Notifications returns the Notifications service.
+func (c *Client) Notifications() *NotificationService {
+	return c.notifications
 }
 
 // CreditsProducts returns the CreditsProducts service.
@@ -485,6 +612,16 @@ func (c *Client) CreditsBalancesTransactions() *CreditsBalancesTransactionServic
 // Affiliates returns the Affiliates service.
 func (c *Client) Affiliates() *AffiliateService {
 	return c.affiliates
+}
+
+// AffiliatesProducts returns the AffiliatesProducts service.
+func (c *Client) AffiliatesProducts() *AffiliatesProductService {
+	return c.affiliatesProducts
+}
+
+// AffiliatesCoupon returns the AffiliatesCoupon service.
+func (c *Client) AffiliatesCoupon() *AffiliatesCouponService {
+	return c.affiliatesCoupon
 }
 
 // AffiliateReferrals returns the AffiliateReferrals service.
@@ -580,6 +717,16 @@ func (c *Client) Tickets() *TicketService {
 // TicketsMessages returns the TicketsMessages service.
 func (c *Client) TicketsMessages() *TicketsMessageService {
 	return c.ticketsMessages
+}
+
+// TicketsWalletRefunds returns the TicketsWalletRefunds service.
+func (c *Client) TicketsWalletRefunds() *TicketsWalletRefundService {
+	return c.ticketsWalletRefunds
+}
+
+// TicketsAnalytics returns the TicketsAnalytics service.
+func (c *Client) TicketsAnalytics() *TicketsAnalyticService {
+	return c.ticketsAnalytics
 }
 
 // OAuth returns the OAuth service.

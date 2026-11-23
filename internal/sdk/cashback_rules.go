@@ -15,7 +15,7 @@ type CashbackRuleService struct {
 }
 
 // List cashback rules
-// List current and archived store records. Requires the `wallet` or `wallet:write` API ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List current and archived store records. Requires the `wallet` or `wallet:write` API-key ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *CashbackRuleService) List(ctx context.Context, opts ...RequestOption) (*SdkListCashbackRulesResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("listCashbackRules", false)}, opts...)
 	var result SdkListCashbackRulesResponseValue200ApplicationJSON
@@ -45,7 +45,7 @@ type CashbackRulesCreateParams struct {
 }
 
 // Create a cashback rule
-// Create a cashback rule. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Create a cashback rule. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *CashbackRuleService) Create(ctx context.Context, params *CashbackRulesCreateParams, opts ...RequestOption) (*SdkCreateCashbackRuleResponseValue201ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("createCashbackRule", false)}, opts...)
 	var result SdkCreateCashbackRuleResponseValue201ApplicationJSON
@@ -75,7 +75,7 @@ type CashbackRulesReplaceParams struct {
 }
 
 // Replace update a cashback rule
-// Update a cashback rule. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Update a cashback rule. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *CashbackRuleService) Replace(ctx context.Context, cashbackRule int, params *CashbackRulesReplaceParams, opts ...RequestOption) (*SdkReplaceCashbackRuleResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("replaceCashbackRule", false)}, opts...)
 	var result SdkReplaceCashbackRuleResponseValue200ApplicationJSON
@@ -137,7 +137,7 @@ func (p CashbackRulesUpdateParams) MarshalJSON() ([]byte, error) {
 }
 
 // Update a cashback rule
-// Update a cashback rule. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Update a cashback rule. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *CashbackRuleService) Update(ctx context.Context, cashbackRule int, params *CashbackRulesUpdateParams, opts ...RequestOption) (*SdkUpdateCashbackRuleResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("updateCashbackRule", false)}, opts...)
 	var result SdkUpdateCashbackRuleResponseValue200ApplicationJSON
@@ -159,7 +159,7 @@ func (s *CashbackRuleService) UpdateWithResponse(ctx context.Context, cashbackRu
 }
 
 // Archive a cashback rule
-// Archive a cashback rule. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Archive a cashback rule. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *CashbackRuleService) Archive(ctx context.Context, cashbackRule int, opts ...RequestOption) error {
 	opts = append([]RequestOption{withOperation("archiveCashbackRule", false)}, opts...)
 	_, err := s.client.request(ctx, "DELETE", fmt.Sprintf("/v2/cashback-rules/%s", url.PathEscape(fmt.Sprint(cashbackRule))), nil, nil, nil, opts)
@@ -176,7 +176,7 @@ func (s *CashbackRuleService) ArchiveWithResponse(ctx context.Context, cashbackR
 }
 
 // Restore a cashback rule
-// Restore a cashback rule. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Restore a cashback rule. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *CashbackRuleService) Restore(ctx context.Context, cashbackRule int, opts ...RequestOption) (*SdkRestoreCashbackRuleResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("restoreCashbackRule", false)}, opts...)
 	var result SdkRestoreCashbackRuleResponseValue200ApplicationJSON
@@ -191,6 +191,36 @@ func (s *CashbackRuleService) RestoreWithResponse(ctx context.Context, cashbackR
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
 	value, err := s.Restore(ctx, cashbackRule, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// CashbackRulesQuoteParams contains the parameters for Quote.
+type CashbackRulesQuoteParams struct {
+	// ProductID is the product to quote. Leave it out to quote the store-wide rule.
+	ProductID *int `url:"product_id,omitempty" json:"-"`
+	// PurchaseCents is the purchase amount to quote, in integer USD cents.
+	PurchaseCents *int `url:"purchase_cents,omitempty" json:"-"`
+}
+
+// Quote a cashback rule
+// See which cashback rule a purchase would earn right now, and how much it would add to the customer's wallet, without creating anything. Send `product_id` to check one product (a rule naming the product wins over the store-wide rule); leave it out to check only the store-wide rule. Add `purchase_cents` to get the cashback amount. Amounts are integer USD cents: `purchase_cents=10000` asks about a $100.00 purchase. Requires the `wallet` or `wallet:write` API-key ability and the wallet permission in your team role. A product that is not in your store returns `422` on `product_id`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *CashbackRuleService) Quote(ctx context.Context, params *CashbackRulesQuoteParams, opts ...RequestOption) (*SdkQuoteCashbackRuleResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("quoteCashbackRule", false)}, opts...)
+	var result SdkQuoteCashbackRuleResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", "/v2/cashback-rules/quote", params, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *CashbackRuleService) QuoteWithResponse(ctx context.Context, params *CashbackRulesQuoteParams, opts ...RequestOption) (*RawResponse[*SdkQuoteCashbackRuleResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Quote(ctx, params, captureOpts...)
 	if err != nil {
 		return nil, err
 	}

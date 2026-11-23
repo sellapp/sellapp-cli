@@ -13,17 +13,37 @@ type RefundService struct {
 	client *Client
 }
 
-// List refunds
-// List refunds for orders and standalone charges in the selected store, one page at a time. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
-func (s *RefundService) List(ctx context.Context, opts ...RequestOption) *Iterator[ListRefundsResponseValue200ApplicationJSONPropertyDataItem] {
-	opts = append([]RequestOption{withOperation("listRefunds", false)}, opts...)
-	return newIterator[ListRefundsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/refunds", nil, "after", "data", opts, nil)
+// RefundsListParams contains the parameters for List.
+type RefundsListParams struct {
+	// Page is page number, starting at 1.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
+	// Limit is refunds per page, from 1 to 100.
+	// Defaults to 15.
+	Limit *int `url:"limit,omitempty" json:"-"`
+	// Status is keep refunds in this state: `pending`, `effective`, `failed`, or `cancelled`.
+	Status *RefundsStatus `url:"status,omitempty" json:"-"`
+	// Provider is keep refunds made through this payment provider: `manual`, `mercado_pago`, `nmi`, `mollie`, `paypal`, `razorpay`, `square`, or `stripe`.
+	Provider *RefundsProvider `url:"provider,omitempty" json:"-"`
+	// Source is keep refunds by how they were recorded: `manual`, `provider_webhook`, `provider_api`, or `system`. For example, `provider_api` is a refund SellApp requested from the provider and `provider_webhook` one the provider reported.
+	Source *RefundsSource `url:"source,omitempty" json:"-"`
+	// RefundableType is keep refunds of orders (`order`) or of standalone charges (`charge`).
+	RefundableType *RefundsRefundableType `url:"refundable_type,omitempty" json:"-"`
+	// RefundableID is keep refunds of the order or charge with this ID. Send `refundable_type` with it, because an order and a charge can share an ID.
+	RefundableID *int `url:"refundable_id,omitempty" json:"-"`
 }
 
-func (s *RefundService) ListWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*Iterator[ListRefundsResponseValue200ApplicationJSONPropertyDataItem]], error) {
+// List refunds
+// List refunds for orders and standalone charges in the selected store, newest first, 15 per page by default. Filter by `status`, `provider`, `source`, or the order or charge refunded; filters combine. To see every refund of one order, send `refundable_type=order` and `refundable_id` set to the order ID. A value outside a parameter's accepted values, a `limit` above 100, or a query parameter the endpoint does not take returns `422` on that parameter. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *RefundService) List(ctx context.Context, params *RefundsListParams, opts ...RequestOption) *Iterator[ListRefundsResponseValue200ApplicationJSONPropertyDataItem] {
+	opts = append([]RequestOption{withOperation("listRefunds", false)}, opts...)
+	return newIterator[ListRefundsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/refunds", params, "after", "data", opts, map[string]string{"limit": "15"})
+}
+
+func (s *RefundService) ListWithResponse(ctx context.Context, params *RefundsListParams, opts ...RequestOption) (*RawResponse[*Iterator[ListRefundsResponseValue200ApplicationJSONPropertyDataItem]], error) {
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
-	value := s.List(ctx, captureOpts...)
+	value := s.List(ctx, params, captureOpts...)
 	if err := value.Err(); err != nil {
 		return nil, err
 	}

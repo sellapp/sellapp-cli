@@ -141,17 +141,31 @@ func (s *BlacklistService) DeleteWithResponse(ctx context.Context, blacklist int
 	return rawResponse(struct{}{}, metadata), nil
 }
 
-// V2ListBlacklists list blacklist rules
-// List store-scoped blacklist rules. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
-func (s *BlacklistService) V2ListBlacklists(ctx context.Context, opts ...RequestOption) *Iterator[Blacklist] {
-	opts = append([]RequestOption{withOperation("v2ListBlacklists", false)}, opts...)
-	return newIterator[Blacklist](ctx, s.client, "GET", "/v2/blacklists", nil, "after", "data", opts, nil)
+// BlacklistsV2ListBlacklistsParams contains the parameters for V2ListBlacklists.
+type BlacklistsV2ListBlacklistsParams struct {
+	// Limit is number of items to return per page.
+	// Defaults to 15.
+	Limit *int `url:"limit,omitempty" json:"-"`
+	// Page is page number to return.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
+	// Search is text to look for in the blocked value or the description, matched literally and anywhere in the text, up to 255 characters.
+	Search *string `url:"search,omitempty" json:"-"`
+	// Type is return only rules of this type.
+	Type *BlacklistsType `url:"type,omitempty" json:"-"`
 }
 
-func (s *BlacklistService) V2ListBlacklistsWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*Iterator[Blacklist]], error) {
+// V2ListBlacklists list blacklist rules
+// List your store's blacklist rules, oldest first, 15 per page by default. Narrow the list with `type` and with `search`, which matches part of the blocked value or of the description. An unknown `type`, a `search` longer than 255 characters or a `limit` over 100 returns `422`. An empty `data` array means no rule matches. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *BlacklistService) V2ListBlacklists(ctx context.Context, params *BlacklistsV2ListBlacklistsParams, opts ...RequestOption) *Iterator[Blacklist] {
+	opts = append([]RequestOption{withOperation("v2ListBlacklists", false)}, opts...)
+	return newIterator[Blacklist](ctx, s.client, "GET", "/v2/blacklists", params, "after", "data", opts, map[string]string{"limit": "15"})
+}
+
+func (s *BlacklistService) V2ListBlacklistsWithResponse(ctx context.Context, params *BlacklistsV2ListBlacklistsParams, opts ...RequestOption) (*RawResponse[*Iterator[Blacklist]], error) {
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
-	value := s.V2ListBlacklists(ctx, captureOpts...)
+	value := s.V2ListBlacklists(ctx, params, captureOpts...)
 	if err := value.Err(); err != nil {
 		return nil, err
 	}

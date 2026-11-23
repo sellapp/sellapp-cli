@@ -141,14 +141,14 @@ func (p OrdersSearchParams) MarshalJSON() ([]byte, error) {
 }
 
 // Search orders
-// Find orders using the same filters as the list endpoint. Requires the invoice token ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Find your store's orders by transaction, customer, product, delivery, payment, status, currency, placement time, or total, newest first unless `sort` says otherwise. Every filter must match. Combine a `gte` and an `lte` filter on `created_at` or `total` for a range; a `gte` value above the `lte` value returns `422` on `filters`. An unknown field, an operator the field does not take, or a value of the wrong type returns `422` on its position, such as `filters.0.operator`. Requires the invoice token ability. Read-only and safe to repeat. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *OrderService) Search(ctx context.Context, params *OrdersSearchParams, opts ...RequestOption) *Iterator[SearchOrdersResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("searchOrders", false)}, opts...)
 	return newIterator[SearchOrdersResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", "/v2/orders/search", nil, "after", "data", opts, nil, paginationRequestBody{value: func() any {
 		if params == nil {
 			return nil
 		}
-		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkSearchOrdersRequestApplicationJson\",\"properties\":{\"filters\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchOrdersRequestApplicationJsonPropertyFiltersItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"operator\":{\"kind\":\"enum\",\"values\":[\"eq\",\"contains\",\"in\"]},\"value\":{\"kind\":\"primitive\",\"type\":\"unknown\"}},\"required\":[\"field\",\"operator\",\"value\"],\"additionalProperties\":false},\"constraints\":{\"maxItems\":25}},\"sort\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchOrdersRequestApplicationJsonPropertySortItem\",\"properties\":{\"field\":{\"kind\":\"literal\",\"value\":\"created_at\"},\"direction\":{\"kind\":\"enum\",\"values\":[\"asc\",\"desc\"]}},\"required\":[\"field\",\"direction\"],\"additionalProperties\":false},\"constraints\":{\"maxItems\":1}},\"pagination\":{\"kind\":\"object\",\"modelName\":\"SearchOrdersRequestApplicationJsonPropertyPagination\",\"properties\":{\"page\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}},\"limit\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":100}}},\"required\":[],\"additionalProperties\":false}},\"required\":[],\"additionalProperties\":false}"))
+		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkSearchOrdersRequestApplicationJson\",\"properties\":{\"filters\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchOrdersRequestApplicationJsonPropertyFiltersItem\",\"properties\":{\"field\":{\"kind\":\"enum\",\"values\":[\"id\",\"customer_email\",\"transaction_id\",\"serial_code\",\"additional_information\",\"line_item_title\",\"discord_user_id\",\"discord_username\",\"blockchain_txid\",\"crypto_address\",\"coupon_code\",\"status\",\"payment_method\",\"product_id\",\"currency\",\"created_at\",\"total\"]},\"operator\":{\"kind\":\"enum\",\"values\":[\"eq\",\"contains\",\"in\",\"gte\",\"lte\"]},\"value\":{\"kind\":\"primitive\",\"type\":\"unknown\"}},\"required\":[\"field\",\"operator\",\"value\"],\"additionalProperties\":false},\"constraints\":{\"maxItems\":25}},\"sort\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchOrdersRequestApplicationJsonPropertySortItem\",\"properties\":{\"field\":{\"kind\":\"literal\",\"value\":\"created_at\"},\"direction\":{\"kind\":\"enum\",\"values\":[\"asc\",\"desc\"]}},\"required\":[\"field\",\"direction\"],\"additionalProperties\":false},\"constraints\":{\"maxItems\":1}},\"pagination\":{\"kind\":\"object\",\"modelName\":\"SearchOrdersRequestApplicationJsonPropertyPagination\",\"properties\":{\"page\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}},\"limit\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":100}}},\"required\":[],\"additionalProperties\":false}},\"required\":[],\"additionalProperties\":false}"))
 	}(), pageField: "pagination"})
 }
 
@@ -189,6 +189,8 @@ type OrdersUpdateStatusParams struct {
 	Status SdkUpdateOrderStatusRequestApplicationJSONStatus `json:"status" url:"-"`
 	// ExpectedStatus is expected current status. A status update checks this under the order lock and returns 422 if the order has changed.
 	ExpectedStatus *ExpectedStatus `json:"expected_status,omitempty" url:"-"`
+	// PaymentReceived is send `true` to confirm that the store received the payment for this order outside SellApp, which can release purchased products to the customer. `true` is accepted only with `status: COMPLETED` (otherwise `422` on `payment_received`) and requires `expected_status` (otherwise `422` on `expected_status`). `false` is accepted with any status and changes nothing.
+	PaymentReceived *bool `json:"payment_received,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
 	// clearing the corresponding value (e.g. []string{"external_id"}).
 	NullFields []string `json:"-" url:"-"`
@@ -221,11 +223,11 @@ func (p OrdersUpdateStatusParams) MarshalJSON() ([]byte, error) {
 }
 
 // UpdateStatus update order status
-// Change order lifecycle state. COMPLETED finalizes fulfillment of an already paid/partial/disputing order; it does not capture a pending payment. VOIDED can schedule provider side effects. REVIEW and DISPUTING have state restrictions. Send expected_status to prevent overwriting a changed state; an invalid transition, stale status, or busy lifecycle lock returns 422. Requires the invoice ability or orders:write OAuth scope and current store permission. Idempotency-Key is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns 409. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Change order lifecycle state. COMPLETED finalizes fulfillment of an already paid/partial/disputing order; it does not capture a pending payment. VOIDED can schedule provider side effects. REVIEW and DISPUTING have state restrictions. Send expected_status to prevent overwriting a changed state; an invalid transition, stale status, or busy lifecycle lock returns 422. To record a payment the store received outside SellApp, send `status: COMPLETED` with `payment_received: true` and `expected_status` set to the status you last read; this is the dashboard's manual completion. A `PENDING`, `REVIEW`, or `VOIDED` order then becomes `PAID` and delivery to the customer starts; a `PAID` or `PARTIAL` order has its delivery finished and becomes `COMPLETED`. An order can be marked paid by hand only when its total is at most 100000 minor units of its currency ($1,000.00 in USD), unless it is a custom payment method order in `REVIEW`. A larger order, or an order in any other status, returns `422` on `status`; a status that changed since you read it returns `422` on `expected_status`. Without `payment_received`, a `PENDING` order cannot be completed. Requires the `invoice` API-key ability or the `orders:write` OAuth scope, and current store permission. `Idempotency-Key` is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns `409`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *OrderService) UpdateStatus(ctx context.Context, order int, params *OrdersUpdateStatusParams, opts ...RequestOption) (*SdkUpdateOrderStatusResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("updateOrderStatus", true)}, opts...)
 	var result SdkUpdateOrderStatusResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v2/orders/%s/status", url.PathEscape(fmt.Sprint(order))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateOrderStatusRequestApplicationJson\",\"properties\":{\"status\":{\"kind\":\"enum\",\"values\":[\"COMPLETED\",\"VOIDED\",\"REVIEW\",\"DISPUTING\"]},\"expected_status\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"enum\",\"values\":[\"PENDING\",\"REVERSED\",\"PARTIAL\",\"VOIDED\",\"REFUNDED\",\"PAID\",\"COMPLETED\",\"DISPUTING\",\"REVIEW\",\"FAILED\",\"null\"]}}},\"required\":[\"status\"],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v2/orders/%s/status", url.PathEscape(fmt.Sprint(order))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateOrderStatusRequestApplicationJson\",\"properties\":{\"status\":{\"kind\":\"enum\",\"values\":[\"COMPLETED\",\"VOIDED\",\"REVIEW\",\"DISPUTING\"]},\"expected_status\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"enum\",\"values\":[\"PENDING\",\"REVERSED\",\"PARTIAL\",\"VOIDED\",\"REFUNDED\",\"PAID\",\"COMPLETED\",\"DISPUTING\",\"REVIEW\",\"FAILED\",\"null\"]}},\"payment_received\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[\"status\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -278,7 +280,7 @@ func (p OrdersCreateCheckoutParams) MarshalJSON() ([]byte, error) {
 }
 
 // CreateCheckout create order checkout
-// Start or reuse checkout for a PENDING order. A new payment session returns 201; if the order already has one, that session is returned with 200. An order that costs nothing, or that the customer wallet covers in full, is marked as paid and returns 200 with a null payment.checkout_url. A free trial sold through Stripe, PayPal, or Razorpay is the exception: the customer still has to authorise the subscription with that provider, so checkout returns its payment.checkout_url and the order stays PENDING until they do. An unpaid order that sold a trial stops being payable after 72 hours, or on those three providers once the trial it sold is about to end; checkout then returns 422 on order.checkout, the order stays PENDING, and the customer has to start a new checkout. An order that is no longer PENDING also returns 422 on order.checkout. Other failures can mark the order FAILED and release wallet reservations. Do not infer payment from a checkout URL or browser return. The optional expected_status field is validated but is not a checkout concurrency precondition. Requires the invoice ability or orders:write OAuth scope and current store permission. Idempotency-Key is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns 409. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Start or reuse checkout for a PENDING order. A new payment session returns 201; if the order already has one, that session is returned with 200. An order that costs nothing, or that the customer wallet covers in full, is marked as paid and returns 200 with a null payment.checkout_url. A free trial sold through Stripe, PayPal, or Razorpay is the exception: the customer still has to authorise the subscription with that provider, so checkout returns its payment.checkout_url and the order stays PENDING until they do. An unpaid order that sold a trial stops being payable after 72 hours, or on those three providers once the trial it sold is about to end; checkout then returns 422 on order.checkout, the order stays PENDING, and the customer has to start a new checkout. An order that is no longer PENDING also returns 422 on order.checkout. Other failures can mark the order FAILED and release wallet reservations. Do not infer payment from a checkout URL or browser return. The optional expected_status field is validated but is not a checkout concurrency precondition. Requires the `invoice` API-key ability or the `orders:write` OAuth scope, and current store permission. `Idempotency-Key` is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns `409`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *OrderService) CreateCheckout(ctx context.Context, order int, params *OrdersCreateCheckoutParams, opts ...RequestOption) (*SdkCreateOrderCheckoutResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("createOrderCheckout", true)}, opts...)
 	var result SdkCreateOrderCheckoutResponseValue200ApplicationJSON
@@ -306,15 +308,15 @@ func (s *OrderService) CreateCheckoutWithResponse(ctx context.Context, order int
 
 // OrdersCreateReplacementParams contains the parameters for CreateReplacement.
 type OrdersCreateReplacementParams struct {
-	ProductVariants *CreateOrderReplacementRequestApplicationJSONPropertyProductVariants `json:"product_variants" url:"-"`
+	ProductVariants interface{} `json:"product_variants" url:"-"`
 }
 
 // CreateReplacement issue replacements
-// Create a replacement order and begin fulfillment for selected purchased variants. Supply a variant ID, an array of variant IDs, or a map of variant IDs to replacement quantities (null means original quantity). Variants must belong to this order; replacement quantities cannot exceed purchased quantity or available stock. Already replaced deliveries cannot be replaced again. The returned ID belongs to the new replacement order. Requires the invoice ability or orders:write OAuth scope and current store permission. Idempotency-Key is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns 409. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Create a replacement order and begin fulfillment for selected purchased variants. Supply a variant ID, an array of variant IDs, or a map of variant IDs to replacement quantities (null means original quantity). Variants must belong to this order; replacement quantities cannot exceed purchased quantity or available stock. Already replaced deliveries cannot be replaced again. The returned ID belongs to the new replacement order. Requires the `invoice` API-key ability or the `orders:write` OAuth scope, and current store permission. `Idempotency-Key` is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns `409`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *OrderService) CreateReplacement(ctx context.Context, order int, params *OrdersCreateReplacementParams, opts ...RequestOption) (*SdkCreateOrderReplacementResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("createOrderReplacement", true)}, opts...)
 	var result SdkCreateOrderReplacementResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/orders/%s/replacements", url.PathEscape(fmt.Sprint(order))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCreateOrderReplacementRequestApplicationJson\",\"properties\":{\"product_variants\":{\"kind\":\"object\",\"modelName\":\"CreateOrderReplacementRequestApplicationJsonPropertyProductVariants\",\"properties\":{},\"required\":[],\"additionalProperties\":true}},\"required\":[\"product_variants\"],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/orders/%s/replacements", url.PathEscape(fmt.Sprint(order))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCreateOrderReplacementRequestApplicationJson\",\"properties\":{\"product_variants\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"integer\"},{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},{\"kind\":\"object\",\"modelName\":\"CreateOrderReplacementRequestApplicationJsonPropertyProductVariantsAnyOfValue3\",\"properties\":{},\"required\":[],\"additionalProperties\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\"}}}],\"composition\":\"anyOf\"}},\"required\":[\"product_variants\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -333,8 +335,10 @@ func (s *OrderService) CreateReplacementWithResponse(ctx context.Context, order 
 
 // OrdersCreateRefundParams contains the parameters for CreateRefund.
 type OrdersCreateRefundParams struct {
-	// Amount is decimal major-unit amount in the order currency, positive and no greater than remaining balance. Precision follows that currency. Omission/null/empty requests the full remaining balance.
+	// Amount is decimal major-unit amount in the order's `totals.refund_currency`, positive and no greater than remaining balance. Precision follows that currency. Omission/null/empty requests the full remaining balance.
 	Amount *string `json:"amount,omitempty" url:"-"`
+	// ExpectedRefundedTotalCents is the refunded total you expect, in integer minor units of the order's `totals.refund_currency`, which can differ from the order currency: `500` means $5.00 in USD. Read it from `totals.refunded_total_cents` on the order and send it unchanged; it is `0` before the first refund. After a refund, `data.order.totals.refunded_total_cents` in the response is the value to send with the next one. With this field, the refund goes out only while the refunded total still equals it and no other refund on the order is pending. Omit it or send null to refund without the check.
+	ExpectedRefundedTotalCents *int `json:"expected_refunded_total_cents,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
 	// clearing the corresponding value (e.g. []string{"external_id"}).
 	NullFields []string `json:"-" url:"-"`
@@ -355,7 +359,8 @@ func (p OrdersCreateRefundParams) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	nullable := map[string]bool{
-		"amount": true,
+		"amount":                        true,
+		"expected_refunded_total_cents": true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -367,7 +372,7 @@ func (p OrdersCreateRefundParams) MarshalJSON() ([]byte, error) {
 }
 
 // CreateRefund refund an order
-// Request a real refund for a completed, nonsubscription order with refundable balance and a supported provider. amount is a decimal string in the order currency: "5.00" means $5.00 in USD, not 500 cents. Omitting amount, sending null, or an empty string requests the FULL remaining balance. Do not send amount_cents: it is not a request field. Inspect refund.status (pending/effective/failed/cancelled); a 200 response does not guarantee money has reached the customer. Retrieve refund state before retrying an uncertain provider outcome. Requires the invoice ability or orders:write OAuth scope and current store permission. Idempotency-Key is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns 409. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Request a real refund for a completed, nonsubscription order with refundable balance and a supported provider. amount is a decimal string in the order's `totals.refund_currency`: "5.00" means $5.00 in USD, not 500 cents. Omitting amount, sending null, or an empty string requests the FULL remaining balance. Do not send amount_cents: it is not a request field. Inspect refund.status (pending/effective/failed/cancelled); a 200 response does not guarantee money has reached the customer. Retrieve refund state before retrying an uncertain provider outcome. Send the order's `totals.refunded_total_cents` unchanged as `expected_refunded_total_cents` so that a retry under a new Idempotency-Key, or a refund someone else made meanwhile, is refused instead of refunding twice: the refund goes out only while the order's refunded total still equals it. A changed total returns `422` on `expected_refunded_total_cents`; read the order again before deciding whether to refund. An invalid `amount` returns `422` on `amount`; other refusals return `422` on `refund`, including, when you send `expected_refunded_total_cents`, a refund still pending on the order. Requires the `invoice` API-key ability or the `orders:write` OAuth scope, and current store permission. `Idempotency-Key` is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns `409`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *OrderService) CreateRefund(ctx context.Context, order int, params *OrdersCreateRefundParams, opts ...RequestOption) (*SdkCreateOrderRefundResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("createOrderRefund", true)}, opts...)
 	var result SdkCreateOrderRefundResponseValue200ApplicationJSON
@@ -375,7 +380,7 @@ func (s *OrderService) CreateRefund(ctx context.Context, order int, params *Orde
 		if params == nil {
 			return nil
 		}
-		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCreateOrderRefundRequestApplicationJson\",\"properties\":{\"amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":32}}}},\"required\":[],\"additionalProperties\":true}"))
+		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCreateOrderRefundRequestApplicationJson\",\"properties\":{\"amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":32}}},\"expected_refunded_total_cents\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0}}}},\"required\":[],\"additionalProperties\":true}"))
 	}(), &result, opts)
 	if err != nil {
 		return nil, err
@@ -429,7 +434,7 @@ func (p OrdersRetryFulfillmentParams) MarshalJSON() ([]byte, error) {
 }
 
 // RetryFulfillment
-// Reset fulfillment effects for a PAID or PARTIAL order and retry delivery. The optional email overrides the recipient. meta.effects_reset counts reset effects; it does not prove fulfillment finished. Other order states and a busy lifecycle lock return 422. Requires the invoice ability or orders:write OAuth scope and current store permission. Idempotency-Key is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns 409. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Reset fulfillment effects for a PAID or PARTIAL order and retry delivery. The optional email overrides the recipient. meta.effects_reset counts reset effects; it does not prove fulfillment finished. Other order states and a busy lifecycle lock return 422. Requires the `invoice` API-key ability or the `orders:write` OAuth scope, and current store permission. `Idempotency-Key` is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns `409`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *OrderService) RetryFulfillment(ctx context.Context, order int, params *OrdersRetryFulfillmentParams, opts ...RequestOption) (*SdkRetryOrderFulfillmentResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("retryOrderFulfillment", true)}, opts...)
 	var result SdkRetryOrderFulfillmentResponseValue200ApplicationJSON
@@ -457,12 +462,12 @@ func (s *OrderService) RetryFulfillmentWithResponse(ctx context.Context, order i
 
 // OrdersRetryDynamicDeliveryParams contains the parameters for RetryDynamicDelivery.
 type OrdersRetryDynamicDeliveryParams struct {
-	// DeliveredProductID is delivered product record ID, not a catalog product or order line-item ID. The public order-deliverables response does not currently expose this ID; obtain it from an authorized integration context before requesting a retry.
+	// DeliveredProductID is delivered product record ID, not a catalog product or order line-item ID. Read it from `delivered_product_id` in `GET /v2/orders/{order}/deliverables`.
 	DeliveredProductID int `json:"delivered_product_id" url:"-"`
 }
 
 // RetryDynamicDelivery
-// Queue another dynamic delivery attempt for one delivered product of a COMPLETED order. The delivered product, line item and currently dynamic variant must all belong to this order and store, with a configured webhook. 202 and meta.queued acknowledge the retry request, not successful external delivery. Requires the invoice ability or orders:write OAuth scope and current store permission. Idempotency-Key is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns 409. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Queue another dynamic delivery attempt for one delivered product of a COMPLETED order. The delivered product, line item and currently dynamic variant must all belong to this order and store, with a configured webhook. 202 and meta.queued acknowledge the retry request, not successful external delivery. Requires the `invoice` API-key ability or the `orders:write` OAuth scope, and current store permission. `Idempotency-Key` is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns `409`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *OrderService) RetryDynamicDelivery(ctx context.Context, order int, params *OrdersRetryDynamicDeliveryParams, opts ...RequestOption) (*SdkRetryOrderDynamicDeliveryResponseValue202ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("retryOrderDynamicDelivery", true)}, opts...)
 	var result SdkRetryOrderDynamicDeliveryResponseValue202ApplicationJSON
@@ -521,7 +526,7 @@ func (p OrdersSendFulfillmentNotificationsParams) MarshalJSON() ([]byte, error) 
 }
 
 // SendFulfillmentNotifications
-// Send delivery notifications for each selected purchased variant. Omit product_variant_ids to select all variants. A supplied list must contain distinct positive IDs belonging to this order and store. Noncompleted orders or a missing recipient return meta.notifications_sent=0. The count records notifications requested, not email delivery confirmation. Requires the invoice ability or orders:write OAuth scope and current store permission. Idempotency-Key is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns 409. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Send delivery notifications for each selected purchased variant. Omit product_variant_ids to select all variants. A supplied list must contain distinct positive IDs belonging to this order and store. Noncompleted orders or a missing recipient return meta.notifications_sent=0. The count records notifications requested, not email delivery confirmation. Requires the `invoice` API-key ability or the `orders:write` OAuth scope, and current store permission. `Idempotency-Key` is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns `409`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *OrderService) SendFulfillmentNotifications(ctx context.Context, order int, params *OrdersSendFulfillmentNotificationsParams, opts ...RequestOption) (*SdkSendOrderFulfillmentNotificationsResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("sendOrderFulfillmentNotifications", true)}, opts...)
 	var result SdkSendOrderFulfillmentNotificationsResponseValue200ApplicationJSON
@@ -547,8 +552,70 @@ func (s *OrderService) SendFulfillmentNotificationsWithResponse(ctx context.Cont
 	return rawResponse(value, metadata), nil
 }
 
+// OrdersRegenerateTelegramInviteParams contains the parameters for RegenerateTelegramInvite.
+type OrdersRegenerateTelegramInviteParams struct {
+	// VariantID is the purchased product variant whose Telegram access needs a new link, as in `line_items[].product_variant_id`. Required only when the order grants Telegram access for more than one product.
+	VariantID *int `json:"variant_id,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for OrdersRegenerateTelegramInviteParams.
+func (p OrdersRegenerateTelegramInviteParams) MarshalJSON() ([]byte, error) {
+	type Alias OrdersRegenerateTelegramInviteParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"variant_id": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("OrdersRegenerateTelegramInviteParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
+}
+
+// RegenerateTelegramInvite create a Telegram invite link
+// Create a new Telegram invite link for a customer whose order granted access to a Telegram group or channel, for example after their first link expired or was used. Each link admits one person and expires 24 hours after it is created. SellApp saves the link on the order but does not send it: pass `invite_link` to the customer yourself. Send `variant_id` to choose the product when the order grants Telegram access for several; omit it when only one does. At most three links per product of an order are created in 24 hours, and a failed attempt does not count; a fourth returns `422` on `telegram_invite`, as do Telegram refusals such as an unhealthy bot connection or missing invite data. An order that is no longer paid, for example one refunded, disputed or voided, returns `422` on `telegram_invite` with `This order no longer grants Telegram access.` and creates no link. An order without granted Telegram access returns `422` on `order`; a product without it, or a missing `variant_id` when several products qualify, returns `422` on `variant_id`. Requires the `invoice` API-key ability or the `orders:write` OAuth scope, and current store permission. `Idempotency-Key` is required. Reuse the same key and identical request after a lost response; changed input or an in-progress request returns `409`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *OrderService) RegenerateTelegramInvite(ctx context.Context, order int, params *OrdersRegenerateTelegramInviteParams, opts ...RequestOption) (*SdkRegenerateOrderTelegramInviteResponseValue201ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("regenerateOrderTelegramInvite", true)}, opts...)
+	var result SdkRegenerateOrderTelegramInviteResponseValue201ApplicationJSON
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/orders/%s/telegram-invites", url.PathEscape(fmt.Sprint(order))), nil, func() any {
+		if params == nil {
+			return nil
+		}
+		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkRegenerateOrderTelegramInviteRequestApplicationJson\",\"properties\":{\"variant_id\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}}},\"required\":[],\"additionalProperties\":true}"))
+	}(), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *OrderService) RegenerateTelegramInviteWithResponse(ctx context.Context, order int, params *OrdersRegenerateTelegramInviteParams, opts ...RequestOption) (*RawResponse[*SdkRegenerateOrderTelegramInviteResponseValue201ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.RegenerateTelegramInvite(ctx, order, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
 // ListDeliverables list order deliverables
-// List seller-visible fulfillment records, expanding purchased bundle snapshots into their component variants. File download links expire after one hour. This payload includes line-item and variant IDs but does not expose the delivered_product_id required for dynamic delivery retries. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List seller-visible fulfillment records, expanding purchased bundle snapshots into their component variants. File download links expire after one hour. A delivered record carries `delivered_product_id`, which `POST /v2/orders/{order}/dynamic-delivery-retries` takes to retry a dynamic delivery. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *OrderService) ListDeliverables(ctx context.Context, order int, opts ...RequestOption) (*SdkListOrderDeliverablesResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("listOrderDeliverables", false)}, opts...)
 	var result SdkListOrderDeliverablesResponseValue200ApplicationJSON

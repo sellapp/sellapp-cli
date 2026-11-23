@@ -44,6 +44,95 @@ func (s *CourseService) ListWithResponse(ctx context.Context, params *CoursesLis
 	return rawResponse(value, metadata), nil
 }
 
+// CoursesCreateParams contains the parameters for Create.
+type CoursesCreateParams struct {
+	Category           *Category                                        `json:"category,omitempty" url:"-"`
+	Level              *SdkCreateCourseRequestApplicationJSONLevel      `json:"level,omitempty" url:"-"`
+	Language           *string                                          `json:"language,omitempty" url:"-"`
+	Subtitle           *string                                          `json:"subtitle,omitempty" url:"-"`
+	Author             *string                                          `json:"author,omitempty" url:"-"`
+	Subcategory        *string                                          `json:"subcategory,omitempty" url:"-"`
+	WhatYouLearn       []string                                         `json:"what_you_learn,omitempty" url:"-"`
+	Requirements       []string                                         `json:"requirements,omitempty" url:"-"`
+	CertificateEnabled *bool                                            `json:"certificate_enabled,omitempty" url:"-"`
+	AccessType         *SdkCreateCourseRequestApplicationJSONAccessType `json:"access_type,omitempty" url:"-"`
+	// AccessDurationDays is required when access_type is limited; cleared otherwise.
+	AccessDurationDays *int    `json:"access_duration_days,omitempty" url:"-"`
+	EnrollmentLimit    *int    `json:"enrollment_limit,omitempty" url:"-"`
+	DeliveryText       *string `json:"delivery_text,omitempty" url:"-"`
+	// Title is the course name customers see.
+	Title string `json:"title" url:"-"`
+	// Slug is the last part of the course's storefront URL: lowercase letters and numbers in words joined by single hyphens, such as `design-foundations`. It must be unused by every other product in the store, or the request returns `422` on `slug`. When you leave it out, SellApp makes one from the title.
+	Slug *string `json:"slug,omitempty" url:"-"`
+	// Description is the course description as HTML, at least 5 characters long and at most 2000 characters of visible text. Leave it out, or send null, to start without one; a course needs a description before it is published.
+	Description *string            `json:"description,omitempty" url:"-"`
+	Visibility  *CatalogVisibility `json:"visibility,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for CoursesCreateParams.
+func (p CoursesCreateParams) MarshalJSON() ([]byte, error) {
+	type Alias CoursesCreateParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 && p.WhatYouLearn == nil && p.Requirements == nil {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	if p.WhatYouLearn != nil {
+		m["what_you_learn"] = p.WhatYouLearn
+	}
+	if p.Requirements != nil {
+		m["requirements"] = p.Requirements
+	}
+	nullable := map[string]bool{
+		"category":             true,
+		"subtitle":             true,
+		"author":               true,
+		"subcategory":          true,
+		"access_duration_days": true,
+		"enrollment_limit":     true,
+		"delivery_text":        true,
+		"description":          true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("CoursesCreateParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
+}
+
+// Create a course
+// Create a course as a draft that customers cannot buy yet, whatever `visibility` you send: `visibility`, `HIDDEN` by default, applies once the course is published. It starts with no sections and one draft option named `Default`, priced at 0 USD: set the price with the product variant endpoints, add sections and lessons, then publish it with `POST /v2/products/{product}/publish`, where `{product}` is the course `id`. Each successful call creates another course, so do not retry blindly after a lost response: search courses for the title first. Requires the `listing` API-key ability and the `listing` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *CourseService) Create(ctx context.Context, params *CoursesCreateParams, opts ...RequestOption) (*SdkCreateCourseResponseValue201ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("createCourse", false)}, opts...)
+	var result SdkCreateCourseResponseValue201ApplicationJSON
+	_, err := s.client.request(ctx, "POST", "/v2/courses", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCreateCourseRequestApplicationJson\",\"properties\":{\"category\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"enum\",\"values\":[\"development\",\"business\",\"marketing\",\"design\",\"finance\",\"it-software\",\"personal-development\",\"productivity\",\"other\",\"null\"]}},\"level\":{\"kind\":\"enum\",\"values\":[\"all_levels\",\"beginner\",\"intermediate\",\"advanced\"]},\"language\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"subtitle\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":120}}},\"author\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":120}}},\"subcategory\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"what_you_learn\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"constraints\":{\"maxItems\":50}},\"requirements\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"constraints\":{\"maxItems\":50}},\"certificate_enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"access_type\":{\"kind\":\"enum\",\"values\":[\"lifetime\",\"limited\"]},\"access_duration_days\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":3650}}},\"enrollment_limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"delivery_text\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":65535}}},\"title\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minLength\":1,\"maxLength\":255}},\"slug\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255,\"pattern\":\"^[a-z0-9]+(?:-[a-z0-9]+)*$\"}},\"description\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minLength\":5}}},\"visibility\":{\"kind\":\"enum\",\"values\":[\"PUBLIC\",\"ON_HOLD\",\"HIDDEN\",\"PRIVATE\"]}},\"required\":[\"title\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *CourseService) CreateWithResponse(ctx context.Context, params *CoursesCreateParams, opts ...RequestOption) (*RawResponse[*SdkCreateCourseResponseValue201ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Create(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
 // CoursesSearchParams contains the parameters for Search.
 type CoursesSearchParams struct {
 	Filters  []*SearchRewardRulesRequestApplicationJSONPropertyFiltersItem  `json:"filters,omitempty" url:"-"`
@@ -148,7 +237,14 @@ type CoursesReplaceParams struct {
 	EnrollmentLimit    *int               `json:"enrollment_limit,omitempty" url:"-"`
 	DeliveryText       *string            `json:"delivery_text,omitempty" url:"-"`
 	Visibility         *CatalogVisibility `json:"visibility,omitempty" url:"-"`
-	ExpectedUpdatedAt  *string            `json:"expected_updated_at,omitempty" url:"-"`
+	// ExpectedUpdatedAt is the `updated_at` you last read. If the course changed since, the request returns `422` on `expected_updated_at` and changes nothing. It is checked even when the request changes nothing else.
+	ExpectedUpdatedAt *string `json:"expected_updated_at,omitempty" url:"-"`
+	// Title is the course name customers see.
+	Title *string `json:"title,omitempty" url:"-"`
+	// Slug is the last part of the course's storefront URL: lowercase letters and numbers in words joined by single hyphens, such as `design-foundations`. It must be unused by every other product in the store, or the request returns `422` on `slug`.
+	Slug *string `json:"slug,omitempty" url:"-"`
+	// Description is the course description as HTML, at least 5 characters long and at most 2000 characters of visible text. `null` keeps the current description. To clear the description of a draft course, send an empty element such as `<p></p>`; a published course must keep one, so clearing it returns `422` on `description`.
+	Description *string `json:"description,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
 	// clearing the corresponding value (e.g. []string{"external_id"}).
 	NullFields []string `json:"-" url:"-"`
@@ -182,6 +278,7 @@ func (p CoursesReplaceParams) MarshalJSON() ([]byte, error) {
 		"access_duration_days": true,
 		"enrollment_limit":     true,
 		"delivery_text":        true,
+		"description":          true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -193,11 +290,11 @@ func (p CoursesReplaceParams) MarshalJSON() ([]byte, error) {
 }
 
 // Replace update a course
-// Update course metadata, access configuration, delivery copy, or publication visibility. Public visibility requires a ready promotional video and at least one published lesson. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Update a course's title, URL slug, description, details, access rules, delivery message, or visibility. Only the fields you send change, and PUT behaves exactly like PATCH. Sending the course's current `visibility` changes nothing; a different `visibility` also publishes a draft course. `PUBLIC` first checks that the course has a ready promotional video and at least one published lesson, and otherwise returns `422` on `promo_video` or `curriculum` without changing anything. Every successful update moves `updated_at` forward, even one that changes nothing, so retrying with the same `expected_updated_at` after a success returns `422`: retrieve the course again first. Requires the `listing` API-key ability and the `listing` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *CourseService) Replace(ctx context.Context, course string, params *CoursesReplaceParams, opts ...RequestOption) (*SdkReplaceCourseResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("replaceCourse", false)}, opts...)
 	var result SdkReplaceCourseResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PUT", fmt.Sprintf("/v2/courses/%s", url.PathEscape(fmt.Sprint(course))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReplaceCourseRequestApplicationJson\",\"properties\":{\"category\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"enum\",\"values\":[\"development\",\"business\",\"marketing\",\"design\",\"finance\",\"it-software\",\"personal-development\",\"productivity\",\"other\",\"null\"]}},\"level\":{\"kind\":\"enum\",\"values\":[\"all_levels\",\"beginner\",\"intermediate\",\"advanced\"]},\"language\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"subtitle\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":120}}},\"author\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":120}}},\"subcategory\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"what_you_learn\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"constraints\":{\"maxItems\":50}},\"requirements\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"constraints\":{\"maxItems\":50}},\"certificate_enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"access_type\":{\"kind\":\"enum\",\"values\":[\"lifetime\",\"limited\"]},\"access_duration_days\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":3650}}},\"enrollment_limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"delivery_text\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":65535}}},\"visibility\":{\"kind\":\"enum\",\"values\":[\"PUBLIC\",\"ON_HOLD\",\"HIDDEN\",\"PRIVATE\"]},\"expected_updated_at\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PUT", fmt.Sprintf("/v2/courses/%s", url.PathEscape(fmt.Sprint(course))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReplaceCourseRequestApplicationJson\",\"properties\":{\"category\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"enum\",\"values\":[\"development\",\"business\",\"marketing\",\"design\",\"finance\",\"it-software\",\"personal-development\",\"productivity\",\"other\",\"null\"]}},\"level\":{\"kind\":\"enum\",\"values\":[\"all_levels\",\"beginner\",\"intermediate\",\"advanced\"]},\"language\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"subtitle\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":120}}},\"author\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":120}}},\"subcategory\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"what_you_learn\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"constraints\":{\"maxItems\":50}},\"requirements\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"constraints\":{\"maxItems\":50}},\"certificate_enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"access_type\":{\"kind\":\"enum\",\"values\":[\"lifetime\",\"limited\"]},\"access_duration_days\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":3650}}},\"enrollment_limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"delivery_text\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":65535}}},\"visibility\":{\"kind\":\"enum\",\"values\":[\"PUBLIC\",\"ON_HOLD\",\"HIDDEN\",\"PRIVATE\"]},\"expected_updated_at\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"},\"title\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minLength\":1,\"maxLength\":255}},\"slug\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255,\"pattern\":\"^[a-z0-9]+(?:-[a-z0-9]+)*$\"}},\"description\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minLength\":5}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +328,14 @@ type CoursesUpdateParams struct {
 	EnrollmentLimit    *int               `json:"enrollment_limit,omitempty" url:"-"`
 	DeliveryText       *string            `json:"delivery_text,omitempty" url:"-"`
 	Visibility         *CatalogVisibility `json:"visibility,omitempty" url:"-"`
-	ExpectedUpdatedAt  *string            `json:"expected_updated_at,omitempty" url:"-"`
+	// ExpectedUpdatedAt is the `updated_at` you last read. If the course changed since, the request returns `422` on `expected_updated_at` and changes nothing. It is checked even when the request changes nothing else.
+	ExpectedUpdatedAt *string `json:"expected_updated_at,omitempty" url:"-"`
+	// Title is the course name customers see.
+	Title *string `json:"title,omitempty" url:"-"`
+	// Slug is the last part of the course's storefront URL: lowercase letters and numbers in words joined by single hyphens, such as `design-foundations`. It must be unused by every other product in the store, or the request returns `422` on `slug`.
+	Slug *string `json:"slug,omitempty" url:"-"`
+	// Description is the course description as HTML, at least 5 characters long and at most 2000 characters of visible text. `null` keeps the current description. To clear the description of a draft course, send an empty element such as `<p></p>`; a published course must keep one, so clearing it returns `422` on `description`.
+	Description *string `json:"description,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
 	// clearing the corresponding value (e.g. []string{"external_id"}).
 	NullFields []string `json:"-" url:"-"`
@@ -265,6 +369,7 @@ func (p CoursesUpdateParams) MarshalJSON() ([]byte, error) {
 		"access_duration_days": true,
 		"enrollment_limit":     true,
 		"delivery_text":        true,
+		"description":          true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -276,11 +381,11 @@ func (p CoursesUpdateParams) MarshalJSON() ([]byte, error) {
 }
 
 // Update a course
-// Update course metadata, access configuration, delivery copy, or publication visibility. Public visibility requires a ready promotional video and at least one published lesson. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Update a course's title, URL slug, description, details, access rules, delivery message, or visibility. Only the fields you send change, and PUT behaves exactly like PATCH. Sending the course's current `visibility` changes nothing; a different `visibility` also publishes a draft course. `PUBLIC` first checks that the course has a ready promotional video and at least one published lesson, and otherwise returns `422` on `promo_video` or `curriculum` without changing anything. Every successful update moves `updated_at` forward, even one that changes nothing, so retrying with the same `expected_updated_at` after a success returns `422`: retrieve the course again first. Requires the `listing` API-key ability and the `listing` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *CourseService) Update(ctx context.Context, course string, params *CoursesUpdateParams, opts ...RequestOption) (*SdkUpdateCourseResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("updateCourse", false)}, opts...)
 	var result SdkUpdateCourseResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v2/courses/%s", url.PathEscape(fmt.Sprint(course))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateCourseRequestApplicationJson\",\"properties\":{\"category\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"enum\",\"values\":[\"development\",\"business\",\"marketing\",\"design\",\"finance\",\"it-software\",\"personal-development\",\"productivity\",\"other\",\"null\"]}},\"level\":{\"kind\":\"enum\",\"values\":[\"all_levels\",\"beginner\",\"intermediate\",\"advanced\"]},\"language\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"subtitle\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":120}}},\"author\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":120}}},\"subcategory\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"what_you_learn\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"constraints\":{\"maxItems\":50}},\"requirements\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"constraints\":{\"maxItems\":50}},\"certificate_enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"access_type\":{\"kind\":\"enum\",\"values\":[\"lifetime\",\"limited\"]},\"access_duration_days\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":3650}}},\"enrollment_limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"delivery_text\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":65535}}},\"visibility\":{\"kind\":\"enum\",\"values\":[\"PUBLIC\",\"ON_HOLD\",\"HIDDEN\",\"PRIVATE\"]},\"expected_updated_at\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v2/courses/%s", url.PathEscape(fmt.Sprint(course))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateCourseRequestApplicationJson\",\"properties\":{\"category\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"enum\",\"values\":[\"development\",\"business\",\"marketing\",\"design\",\"finance\",\"it-software\",\"personal-development\",\"productivity\",\"other\",\"null\"]}},\"level\":{\"kind\":\"enum\",\"values\":[\"all_levels\",\"beginner\",\"intermediate\",\"advanced\"]},\"language\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"subtitle\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":120}}},\"author\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":120}}},\"subcategory\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}},\"what_you_learn\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"constraints\":{\"maxItems\":50}},\"requirements\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"constraints\":{\"maxItems\":50}},\"certificate_enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"access_type\":{\"kind\":\"enum\",\"values\":[\"lifetime\",\"limited\"]},\"access_duration_days\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":3650}}},\"enrollment_limit\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"delivery_text\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":65535}}},\"visibility\":{\"kind\":\"enum\",\"values\":[\"PUBLIC\",\"ON_HOLD\",\"HIDDEN\",\"PRIVATE\"]},\"expected_updated_at\":{\"kind\":\"primitive\",\"type\":\"string\",\"format\":\"date-time\"},\"title\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minLength\":1,\"maxLength\":255}},\"slug\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255,\"pattern\":\"^[a-z0-9]+(?:-[a-z0-9]+)*$\"}},\"description\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minLength\":5}}}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -291,6 +396,41 @@ func (s *CourseService) UpdateWithResponse(ctx context.Context, course string, p
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
 	value, err := s.Update(ctx, course, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// CoursesGetStudentSummaryParams contains the parameters for GetStudentSummary.
+type CoursesGetStudentSummaryParams struct {
+	// StartDate is the first day to include, as `YYYY-MM-DD` in the store's timezone.
+	StartDate string `url:"start_date" json:"-"`
+	// EndDate is the last day to include, as `YYYY-MM-DD` in the store's timezone. It must not be before `start_date`, and the range can cover at most 366 days; otherwise the request returns `422` on `end_date`.
+	EndDate string `url:"end_date" json:"-"`
+	// CourseID is count one course only: the course `id` from `/v2/courses`. Another product, a deleted course, or another store's course returns `422` on `course_id`.
+	CourseID *int `url:"course_id,omitempty" json:"-"`
+	// Limit is how many rows `students` and `courses` each return: 10 by default, at most 20. A larger value returns `422` on `limit`. The `summary` totals always cover everything.
+	// Defaults to 10.
+	Limit *int `url:"limit,omitempty" json:"-"`
+}
+
+// GetStudentSummary retrieve a course student summary
+// Summarize who bought your courses in a date range: totals for students, purchases, units, and orders, plus the top students and the top courses. A purchase counts when it is paid or completed and was made within the range; refunded and pending purchases do not count. A student is a customer, or the order email when a purchase has no customer record. The response contains customer email addresses, so handle it as personal data. Requires the `invoice` API-key ability and the invoice permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *CourseService) GetStudentSummary(ctx context.Context, params *CoursesGetStudentSummaryParams, opts ...RequestOption) (*SdkGetCourseStudentSummaryResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("getCourseStudentSummary", false)}, opts...)
+	var result SdkGetCourseStudentSummaryResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", "/v2/course-students", params, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *CourseService) GetStudentSummaryWithResponse(ctx context.Context, params *CoursesGetStudentSummaryParams, opts ...RequestOption) (*RawResponse[*SdkGetCourseStudentSummaryResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.GetStudentSummary(ctx, params, captureOpts...)
 	if err != nil {
 		return nil, err
 	}

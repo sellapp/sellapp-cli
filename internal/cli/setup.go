@@ -224,6 +224,12 @@ func commandManifest(cfg *Config, full bool) error {
 	for _, entry := range CommandCatalog {
 		rows = append(rows, commandIndexEntry(entry))
 	}
+	// Keep the complete index compact without changing its JSON array or fields.
+	if cfg.Output == "json" {
+		copy := *cfg
+		copy.Output = "raw"
+		return writeMetadataResult(&copy, rows)
+	}
 	return writeMetadataResult(cfg, rows)
 }
 func searchCommand(cfg *Config) *cobra.Command {

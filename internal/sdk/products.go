@@ -26,6 +26,16 @@ type ProductsListParams struct {
 	WithDrafts *bool `url:"with_drafts,omitempty" json:"-"`
 	// OnlyDrafts is return only draft products.
 	OnlyDrafts *bool `url:"only_drafts,omitempty" json:"-"`
+	// MinPrice is only products whose every priced variant costs at least this much, in integer minor units of that variant's own currency: `999` means $9.99 for a USD variant. Draft variants count. A product without a priced variant never matches a price filter. Must not be greater than `max_price`.
+	MinPrice *int `url:"min_price,omitempty" json:"-"`
+	// MaxPrice is only products whose every priced variant costs at most this much, in integer minor units of that variant's own currency: `2500` means $25.00 for a USD variant. Draft variants count. A product without a priced variant never matches a price filter.
+	MaxPrice *int `url:"max_price,omitempty" json:"-"`
+	// Stock is filter by stock, draft variants included. `in_stock`: at least one variant can be bought (unlimited stock, or at least its minimum purchase quantity left). `sold_out`: no variant can be bought. `any_variant_sold_out`: at least one variant with a stock count is sold out. `limited`: at least one variant has a stock count. `unlimited`: no variant has a stock count.
+	Stock *ProductsStock `url:"stock,omitempty" json:"-"`
+	// Visibility is only products with one of these visibilities. Repeat the parameter to select several. A single `visibility=HIDDEN` also works.
+	Visibility []ProductsVisibility `url:"visibility[],omitempty" json:"-"`
+	// HasSales is `true` for products with at least one completed sale, `false` for products without one. Only purchase line items with status `COMPLETED` count, so pending or refunded ones do not.
+	HasSales *bool `url:"has_sales,omitempty" json:"-"`
 }
 
 // List all products
@@ -315,16 +325,36 @@ func (s *ProductService) DeleteWithResponse(ctx context.Context, product int, pa
 
 // ProductsSearchParams contains the parameters for Search.
 type ProductsSearchParams struct {
-	Filters  []*SearchProductsRequestApplicationJSONPropertyFiltersItem  `json:"filters,omitempty" url:"-"`
-	Sort     []*SearchProductsRequestApplicationJSONPropertySortItem     `json:"sort,omitempty" url:"-"`
-	Search   *SearchProductsRequestApplicationJSONPropertySearch         `json:"search,omitempty" url:"-"`
+	// Filters is not supported for products: no field can be filtered this way, so any entry returns `422` on `filters`. Use the price, stock, visibility, and sales fields instead.
+	Filters []*SearchProductsRequestApplicationJSONPropertyFiltersItem `json:"filters,omitempty" url:"-"`
+	// Sort is not supported for products: any entry returns `422` on `sort`.
+	Sort   []*SearchProductsRequestApplicationJSONPropertySortItem `json:"sort,omitempty" url:"-"`
+	Search *SearchProductsRequestApplicationJSONPropertySearch     `json:"search,omitempty" url:"-"`
+	// Includes is only `variants` is accepted, and variants are always included.
 	Includes []*SearchProductsRequestApplicationJSONPropertyIncludesItem `json:"includes,omitempty" url:"-"`
+	// MinPrice is only products whose every priced variant costs at least this much, in integer minor units of that variant's own currency: `999` means $9.99 for a USD variant. Draft variants count. A product without a priced variant never matches a price filter. Must not be greater than `max_price`.
+	MinPrice *int `json:"min_price,omitempty" url:"-"`
+	// MaxPrice is only products whose every priced variant costs at most this much, in integer minor units of that variant's own currency: `2500` means $25.00 for a USD variant. Draft variants count. A product without a priced variant never matches a price filter.
+	MaxPrice *int `json:"max_price,omitempty" url:"-"`
+	// Stock is filter by stock, draft variants included. `in_stock`: at least one variant can be bought (unlimited stock, or at least its minimum purchase quantity left). `sold_out`: no variant can be bought. `any_variant_sold_out`: at least one variant with a stock count is sold out. `limited`: at least one variant has a stock count. `unlimited`: no variant has a stock count.
+	Stock *Stock `json:"stock,omitempty" url:"-"`
+	// Visibility is only products with one of these visibilities. A single string such as `"HIDDEN"` is also accepted.
+	Visibility []SdkSearchProductsRequestApplicationJSONVisibility `json:"visibility,omitempty" url:"-"`
+	// HasSales is `true` for products with at least one completed sale, `false` for products without one. Only purchase line items with status `COMPLETED` count, so pending or refunded ones do not.
+	HasSales *bool `json:"has_sales,omitempty" url:"-"`
+	// WithDrafts is include draft products alongside published products.
+	WithDrafts *bool `json:"with_drafts,omitempty" url:"-"`
+	// OnlyDrafts is return only draft products.
+	OnlyDrafts *bool `json:"only_drafts,omitempty" url:"-"`
 	// Limit is number of items to return per page.
 	// Defaults to 15.
 	Limit *int `url:"limit,omitempty" json:"-"`
 	// Page is page number to return.
 	// Defaults to 1.
 	Page *int `url:"page,omitempty" json:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
 }
 
 // MarshalJSON implements json.Marshaler for ProductsSearchParams.
@@ -334,7 +364,7 @@ func (p ProductsSearchParams) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if p.Filters == nil && p.Sort == nil && p.Includes == nil {
+	if len(p.NullFields) == 0 && p.Filters == nil && p.Sort == nil && p.Includes == nil && p.Visibility == nil {
 		return data, nil
 	}
 	var m map[string]any
@@ -350,18 +380,33 @@ func (p ProductsSearchParams) MarshalJSON() ([]byte, error) {
 	if p.Includes != nil {
 		m["includes"] = p.Includes
 	}
+	if p.Visibility != nil {
+		m["visibility"] = p.Visibility
+	}
+	nullable := map[string]bool{
+		"min_price": true,
+		"max_price": true,
+		"stock":     true,
+		"has_sales": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("ProductsSearchParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
 	return json.Marshal(m)
 }
 
 // Search products
-// Search products using JSON body filters, search terms, includes, and sort instructions. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Search your store's products by title and narrow them by price, stock, visibility, or sales, 15 per page by default. Send the filters in the JSON body. Products support no `filters` or `sort` entries: any entry returns `422`. A filter value that is not valid, such as an unknown `stock` state or a `min_price` above `max_price`, returns `422` on that field. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *ProductService) Search(ctx context.Context, params *ProductsSearchParams, opts ...RequestOption) *Iterator[SearchProductsResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("searchProducts", false)}, opts...)
 	return newIterator[SearchProductsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", "/v2/products/search", params, "after", "data", opts, map[string]string{"limit": "15"}, func() any {
 		if params == nil {
 			return nil
 		}
-		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkSearchProductsRequestApplicationJson\",\"properties\":{\"filters\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchProductsRequestApplicationJsonPropertyFiltersItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"operator\":{\"kind\":\"primitive\",\"type\":\"string\"},\"value\":{\"kind\":\"primitive\",\"type\":\"unknown\"},\"type\":{\"kind\":\"enum\",\"values\":[\"and\",\"or\"]},\"nested\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchProductsRequestApplicationJsonPropertyFiltersItemPropertyNestedItem\",\"properties\":{},\"required\":[],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}},\"sort\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchProductsRequestApplicationJsonPropertySortItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"direction\":{\"kind\":\"enum\",\"values\":[\"asc\",\"desc\"]}},\"required\":[\"field\"],\"additionalProperties\":true}},\"search\":{\"kind\":\"object\",\"modelName\":\"SearchProductsRequestApplicationJsonPropertySearch\",\"properties\":{\"value\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"case_sensitive\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true},\"includes\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchProductsRequestApplicationJsonPropertyIncludesItem\",\"properties\":{\"relation\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[\"relation\"],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}"))
+		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkSearchProductsRequestApplicationJson\",\"properties\":{\"filters\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchProductsRequestApplicationJsonPropertyFiltersItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"operator\":{\"kind\":\"primitive\",\"type\":\"string\"},\"value\":{\"kind\":\"primitive\",\"type\":\"unknown\"},\"type\":{\"kind\":\"enum\",\"values\":[\"and\",\"or\"]},\"nested\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchProductsRequestApplicationJsonPropertyFiltersItemPropertyNestedItem\",\"properties\":{},\"required\":[],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}},\"sort\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchProductsRequestApplicationJsonPropertySortItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"direction\":{\"kind\":\"enum\",\"values\":[\"asc\",\"desc\"]}},\"required\":[\"field\"],\"additionalProperties\":true}},\"search\":{\"kind\":\"object\",\"modelName\":\"SearchProductsRequestApplicationJsonPropertySearch\",\"properties\":{\"value\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\"}}},\"required\":[],\"additionalProperties\":true},\"includes\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchProductsRequestApplicationJsonPropertyIncludesItem\",\"properties\":{\"relation\":{\"kind\":\"literal\",\"value\":\"variants\"}},\"required\":[\"relation\"],\"additionalProperties\":true}},\"min_price\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0}}},\"max_price\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0}}},\"stock\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"enum\",\"values\":[\"in_stock\",\"sold_out\",\"any_variant_sold_out\",\"limited\",\"unlimited\",\"null\"]}},\"visibility\":{\"kind\":\"array\",\"items\":{\"kind\":\"enum\",\"values\":[\"PUBLIC\",\"ON_HOLD\",\"HIDDEN\",\"PRIVATE\"]},\"constraints\":{\"minItems\":1,\"uniqueItems\":true}},\"has_sales\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"with_drafts\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"only_drafts\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true}"))
 	}())
 }
 
@@ -449,4 +494,148 @@ func (s *ProductService) BatchDeleteWithResponse(ctx context.Context, params *Pr
 		return nil, err
 	}
 	return rawResponse(struct{}{}, metadata), nil
+}
+
+// ProductsPublishParams contains the parameters for Publish.
+type ProductsPublishParams struct {
+	Visibility *CatalogVisibility `json:"visibility,omitempty" url:"-"`
+	// VariantIDs is normal products only. IDs of this product's draft variants to publish with it. Needed when the product has several variants and none is published yet; a single variant is published anyway. Draft variants you leave out stay drafts.
+	VariantIDs []int `json:"variant_ids,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for ProductsPublishParams.
+func (p ProductsPublishParams) MarshalJSON() ([]byte, error) {
+	type Alias ProductsPublishParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"variant_ids": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("ProductsPublishParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
+}
+
+// Publish a product
+// Publish a draft product so customers can buy it. Works for normal products, bundles, add-ons, credits products, booking products, and courses. Each is checked as saved, the way its dashboard editor checks it before publishing, and nothing else about the product changes. A normal product needs a description and at least one published variant, and every variant that will be on sale needs a title, a description of at least 5 characters, a working delivery (for example an uploaded file for a download), a price, and payment methods enabled for the store that can take that currency. With exactly one variant, that variant is published with the product. With several, send the draft variants to publish with it in `variant_ids`; the others stay drafts. Publishing a subscription variant also creates its billing plans with the payment providers. A booking product publishes its one option with it; with several options, publish at least one with `POST /v2/products/{product}/variants/{variant}/publish` first, and the other options keep their own state. A bundle needs at least one product in it. A course is published with `visibility`, or with its saved visibility when you leave it out; `PUBLIC` also needs a ready promo video and at least one published lesson. A subscription-priced course cannot be published here. Publishing does not change a normal product's `visibility`: a product that is not `PUBLIC` is published but stays off the storefront listing. Requires the `listing` API-key ability and the `listing` permission in your team role. Safe to repeat: once the product is published, another call changes nothing and returns `422` with `The product is already published.` on `product`. Every refusal returns `422`. `visibility` is accepted only for a course and `variant_ids` only for a normal product; each is otherwise refused on that field, and `variant_ids.{i}` names an ID that is not a variant of this product. Everything else is on `product`, with one sentence per thing the product still needs. One `product` refusal comes after the product was published: when a payment provider refuses to create a subscription billing plan, the product and its variants are already published and the message is the provider's reason. Retrieve the product before trying again. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *ProductService) Publish(ctx context.Context, product int, params *ProductsPublishParams, opts ...RequestOption) (*SdkPublishProductResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("publishProduct", false)}, opts...)
+	var result SdkPublishProductResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/products/%s/publish", url.PathEscape(fmt.Sprint(product))), nil, func() any {
+		if params == nil {
+			return nil
+		}
+		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkPublishProductRequestApplicationJson\",\"properties\":{\"visibility\":{\"kind\":\"enum\",\"values\":[\"PUBLIC\",\"ON_HOLD\",\"HIDDEN\",\"PRIVATE\"]},\"variant_ids\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"},\"constraints\":{\"uniqueItems\":true}}}},\"required\":[],\"additionalProperties\":true}"))
+	}(), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *ProductService) PublishWithResponse(ctx context.Context, product int, params *ProductsPublishParams, opts ...RequestOption) (*RawResponse[*SdkPublishProductResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Publish(ctx, product, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// Duplicate a product
+// Copy a normal product, bundle, add-on, credits product, or booking product within the same store and return the copy. Courses cannot be duplicated. The copy is titled `(Copy)`, `(Copy 2)`, and so on, with a matching `-copy` slug, and keeps every other product setting, including its images, `visibility`, and draft state. A copy of a published product is therefore on sale straight away. It gets no place in the product order or in a section. A normal product's variants are copied with their settings and downloadable files, except subscription variants. A bundle's variant is copied with the products in it, an add-on's with its downloadable files and the products it is offered with, a credits product's with its rate tiers, and a booking product's options, except subscription options, with their schedules. Never copied: sales, reviews, appointments, serial codes, issued licence keys, and group membership. A copied variant that delivers serial codes gets a stock of `0`, so it shows as sold out until you add codes. Requires the `listing` API-key ability and the `listing` permission in your team role. Not safe to retry blindly: every call creates another copy. If a response is lost, list your products and look for the copy before trying again. A course, or a product with nothing to copy (only subscription variants), returns `422` on `product`. A product that changed while the copy was being made also returns `422` on `product`; nothing was copied. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *ProductService) Duplicate(ctx context.Context, product int, opts ...RequestOption) (*SdkDuplicateProductResponseValue201ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("duplicateProduct", false)}, opts...)
+	var result SdkDuplicateProductResponseValue201ApplicationJSON
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/products/%s/duplicate", url.PathEscape(fmt.Sprint(product))), nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *ProductService) DuplicateWithResponse(ctx context.Context, product int, opts ...RequestOption) (*RawResponse[*SdkDuplicateProductResponseValue201ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Duplicate(ctx, product, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// ProductsMoveParams contains the parameters for Move.
+type ProductsMoveParams struct {
+	// Position is the new position, where `1` is first. At most the number of normal products in the store, drafts included.
+	Position int `json:"position" url:"-"`
+	// ExpectedPosition is the position you last read for this product (its `order`). The move is refused when the product is no longer there.
+	ExpectedPosition *int `json:"expected_position,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for ProductsMoveParams.
+func (p ProductsMoveParams) MarshalJSON() ([]byte, error) {
+	type Alias ProductsMoveParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"expected_position": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("ProductsMoveParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
+}
+
+// Move a product
+// Move a normal product to a position in your store's product order, shifting the products in between by one. Positions run from `1` to the number of normal products, drafts included; a product's position is its `order`. Gaps in the stored order are closed first. Requires the `listing` API-key ability and the `listing` permission in your team role. Safe to repeat: moving a product to the position it already has changes nothing. Send `expected_position` with the position you last read to refuse the move when someone else moved the product in the meantime. A position past the end returns `422` on `position` with the allowed range, a product that is no longer at `expected_position` returns `422` on `expected_position` with its current position, and a listing that is not a normal product returns `422` on `product`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *ProductService) Move(ctx context.Context, product int, params *ProductsMoveParams, opts ...RequestOption) (*SdkMoveProductResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("moveProduct", false)}, opts...)
+	var result SdkMoveProductResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PUT", fmt.Sprintf("/v2/products/%s/position", url.PathEscape(fmt.Sprint(product))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkMoveProductRequestApplicationJson\",\"properties\":{\"position\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}},\"expected_position\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}}},\"required\":[\"position\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *ProductService) MoveWithResponse(ctx context.Context, product int, params *ProductsMoveParams, opts ...RequestOption) (*RawResponse[*SdkMoveProductResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Move(ctx, product, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
 }

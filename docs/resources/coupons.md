@@ -607,13 +607,14 @@ sellapp coupons v-2-create-coupon --body '{"code":"PLAN10","type":"PERCENTAGE","
 | --type | Yes | Value for type. |
 | --discount | Yes | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead. |
 | --store-wide | Yes | Value for store wide. |
-| --products | No | Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`. |
+| --products | No | Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`. It may be an empty list when the same request sends `store_wide: true`, so a store-wide coupon you read can be sent back unchanged. Otherwise an empty list returns `422` on `products`. |
 | --product-variants | No | Optional variant restrictions. Every variant must belong to a selected product. Products without listed variants remain eligible on all variants. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`. |
 | --limit | No | Value for limit. |
 | --expires-at | No | A future date and time, or null for no expiry. |
 | --minimum-amount | No | A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum. |
 | --applies-to | No | What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind. |
 | --subscription-payments | No | How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here. |
+| --maximum-discount-amount | No | The most a percentage coupon takes off one order, as a decimal amount of at least 1 in the major unit of the order's currency, with at most two decimals: `15.50` caps the discount at 15.50. Send null to remove the cap. Only a `PERCENTAGE` coupon can have a cap: sending one for an `AMOUNT` coupon returns `422` on `maximum_discount_amount`, and changing a coupon to `AMOUNT` removes its cap. |
 
 The request body is required.
 
@@ -744,6 +745,53 @@ Response data is printed to stdout; diagnostics go to stderr. Use `--output json
 
 Inspect the complete schema: `sellapp commands coupons v-2-get-coupon --json`.
 
+## v-2-get-coupon-usage
+
+Retrieve coupon usage
+
+Count the completed orders that used a coupon, over the coupon's whole life. Only orders whose status is `COMPLETED` count; pending, failed, and refunded orders do not. A coupon from another store, a deleted coupon, and a coupon issued by a reward return `404`. Requires the `coupon` API-key ability and the coupon permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/coupons/retrieve-coupon-usage) · Effect: **read**
+
+```sh
+sellapp coupons v-2-get-coupon-usage 1
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| coupon (positional) | Yes | The coupon ID. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands coupons v-2-get-coupon-usage --json`.
+
 ## v-2-list-coupons
 
 List all coupons
@@ -815,13 +863,14 @@ sellapp coupons v-2-replace-coupon 1 --body '{"store_wide":false,"products":[123
 | --type | No | Value for type. |
 | --discount | No | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead. |
 | --store-wide | No | Value for store wide. |
-| --products | No | Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`. |
+| --products | No | Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`. It may be an empty list when the same request sends `store_wide: true`, so a store-wide coupon you read can be sent back unchanged. Otherwise an empty list returns `422` on `products`. |
 | --product-variants | No | Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`. |
 | --limit | No | Value for limit. |
 | --expires-at | No | A future date and time, or null for no expiry. |
 | --minimum-amount | No | A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum. |
 | --applies-to | No | What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind. |
 | --subscription-payments | No | How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here. |
+| --maximum-discount-amount | No | The most a percentage coupon takes off one order, as a decimal amount of at least 1 in the major unit of the order's currency, with at most two decimals: `15.50` caps the discount at 15.50. Send null to remove the cap. Only a `PERCENTAGE` coupon can have a cap: sending one for an `AMOUNT` coupon returns `422` on `maximum_discount_amount`, and changing a coupon to `AMOUNT` removes its cap. |
 
 The request body is required.
 
@@ -868,6 +917,8 @@ sellapp coupons v-2-search-coupons --body '{"filters":[{"field":"id","operator":
 
 | Input | Required | Meaning |
 | --- | --- | --- |
+| --limit | No | Number of items to return per page. |
+| --page | No | Page number to return. |
 | --with-trashed | No | Include soft-deleted resources in the result. |
 | --only-trashed | No | Return only soft-deleted resources. Ignored when with_trashed is true. |
 | --filters | No | Value for filters. |
@@ -927,13 +978,14 @@ sellapp coupons v-2-update-coupon 1 --body '{"store_wide":false,"products":[123]
 | --type | No | Value for type. |
 | --discount | No | A decimal discount value of at least 1. Percentage discounts cannot exceed 100; amount discounts use the store currency's major unit. A `subscriptions` coupon cannot take 100% off: that returns `422` on `discount`, so offer a free trial instead. |
 | --store-wide | No | Value for store wide. |
-| --products | No | Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`. |
+| --products | No | Product IDs the coupon applies to when store_wide is false. Each product you add must sell a variant of the coupon's kind: a subscription plan for a `subscriptions` coupon, or a one-time variant for a `one_time` one. Another product returns `422` on `products`. It may be an empty list when the same request sends `store_wide: true`, so a store-wide coupon you read can be sent back unchanged. Otherwise an empty list returns `422` on `products`. |
 | --product-variants | No | Optional variant restrictions. Omit to preserve existing restrictions or send an empty array to allow every variant of the selected products. Each variant you add must be of the coupon's kind, a subscription plan or a one-time variant; another returns `422` on `product_variants`. |
 | --limit | No | Value for limit. |
 | --expires-at | No | A future date and time, or null for no expiry. |
 | --minimum-amount | No | A decimal minimum amount in the store currency's major unit that the order lines of the coupon's kind must reach, or null for no minimum. |
 | --applies-to | No | What the coupon discounts: `one_time` for one-time purchases, or `subscriptions` for the first payments of a subscription plan. A new coupon defaults to `one_time`, and an update that leaves this out keeps the current kind. The coupon only discounts order lines of its kind. |
 | --subscription-payments | No | How many payments a `subscriptions` coupon discounts, counting the signup payment as the first, so `3` discounts the signup and the next two renewals. A `subscriptions` coupon needs one, and an update that leaves it out keeps the stored number. Missing on a `subscriptions` coupon, or outside 1 to 36, it returns `422` on `subscription_payments` with `The number of discounted payments must be between 1 and 36.` A `one_time` coupon always stores null here. |
+| --maximum-discount-amount | No | The most a percentage coupon takes off one order, as a decimal amount of at least 1 in the major unit of the order's currency, with at most two decimals: `15.50` caps the discount at 15.50. Send null to remove the cap. Only a `PERCENTAGE` coupon can have a cap: sending one for an `AMOUNT` coupon returns `422` on `maximum_discount_amount`, and changing a coupon to `AMOUNT` removes its cap. |
 
 The request body is required.
 

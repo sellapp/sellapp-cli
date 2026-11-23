@@ -28,8 +28,8 @@ func baseArgs(server *httptest.Server) []string {
 }
 
 func TestCatalogHasExactCoverage(t *testing.T) {
-	if len(CommandCatalog) != 438 {
-		t.Fatalf("catalog=%d want=438", len(CommandCatalog))
+	if len(CommandCatalog) != 548 {
+		t.Fatalf("catalog=%d want=548", len(CommandCatalog))
 	}
 	executable := 0
 	seen := map[string]bool{}
@@ -43,8 +43,8 @@ func TestCatalogHasExactCoverage(t *testing.T) {
 			executable++
 		}
 	}
-	if executable != 438 {
-		t.Fatalf("executable=%d want=438", executable)
+	if executable != 548 {
+		t.Fatalf("executable=%d want=548", executable)
 	}
 }
 

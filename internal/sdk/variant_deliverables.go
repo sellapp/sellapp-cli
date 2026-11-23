@@ -13,6 +13,50 @@ type VariantDeliverableService struct {
 	client *Client
 }
 
+// Preview variant buyer notification
+// See who would be emailed if you told this variant's buyers about new downloadable files, without sending anything. Use it before `POST` on the same path to check the numbers. Works for any variant, drafts included. Requires the `listing` API-key ability and the `listing` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *VariantDeliverableService) Preview(ctx context.Context, product int, variant int, opts ...RequestOption) (*SdkPreviewVariantBuyerNotificationResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("previewVariantBuyerNotification", false)}, opts...)
+	var result SdkPreviewVariantBuyerNotificationResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", fmt.Sprintf("/v2/products/%s/variants/%s/deliverable/buyer-notification", url.PathEscape(fmt.Sprint(product)), url.PathEscape(fmt.Sprint(variant))), nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *VariantDeliverableService) PreviewWithResponse(ctx context.Context, product int, variant int, opts ...RequestOption) (*RawResponse[*SdkPreviewVariantBuyerNotificationResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Preview(ctx, product, variant, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// Notify variant buyers
+// Email your customers that this variant has new content: every completed order that delivered its downloadable files gets one email. The emails are queued, so `202` means they were queued, not delivered. It sends only for a published variant with at least one file, at least one such order, and no upload in progress. The buyers of one variant can be emailed this way at most once an hour, whichever API key or team member sends it, and each team member can send at most 3 times a minute per variant. Requires the `listing` API-key ability and the `listing` permission in your team role. Send an `Idempotency-Key` header; requests without one return `400`. A retry with the same key and an empty body returns the first response with `Idempotent-Replayed: true` and sends nothing new. Use a new key for every send you intend, including a new attempt after a `422`. The same key while the first request is still running returns `409`. Every refusal is `422` on `variant`: a draft variant, a variant without files, a variant nobody has bought, an upload still in progress, the hourly limit (the message says how many minutes are left), the per-minute limit, or another send for the same variant at the same moment. Check `GET` on the same path first to see the numbers. A variant of another product returns `404`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *VariantDeliverableService) Notify(ctx context.Context, product int, variant int, opts ...RequestOption) (*SdkNotifyVariantBuyersResponseValue202ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("notifyVariantBuyers", true)}, opts...)
+	var result SdkNotifyVariantBuyersResponseValue202ApplicationJSON
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/products/%s/variants/%s/deliverable/buyer-notification", url.PathEscape(fmt.Sprint(product)), url.PathEscape(fmt.Sprint(variant))), nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *VariantDeliverableService) NotifyWithResponse(ctx context.Context, product int, variant int, opts ...RequestOption) (*RawResponse[*SdkNotifyVariantBuyersResponseValue202ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Notify(ctx, product, variant, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
 // Get retrieve variant deliverable configuration
 // Retrieve variant deliverable configuration. Requires the listing Sanctum ability. Returns delivery types and safe configuration for a variant in the authenticated store. Dynamic endpoint URLs and inventory data are not returned. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *VariantDeliverableService) Get(ctx context.Context, product string, variant int, opts ...RequestOption) (*SdkGetVariantDeliverableConfigurationResponseValue200ApplicationJSON, error) {

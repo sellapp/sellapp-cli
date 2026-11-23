@@ -19,6 +19,10 @@ type AffiliatePayoutsListParams struct {
 	AffiliateID *int `url:"affiliate_id,omitempty" json:"-"`
 	// Status is filter by payout status.
 	Status *AffiliatePayoutsStatus `url:"status,omitempty" json:"-"`
+	// PayoutMethod is list only payouts recorded for this payout method. Uppercase, as returned in `payout_method`; `paypal` returns `422`.
+	PayoutMethod *AffiliatePayoutsPayoutMethod `url:"payout_method,omitempty" json:"-"`
+	// Search is the start of the affiliate's email address, such as `alex` or `alex.morgan@`. It matches from the first character only, and `%` and `_` match themselves.
+	Search *string `url:"search,omitempty" json:"-"`
 	// Limit is number of items to return per page.
 	// Defaults to 15.
 	Limit *int `url:"limit,omitempty" json:"-"`
@@ -28,7 +32,7 @@ type AffiliatePayoutsListParams struct {
 }
 
 // List affiliate payouts
-// List merchant-managed affiliate payout records. These record commission payments arranged by the merchant; SellApp does not transfer or hold the funds. Requires the `affiliate` credential ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List merchant-managed affiliate payout records, newest first, 15 per page by default. These record commission payments arranged by the merchant; SellApp does not transfer or hold the funds. Requires the `affiliate` credential ability. A `status` or `payout_method` value the API does not know returns `422`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *AffiliatePayoutService) List(ctx context.Context, params *AffiliatePayoutsListParams, opts ...RequestOption) *Iterator[ListAffiliatePayoutsResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("listAffiliatePayouts", false)}, opts...)
 	return newIterator[ListAffiliatePayoutsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/affiliate-payouts", params, "after", "data", opts, map[string]string{"limit": "15"})
@@ -109,6 +113,36 @@ func (s *AffiliatePayoutService) UpdateWithResponse(ctx context.Context, payout 
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
 	value, err := s.Update(ctx, payout, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// AffiliatePayoutsMarkPaidParams contains the parameters for MarkPaid.
+type AffiliatePayoutsMarkPaidParams struct {
+	// PayoutIDs is the due payouts to record as paid, at most 20, each once. They are marked in this order.
+	PayoutIDs []int `json:"payout_ids" url:"-"`
+	// ExpectedTotalUsdCents is the sum of the payouts' `amount_usd_cents`, in integer USD cents, as you read them. If they add up to anything else, nothing is marked.
+	ExpectedTotalUsdCents int `json:"expected_total_usd_cents" url:"-"`
+}
+
+// MarkPaid mark affiliate payouts paid
+// Record up to 20 due affiliate payouts as paid in one request, after you have paid the affiliates yourself. No money moves: SellApp only records the payment. Each payout marked paid also marks its referrals paid and emails that affiliate that the payout was paid. Send the payout IDs and `expected_total_usd_cents`, the sum of their `amount_usd_cents` as you read them, in integer USD cents (`4250` means $42.50). Every payout is checked first, and nothing changes when one of them is unknown in your store, is not `due`, or has referrals that no longer add up to it or can no longer be paid (`422` on `payout_ids`, one message per payout), or when the amounts add up to another total (`422` on `expected_total_usd_cents`). Then each payout is marked in the order sent, and `data` reports one `outcome` per payout: `paid`, `skipped`, or `failed`. A payout that changes between the check and its turn is skipped or fails without affecting the others. Requires the `affiliate` and `affiliate:payout` API-key abilities, and the staff member who owns the key needs the affiliate and affiliate payout permissions. There is no idempotency key, but sending the same batch again is refused with `422` on `payout_ids`, because those payouts are no longer due, so nobody is emailed twice. After a lost response, list the payouts with `GET /v2/affiliate-payouts?status=due` and send only those still due, with their new total. The emails cannot be taken back; to reopen a payout recorded by mistake, set it back to `due` with `PATCH /v2/affiliate-payouts/{payout}/status`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *AffiliatePayoutService) MarkPaid(ctx context.Context, params *AffiliatePayoutsMarkPaidParams, opts ...RequestOption) (*SdkMarkAffiliatePayoutsPaidResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("markAffiliatePayoutsPaid", false)}, opts...)
+	var result SdkMarkAffiliatePayoutsPaidResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "POST", "/v2/affiliate-payouts/mark-paid", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkMarkAffiliatePayoutsPaidRequestApplicationJson\",\"properties\":{\"payout_ids\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}},\"constraints\":{\"minItems\":1,\"maxItems\":20,\"uniqueItems\":true}},\"expected_total_usd_cents\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"required\":[\"payout_ids\",\"expected_total_usd_cents\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *AffiliatePayoutService) MarkPaidWithResponse(ctx context.Context, params *AffiliatePayoutsMarkPaidParams, opts ...RequestOption) (*RawResponse[*SdkMarkAffiliatePayoutsPaidResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.MarkPaid(ctx, params, captureOpts...)
 	if err != nil {
 		return nil, err
 	}

@@ -1,11 +1,12 @@
 {
   "schemaVersion": 1,
+  "artifacts": "all",
   "language": "cli",
-  "sdkVersion": "0.2.1",
-  "specSha256": "22a0f17c1c7099fa036382e9f037daa5b7e273d57605163d22042e03f964f1c8",
+  "sdkVersion": "0.3.0",
+  "specSha256": "588138cc0421d9c2f8b7382d2924ce51982635c344b9e57f6f46b68e18ea4d69",
   "specVersion": "2026-08-30",
   "coreUpstreamCommit": "73b4f0b9bdad2a8b9048c75f912ff62961aabda7",
   "emittersUpstreamCommit": "097160c7725c2e9b50e0bd259727f55f07bfdef2",
-  "generatorCommit": "5bfb944881c821f7c8b0af0e254d6f9bd16c0806",
+  "generatorCommit": "77cf567815f22f4c07cf6b707ab25d4ca74877af",
   "generatorDirty": false
 }

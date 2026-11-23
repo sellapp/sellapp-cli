@@ -144,6 +144,52 @@ Response data is printed to stdout; diagnostics go to stderr. Use `--output json
 
 Inspect the complete schema: `sellapp commands community-connections list --json`.
 
+## list-failed-grant-reasons
+
+List community failed grant reasons
+
+List why community access grants failed across all platforms, with how many grants failed for each reason and what you can do about it, most frequent first. A grant is the access a purchase gives a customer, such as a Discord role or a place in a Telegram group. Only reasons that still need attention or are retried are counted; failures nobody can act on, such as a customer who left the server, are not. Only SellApp's records are read; no platform is contacted. An empty `data` array means no grant is failing. Requires the `community` API-key ability and the `community` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/community-connections/list-failed-grant-reasons) · Effect: **read**
+
+```sh
+sellapp community-connections list-failed-grant-reasons
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands community-connections list-failed-grant-reasons --json`.
+
 ## poll
 
 Poll a community connection
@@ -192,6 +238,244 @@ Response data is printed to stdout; diagnostics go to stderr. Use `--output json
 
 Inspect the complete schema: `sellapp commands community-connections poll --json`.
 
+## servers get
+
+Retrieve a community server
+
+Retrieve one Discord server, Slack channel, Telegram group or channel, or WhatsApp group connected to the store, with the product variants that give access through it. Read it before removing it: the removal needs exactly these variant IDs. `is_last` tells you it is the platform's last one. `404` when the store has no such server on that platform. Requires the `community` API-key ability and both the `store` and `community` permissions in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/community-connections/community-server) · Effect: **read**
+
+```sh
+sellapp community-connections servers get --platform discord server_ship_room
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --platform | Yes | The community platform. |
+| server (positional) | Yes | The platform's ID of the Discord server, Slack channel, Telegram group or channel, or WhatsApp group, as returned in `servers[].id` by `GET /v2/community-connections`. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands community-connections servers get --json`.
+
+## servers remove
+
+Remove a community server
+
+Remove one Discord server, Slack channel, Telegram group or channel, or WhatsApp group from the store, and clear it from every product variant that gives access through it, including deleted ones. Buyers of those variants get no access through it from then on. SellApp does not contact the platform: members, roles and the bot stay as they are there. Removing the last Telegram or WhatsApp group also disconnects that platform. Confirm the variants first: read them with `GET` on the same path and send their IDs as `affected_variant_ids` (in any order). When they differ from the variants that use it now, the request returns `422` on `affected_variant_ids` and nothing is removed. Leave `affected_variant_ids` out, or send an empty list, when no variant uses it. Clients that cannot send a body with `DELETE` can send the IDs in the query string instead, as `affected_variant_ids[]=902`. A repeated request returns `404` once it is removed. Requires the `community` API-key ability and both the `store` and `community` permissions in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/community-connections/community-server) · Effect: **consequential**
+
+```sh
+sellapp community-connections servers remove --platform discord server_ship_room --body '{"affected_variant_ids":[902]}' --yes
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --platform | Yes | The community platform. |
+| server (positional) | Yes | The platform's ID of the Discord server, Slack channel, Telegram group or channel, or WhatsApp group, as returned in `servers[].id` by `GET /v2/community-connections`. |
+| --affected-variant-ids | No | The IDs of every variant that gives access through it, from `affected_variants[].variant_id` of the read. Defaults to none. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands community-connections servers remove --json`.
+
+## slack add-channel
+
+Add a Slack channel
+
+Add a private Slack channel to the store so product variants can give customers access to it. The workspace needs an invite link first, so customers can join it: set it with `PUT /v2/community-connections/slack/invite-link`. SellApp checks with Slack that its app is a member of the channel. Adding a channel the store already has updates its name and returns `201` again, so a retry is safe. `422` on `platform` when Slack is not connected, on `workspace_invite_link` when the invite link is missing, and on `channel_id` when the app cannot see the channel. Requires the `community` API-key ability and the `community` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/community-connections/slack-channels) · Effect: **consequential**
+
+```sh
+sellapp community-connections slack add-channel --channel-id C07LAUNCHVIP --yes
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --channel-id | Yes | The Slack channel ID, from `channels[].id` of `GET /v2/community-connections/slack/channels`. |
+
+The request body is required.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands community-connections slack add-channel --json`.
+
+## slack list-channels
+
+List Slack available channels
+
+List the private channels of the connected Slack workspace that SellApp's Slack app is a member of and that the store has not added yet. Add one with `POST` on the same path so products can give access to it. A channel is missing when the app is not in it: invite the app to the channel in Slack first. SellApp asks Slack for the list; when Slack does not answer, `channels` is empty. `422` on `platform` when Slack is not connected. Requires the `community` API-key ability and the `community` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/community-connections/slack-channels) · Effect: **read**
+
+```sh
+sellapp community-connections slack list-channels
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands community-connections slack list-channels --json`.
+
+## slack replace-invite-link
+
+Update Slack workspace invite link
+
+Set or remove the invite link customers use to join the store's Slack workspace before they get access to a channel. Adding channels needs it. Send it as `invite_link`, or as `workspace_invite_link`, the name the response uses, so a response can be sent back unchanged; when you send both they must be equal. A link whose host is not `join.slack.com` returns `422` on the field you sent. `422` on `platform` when Slack is not connected. Sending the same link again is safe. Requires the `community` API-key ability and the `community` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/community-connections/slack-invite-link) · Effect: **consequential**
+
+```sh
+sellapp community-connections slack replace-invite-link --invite-link https://join.slack.com/t/launch-lab/shared_invite/zt-2abc123 --yes
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --invite-link | No | A Slack invite link on `join.slack.com`, such as `https://join.slack.com/t/launch-lab/shared_invite/zt-2abc123`. `null` removes it. |
+| --workspace-invite-link | No | Another name for `invite_link`. One of the two is required. |
+
+The request body is required.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands community-connections slack replace-invite-link --json`.
+
 ## start
 
 Start a community connection
@@ -239,6 +523,53 @@ Credential alternatives and scopes:
 Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
 
 Inspect the complete schema: `sellapp commands community-connections start --json`.
+
+## sync-discord-roles
+
+Sync Discord roles
+
+Read the role list of the store's Discord servers from Discord again and check the bot's role position, which tells whether the bot can give the roles your products sell. Syncs every connected server, or only `server_id`. A server Discord refuses is reported on its own row with `synced: false`, and the others still sync; `failed_count` counts those rows. Nothing is given to or taken from a member, so repeating the request is safe. `422` on `platform` when no Discord server is connected, and on `server_id` when that server is not connected to this store. Requires the `community` API-key ability and the `community` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/community-connections/sync-discord-roles) · Effect: **consequential**
+
+```sh
+sellapp community-connections sync-discord-roles --yes
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --server-id | No | The Discord server to sync. Leave out or send `null` to sync every connected server. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands community-connections sync-discord-roles --json`.
 
 ## verify
 

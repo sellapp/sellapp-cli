@@ -91,10 +91,26 @@ type SubscriptionsListParams struct {
 	Pagination *bool `url:"pagination,omitempty" json:"-"`
 	// Status is filter by one or more subscription statuses. Repeat the parameter to select several; a single `status=ACTIVE` works too. A status outside the list is rejected with a validation error.
 	Status []SubscriptionsStatus `url:"status[],omitempty" json:"-"`
+	// OrderID is keep subscriptions sold by this order.
+	OrderID *int `url:"order_id,omitempty" json:"-"`
+	// ProductID is keep subscriptions whose plan is a variant of this product, including subscriptions moved to that plan after signup.
+	ProductID *int `url:"product_id,omitempty" json:"-"`
+	// RenewsAfter is keep subscriptions that renew on or after this moment. Only `ACTIVE` and `TRIALING` subscriptions with a renewal date that are neither paused nor scheduled to cancel match a renewal filter. A date such as `2026-11-01` starts at midnight of that day in the store's time zone; a date-time without an offset is also read in the store's time zone. Inclusive.
+	RenewsAfter *string `url:"renews_after,omitempty" json:"-"`
+	// RenewsBefore is keep subscriptions that renew on or before this moment, with the same rules as `renews_after`. A date runs to the last second of that day in the store's time zone. Inclusive. Must not be earlier than `renews_after`.
+	RenewsBefore *string `url:"renews_before,omitempty" json:"-"`
+	// CancelledAfter is keep `CANCELED` subscriptions cancelled on or after this moment. The cancellation time is when an immediate cancellation happened; for a subscription that ran out at its period end it is approximate, the last time the subscription record changed. Dates are read like `renews_after`. Inclusive.
+	CancelledAfter *string `url:"cancelled_after,omitempty" json:"-"`
+	// CancelledBefore is keep `CANCELED` subscriptions cancelled on or before this moment, with the same rules as `cancelled_after`. A date runs to the last second of that day in the store's time zone. Inclusive. Must not be earlier than `cancelled_after`.
+	CancelledBefore *string `url:"cancelled_before,omitempty" json:"-"`
+	// ScheduledToCancel is `true` keeps `ACTIVE` and `TRIALING` subscriptions set to cancel at the end of their period; `false` keeps subscriptions that are not set to.
+	ScheduledToCancel *bool `url:"scheduled_to_cancel,omitempty" json:"-"`
+	// Paused is `true` keeps paused subscriptions; `false` keeps subscriptions that are not paused.
+	Paused *bool `url:"paused,omitempty" json:"-"`
 }
 
 // List subscriptions
-// List the subscriptions belonging to the authenticated store, ordered by identifier ascending. Requires the `invoice` Sanctum ability. Use `status[]` to keep only the states you care about. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List the subscriptions belonging to the authenticated store, ordered by identifier ascending. Requires the `invoice` Sanctum ability. Use `status[]` to keep only the states you care about, and the other filters to find subscriptions by order, product, renewal date, cancellation date, or whether they are paused or set to cancel. Filters combine: a subscription must match all of them. Date filters read whole days in the store's time zone and include both ends. A filter value in the wrong shape, or a `*_before` date earlier than its `*_after` date, returns `422` on that parameter. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *SubscriptionService) List(ctx context.Context, params *SubscriptionsListParams, opts ...RequestOption) *Iterator[SdkListSubscriptionsResponseValue200ApplicationJSON] {
 	opts = append([]RequestOption{withOperation("listSubscriptions", false)}, opts...)
 	return newIterator[SdkListSubscriptionsResponseValue200ApplicationJSON](ctx, s.client, "GET", "/v2/subscriptions", params, "after", "data", opts, map[string]string{"limit": "15"})
@@ -116,6 +132,22 @@ type SubscriptionsSearchParams struct {
 	Sort     []*SearchSubscriptionsRequestApplicationJSONPropertySortItem     `json:"sort,omitempty" url:"-"`
 	Search   *SearchSubscriptionsRequestApplicationJSONPropertySearch         `json:"search,omitempty" url:"-"`
 	Includes []*SearchSubscriptionsRequestApplicationJSONPropertyIncludesItem `json:"includes,omitempty" url:"-"`
+	// OrderID is keep subscriptions sold by this order.
+	OrderID *int `json:"order_id,omitempty" url:"-"`
+	// ProductID is keep subscriptions whose plan is a variant of this product, including subscriptions moved to that plan after signup.
+	ProductID *int `json:"product_id,omitempty" url:"-"`
+	// RenewsAfter is keep subscriptions that renew on or after this moment. Only `ACTIVE` and `TRIALING` subscriptions with a renewal date that are neither paused nor scheduled to cancel match a renewal filter. A date such as `2026-11-01` starts at midnight of that day in the store's time zone; a date-time without an offset is also read in the store's time zone. Inclusive.
+	RenewsAfter *string `json:"renews_after,omitempty" url:"-"`
+	// RenewsBefore is keep subscriptions that renew on or before this moment, with the same rules as `renews_after`. A date runs to the last second of that day in the store's time zone. Inclusive. Must not be earlier than `renews_after`.
+	RenewsBefore *string `json:"renews_before,omitempty" url:"-"`
+	// CancelledAfter is keep `CANCELED` subscriptions cancelled on or after this moment. The cancellation time is when an immediate cancellation happened; for a subscription that ran out at its period end it is approximate, the last time the subscription record changed. Dates are read like `renews_after`. Inclusive.
+	CancelledAfter *string `json:"cancelled_after,omitempty" url:"-"`
+	// CancelledBefore is keep `CANCELED` subscriptions cancelled on or before this moment, with the same rules as `cancelled_after`. A date runs to the last second of that day in the store's time zone. Inclusive. Must not be earlier than `cancelled_after`.
+	CancelledBefore *string `json:"cancelled_before,omitempty" url:"-"`
+	// ScheduledToCancel is `true` keeps `ACTIVE` and `TRIALING` subscriptions set to cancel at the end of their period; `false` keeps subscriptions that are not set to.
+	ScheduledToCancel *bool `json:"scheduled_to_cancel,omitempty" url:"-"`
+	// Paused is `true` keeps paused subscriptions; `false` keeps subscriptions that are not paused.
+	Paused *bool `json:"paused,omitempty" url:"-"`
 	// Limit is number of items to return per page.
 	// Defaults to 15.
 	Limit *int `url:"limit,omitempty" json:"-"`
@@ -125,6 +157,9 @@ type SubscriptionsSearchParams struct {
 	// Pagination is set to false to return at most 100 matching items in one data array without pagination links or metadata.
 	// Defaults to true.
 	Pagination *bool `url:"pagination,omitempty" json:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
 }
 
 // MarshalJSON implements json.Marshaler for SubscriptionsSearchParams.
@@ -134,7 +169,7 @@ func (p SubscriptionsSearchParams) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if p.Filters == nil && p.Sort == nil && p.Includes == nil {
+	if len(p.NullFields) == 0 && p.Filters == nil && p.Sort == nil && p.Includes == nil {
 		return data, nil
 	}
 	var m map[string]any
@@ -150,18 +185,34 @@ func (p SubscriptionsSearchParams) MarshalJSON() ([]byte, error) {
 	if p.Includes != nil {
 		m["includes"] = p.Includes
 	}
+	nullable := map[string]bool{
+		"order_id":            true,
+		"product_id":          true,
+		"renews_after":        true,
+		"renews_before":       true,
+		"cancelled_after":     true,
+		"cancelled_before":    true,
+		"scheduled_to_cancel": true,
+		"paused":              true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("SubscriptionsSearchParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
 	return json.Marshal(m)
 }
 
 // Search subscriptions
-// Search the store's subscriptions, ordered by identifier ascending unless `sort` says otherwise. `search.value` matches the provider subscription ID, the provider customer ID, and the customer email. Filter on `id`, `customer_id` (the SellApp customer ID, as in `customer.id`), `provider`, `status`, or `product_variant_id`, and sort on `id`, `status`, `current_period_start`, `current_period_end`, `created_at`, or `updated_at`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Search the store's subscriptions, ordered by identifier ascending unless `sort` says otherwise. `search.value` matches the provider subscription ID, the provider customer ID, and the customer email. Filter on `id`, `customer_id` (the SellApp customer ID, as in `customer.id`), `provider`, `status`, or `product_variant_id`, and sort on `id`, `status`, `current_period_start`, `current_period_end`, `created_at`, or `updated_at`. The body also takes the list endpoint's filters as top-level fields: `order_id`, `product_id`, `renews_after`, `renews_before`, `cancelled_after`, `cancelled_before`, `scheduled_to_cancel`, and `paused`, with the same rules; date filters read whole days in the store's time zone and include both ends. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *SubscriptionService) Search(ctx context.Context, params *SubscriptionsSearchParams, opts ...RequestOption) *Iterator[SdkSearchSubscriptionsResponseValue200ApplicationJSON] {
 	opts = append([]RequestOption{withOperation("searchSubscriptions", false)}, opts...)
 	return newIterator[SdkSearchSubscriptionsResponseValue200ApplicationJSON](ctx, s.client, "POST", "/v2/subscriptions/search", params, "after", "data", opts, map[string]string{"limit": "15"}, func() any {
 		if params == nil {
 			return nil
 		}
-		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkSearchSubscriptionsRequestApplicationJson\",\"properties\":{\"filters\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertyFiltersItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"operator\":{\"kind\":\"primitive\",\"type\":\"string\"},\"value\":{\"kind\":\"primitive\",\"type\":\"unknown\"},\"type\":{\"kind\":\"enum\",\"values\":[\"and\",\"or\"]},\"nested\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertyFiltersItemPropertyNestedItem\",\"properties\":{},\"required\":[],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}},\"sort\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertySortItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"direction\":{\"kind\":\"enum\",\"values\":[\"asc\",\"desc\"]}},\"required\":[\"field\"],\"additionalProperties\":true}},\"search\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertySearch\",\"properties\":{\"value\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"case_sensitive\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true},\"includes\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertyIncludesItem\",\"properties\":{\"relation\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[\"relation\"],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}"))
+		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkSearchSubscriptionsRequestApplicationJson\",\"properties\":{\"filters\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertyFiltersItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"operator\":{\"kind\":\"primitive\",\"type\":\"string\"},\"value\":{\"kind\":\"primitive\",\"type\":\"unknown\"},\"type\":{\"kind\":\"enum\",\"values\":[\"and\",\"or\"]},\"nested\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertyFiltersItemPropertyNestedItem\",\"properties\":{},\"required\":[],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}},\"sort\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertySortItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"direction\":{\"kind\":\"enum\",\"values\":[\"asc\",\"desc\"]}},\"required\":[\"field\"],\"additionalProperties\":true}},\"search\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertySearch\",\"properties\":{\"value\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"case_sensitive\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true},\"includes\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"SearchSubscriptionsRequestApplicationJsonPropertyIncludesItem\",\"properties\":{\"relation\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[\"relation\"],\"additionalProperties\":true}},\"order_id\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"product_id\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}}},\"renews_after\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":64}}},\"renews_before\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":64}}},\"cancelled_after\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":64}}},\"cancelled_before\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":64}}},\"scheduled_to_cancel\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"paused\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"boolean\"}}},\"required\":[],\"additionalProperties\":true}"))
 	}())
 }
 

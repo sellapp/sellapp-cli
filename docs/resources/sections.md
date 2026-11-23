@@ -1057,6 +1057,8 @@ sellapp sections v-2-search-sections --body '{"filters":[{"field":"id","operator
 
 | Input | Required | Meaning |
 | --- | --- | --- |
+| --limit | No | Number of items to return per page. |
+| --page | No | Page number to return. |
 | --filters | No | Value for filters. |
 | --sort | No | Value for sort. |
 | --search | No | Value for search. |

@@ -2,6 +2,69 @@
 
 [All commands](../commands.md)
 
+## create
+
+Create a course
+
+Create a course as a draft that customers cannot buy yet, whatever `visibility` you send: `visibility`, `HIDDEN` by default, applies once the course is published. It starts with no sections and one draft option named `Default`, priced at 0 USD: set the price with the product variant endpoints, add sections and lessons, then publish it with `POST /v2/products/{product}/publish`, where `{product}` is the course `id`. Each successful call creates another course, so do not retry blindly after a lost response: search courses for the title first. Requires the `listing` API-key ability and the `listing` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/courses/create-a-course) · Effect: **write**
+
+```sh
+sellapp courses create --body '{"title":"Brand identity basics","description":"<p>Design a logo, color palette, and type system for your next project.</p>","category":"design","level":"beginner","language":"English","what_you_learn":["Sketch a logo concept.","Choose a color palette."],"certificate_enabled":true,"delivery_text":"Open your course from the link in your receipt."}'
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --title | Yes | The course name customers see. |
+| --category | No | Value for category. |
+| --level | No | Value for level. |
+| --language | No | Value for language. |
+| --subtitle | No | Value for subtitle. |
+| --author | No | Value for author. |
+| --subcategory | No | Value for subcategory. |
+| --what-you-learn | No | Value for what you learn. |
+| --requirements | No | Value for requirements. |
+| --certificate-enabled | No | Value for certificate enabled. |
+| --access-type | No | Value for access type. |
+| --access-duration-days | No | Required when access_type is limited; cleared otherwise. |
+| --enrollment-limit | No | Value for enrollment limit. |
+| --delivery-text | No | Value for delivery text. |
+| --slug | No | The last part of the course's storefront URL: lowercase letters and numbers in words joined by single hyphens, such as `design-foundations`. It must be unused by every other product in the store, or the request returns `422` on `slug`. When you leave it out, SellApp makes one from the title. |
+| --description | No | The course description as HTML, at least 5 characters long and at most 2000 characters of visible text. Leave it out, or send null, to start without one; a course needs a description before it is published. |
+| --visibility | No | Value for visibility. |
+
+The request body is required.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands courses create --json`.
+
 ## get
 
 Retrieve a course
@@ -48,6 +111,56 @@ Credential alternatives and scopes:
 Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
 
 Inspect the complete schema: `sellapp commands courses get --json`.
+
+## get-student-summary
+
+Retrieve a course student summary
+
+Summarize who bought your courses in a date range: totals for students, purchases, units, and orders, plus the top students and the top courses. A purchase counts when it is paid or completed and was made within the range; refunded and pending purchases do not count. A student is a customer, or the order email when a purchase has no customer record. The response contains customer email addresses, so handle it as personal data. Requires the `invoice` API-key ability and the invoice permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/courses/retrieve-course-student-summary) · Effect: **read**
+
+```sh
+sellapp courses get-student-summary --start-date 2026-08-01 --end-date 2026-08-31
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --start-date | Yes | The first day to include, as `YYYY-MM-DD` in the store's timezone. |
+| --end-date | Yes | The last day to include, as `YYYY-MM-DD` in the store's timezone. It must not be before `start_date`, and the range can cover at most 366 days; otherwise the request returns `422` on `end_date`. |
+| --course-id | No | Count one course only: the course `id` from `/v2/courses`. Another product, a deleted course, or another store's course returns `422` on `course_id`. |
+| --limit | No | How many rows `students` and `courses` each return: 10 by default, at most 20. A larger value returns `422` on `limit`. The `summary` totals always cover everything. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands courses get-student-summary --json`.
 
 ## lessons create
 
@@ -366,7 +479,7 @@ Inspect the complete schema: `sellapp commands courses list --json`.
 
 Update a course
 
-Update course metadata, access configuration, delivery copy, or publication visibility. Public visibility requires a ready promotional video and at least one published lesson. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Update a course's title, URL slug, description, details, access rules, delivery message, or visibility. Only the fields you send change, and PUT behaves exactly like PATCH. Sending the course's current `visibility` changes nothing; a different `visibility` also publishes a draft course. `PUBLIC` first checks that the course has a ready promotional video and at least one published lesson, and otherwise returns `422` on `promo_video` or `curriculum` without changing anything. Every successful update moves `updated_at` forward, even one that changes nothing, so retrying with the same `expected_updated_at` after a success returns `422`: retrieve the course again first. Requires the `listing` API-key ability and the `listing` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/courses/update-course) · Effect: **write**
 
@@ -391,7 +504,10 @@ sellapp courses replace test_course --level beginner --visibility HIDDEN
 | --enrollment-limit | No | Value for enrollment limit. |
 | --delivery-text | No | Value for delivery text. |
 | --visibility | No | Value for visibility. |
-| --expected-updated-at | No | Value for expected updated at. |
+| --expected-updated-at | No | The `updated_at` you last read. If the course changed since, the request returns `422` on `expected_updated_at` and changes nothing. It is checked even when the request changes nothing else. |
+| --title | No | The course name customers see. |
+| --slug | No | The last part of the course's storefront URL: lowercase letters and numbers in words joined by single hyphens, such as `design-foundations`. It must be unused by every other product in the store, or the request returns `422` on `slug`. |
+| --description | No | The course description as HTML, at least 5 characters long and at most 2000 characters of visible text. `null` keeps the current description. To clear the description of a draft course, send an empty element such as `<p></p>`; a published course must keep one, so clearing it returns `422` on `description`. |
 
 The request body is required.
 
@@ -728,7 +844,7 @@ Inspect the complete schema: `sellapp commands courses sections update --json`.
 
 Update a course
 
-Update course metadata, access configuration, delivery copy, or publication visibility. Public visibility requires a ready promotional video and at least one published lesson. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Update a course's title, URL slug, description, details, access rules, delivery message, or visibility. Only the fields you send change, and PUT behaves exactly like PATCH. Sending the course's current `visibility` changes nothing; a different `visibility` also publishes a draft course. `PUBLIC` first checks that the course has a ready promotional video and at least one published lesson, and otherwise returns `422` on `promo_video` or `curriculum` without changing anything. Every successful update moves `updated_at` forward, even one that changes nothing, so retrying with the same `expected_updated_at` after a success returns `422`: retrieve the course again first. Requires the `listing` API-key ability and the `listing` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/courses/update-course) · Effect: **write**
 
@@ -753,7 +869,10 @@ sellapp courses update test_course --level beginner --visibility HIDDEN
 | --enrollment-limit | No | Value for enrollment limit. |
 | --delivery-text | No | Value for delivery text. |
 | --visibility | No | Value for visibility. |
-| --expected-updated-at | No | Value for expected updated at. |
+| --expected-updated-at | No | The `updated_at` you last read. If the course changed since, the request returns `422` on `expected_updated_at` and changes nothing. It is checked even when the request changes nothing else. |
+| --title | No | The course name customers see. |
+| --slug | No | The last part of the course's storefront URL: lowercase letters and numbers in words joined by single hyphens, such as `design-foundations`. It must be unused by every other product in the store, or the request returns `422` on `slug`. |
+| --description | No | The course description as HTML, at least 5 characters long and at most 2000 characters of visible text. `null` keeps the current description. To clear the description of a draft course, send an empty element such as `<p></p>`; a published course must keep one, so clearing it returns `422` on `description`. |
 
 The request body is required.
 

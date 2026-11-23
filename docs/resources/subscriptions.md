@@ -552,7 +552,7 @@ Inspect the complete schema: `sellapp commands subscriptions keep --json`.
 
 List subscriptions
 
-List the subscriptions belonging to the authenticated store, ordered by identifier ascending. Requires the `invoice` Sanctum ability. Use `status[]` to keep only the states you care about. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+List the subscriptions belonging to the authenticated store, ordered by identifier ascending. Requires the `invoice` Sanctum ability. Use `status[]` to keep only the states you care about, and the other filters to find subscriptions by order, product, renewal date, cancellation date, or whether they are paused or set to cancel. Filters combine: a subscription must match all of them. Date filters read whole days in the store's time zone and include both ends. A filter value in the wrong shape, or a `*_before` date earlier than its `*_after` date, returns `422` on that parameter. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/subscriptions/read-subscriptions) · Effect: **read**
 
@@ -566,6 +566,14 @@ sellapp subscriptions list-subscriptions
 | --page | No | Page number to return. |
 | --pagination | No | Set to false to return at most 100 matching items in one data array without pagination links or metadata. |
 | --status | No | Filter by one or more subscription statuses. Repeat the parameter to select several; a single `status=ACTIVE` works too. A status outside the list is rejected with a validation error. |
+| --order-id | No | Keep subscriptions sold by this order. |
+| --product-id | No | Keep subscriptions whose plan is a variant of this product, including subscriptions moved to that plan after signup. |
+| --renews-after | No | Keep subscriptions that renew on or after this moment. Only `ACTIVE` and `TRIALING` subscriptions with a renewal date that are neither paused nor scheduled to cancel match a renewal filter. A date such as `2026-11-01` starts at midnight of that day in the store's time zone; a date-time without an offset is also read in the store's time zone. Inclusive. |
+| --renews-before | No | Keep subscriptions that renew on or before this moment, with the same rules as `renews_after`. A date runs to the last second of that day in the store's time zone. Inclusive. Must not be earlier than `renews_after`. |
+| --cancelled-after | No | Keep `CANCELED` subscriptions cancelled on or after this moment. The cancellation time is when an immediate cancellation happened; for a subscription that ran out at its period end it is approximate, the last time the subscription record changed. Dates are read like `renews_after`. Inclusive. |
+| --cancelled-before | No | Keep `CANCELED` subscriptions cancelled on or before this moment, with the same rules as `cancelled_after`. A date runs to the last second of that day in the store's time zone. Inclusive. Must not be earlier than `cancelled_after`. |
+| --scheduled-to-cancel | No | `true` keeps `ACTIVE` and `TRIALING` subscriptions set to cancel at the end of their period; `false` keeps subscriptions that are not set to. |
+| --paused | No | `true` keeps paused subscriptions; `false` keeps subscriptions that are not paused. |
 
 A request body is optional or not used by this operation.
 
@@ -803,7 +811,7 @@ Inspect the complete schema: `sellapp commands subscriptions resume --json`.
 
 Search subscriptions
 
-Search the store's subscriptions, ordered by identifier ascending unless `sort` says otherwise. `search.value` matches the provider subscription ID, the provider customer ID, and the customer email. Filter on `id`, `customer_id` (the SellApp customer ID, as in `customer.id`), `provider`, `status`, or `product_variant_id`, and sort on `id`, `status`, `current_period_start`, `current_period_end`, `created_at`, or `updated_at`. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Search the store's subscriptions, ordered by identifier ascending unless `sort` says otherwise. `search.value` matches the provider subscription ID, the provider customer ID, and the customer email. Filter on `id`, `customer_id` (the SellApp customer ID, as in `customer.id`), `provider`, `status`, or `product_variant_id`, and sort on `id`, `status`, `current_period_start`, `current_period_end`, `created_at`, or `updated_at`. The body also takes the list endpoint's filters as top-level fields: `order_id`, `product_id`, `renews_after`, `renews_before`, `cancelled_after`, `cancelled_before`, `scheduled_to_cancel`, and `paused`, with the same rules; date filters read whole days in the store's time zone and include both ends. Requires the `invoice` Sanctum ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/subscriptions/read-subscriptions) · Effect: **read**
 
@@ -820,6 +828,14 @@ sellapp subscriptions search-subscriptions --body '{"search":{"value":"maya.chen
 | --sort | No | Value for sort. |
 | --search | No | Value for search. |
 | --includes | No | Value for includes. |
+| --order-id | No | Keep subscriptions sold by this order. |
+| --product-id | No | Keep subscriptions whose plan is a variant of this product, including subscriptions moved to that plan after signup. |
+| --renews-after | No | Keep subscriptions that renew on or after this moment. Only `ACTIVE` and `TRIALING` subscriptions with a renewal date that are neither paused nor scheduled to cancel match a renewal filter. A date such as `2026-11-01` starts at midnight of that day in the store's time zone; a date-time without an offset is also read in the store's time zone. Inclusive. |
+| --renews-before | No | Keep subscriptions that renew on or before this moment, with the same rules as `renews_after`. A date runs to the last second of that day in the store's time zone. Inclusive. Must not be earlier than `renews_after`. |
+| --cancelled-after | No | Keep `CANCELED` subscriptions cancelled on or after this moment. The cancellation time is when an immediate cancellation happened; for a subscription that ran out at its period end it is approximate, the last time the subscription record changed. Dates are read like `renews_after`. Inclusive. |
+| --cancelled-before | No | Keep `CANCELED` subscriptions cancelled on or before this moment, with the same rules as `cancelled_after`. A date runs to the last second of that day in the store's time zone. Inclusive. Must not be earlier than `cancelled_after`. |
+| --scheduled-to-cancel | No | `true` keeps `ACTIVE` and `TRIALING` subscriptions set to cancel at the end of their period; `false` keeps subscriptions that are not set to. |
+| --paused | No | `true` keeps paused subscriptions; `false` keeps subscriptions that are not paused. |
 
 A request body is optional or not used by this operation.
 

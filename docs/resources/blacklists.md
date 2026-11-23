@@ -350,7 +350,7 @@ Inspect the complete schema: `sellapp commands blacklists v-2-get-blacklist --js
 
 List blacklist rules
 
-List store-scoped blacklist rules. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+List your store's blacklist rules, oldest first, 15 per page by default. Narrow the list with `type` and with `search`, which matches part of the blocked value or of the description. An unknown `type`, a `search` longer than 255 characters or a `limit` over 100 returns `422`. An empty `data` array means no rule matches. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/blacklists/list-blacklists) · Effect: **read**
 
@@ -360,6 +360,10 @@ sellapp blacklists v-2-list-blacklists
 
 | Input | Required | Meaning |
 | --- | --- | --- |
+| --limit | No | Number of items to return per page. |
+| --page | No | Page number to return. |
+| --search | No | Text to look for in the blocked value or the description, matched literally and anywhere in the text, up to 255 characters. |
+| --type | No | Return only rules of this type. |
 
 A request body is optional or not used by this operation.
 

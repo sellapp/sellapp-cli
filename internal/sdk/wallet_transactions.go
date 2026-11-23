@@ -13,6 +13,36 @@ type WalletTransactionService struct {
 	client *Client
 }
 
+// WalletTransactionsReverseParams contains the parameters for Reverse.
+type WalletTransactionsReverseParams struct {
+	// Note is why the entry is reversed. It must contain more than spaces and is saved on the reversal entry.
+	Note string `json:"note" url:"-"`
+	// ExpectedBalanceCents is optional. The wallet balance in integer USD cents that you read before deciding. If the balance is different now, nothing changes and the request returns `422` on `expected_balance_cents`.
+	ExpectedBalanceCents *int `json:"expected_balance_cents,omitempty" url:"-"`
+}
+
+// Reverse a wallet transaction
+// Undo one top-up or manual adjustment in a customer's wallet. SellApp writes a `REVERSAL` entry for the opposite amount, in integer USD cents, and returns it with `201`. Reversing a `TOP_UP` also reverses its `TOP_UP_BONUS`, so the balance drops by the top-up plus its bonus; the returned entry reverses the top-up itself. Reversing a negative `MANUAL_ADJUSTMENT` gives the money back, except credit that the debit had spent and that has since been refunded: a clawback entry takes that part back. The customer is not emailed, and no payment is refunded: reversing a paid top-up does not return money to the customer's card. Requires the `wallet:write` API-key ability and the wallet permission in your team role. Only `TOP_UP` and `MANUAL_ADJUSTMENT` entries can be reversed, once each, and a reversal cannot itself be reversed. Every refusal returns `422` on `transaction` and writes nothing: the entry was already reversed, is a reversal, is an expired credit, or is a type only the system reverses (`TOP_UP_BONUS` goes with its top-up, `CASHBACK` and `REWARD` are reversed by the system, a `REFUND` on its support ticket, a `PURCHASE_DEBIT` through its order); wallets are turned off for the store; or the money is reserved by a checkout or already spent. A customer of another store, a customer without a wallet, or an entry from another customer's wallet returns `404`. Send `expected_balance_cents` with the balance you read to reverse only while the wallet still holds it; otherwise the request returns `422` on `expected_balance_cents` and nothing changes. Repeating the request never takes the money twice: without a key, the repeat returns `422` because the entry is already reversed. To get the original `201` response back instead, send an `Idempotency-Key` header and repeat the same key with the same body within 24 hours; the replay carries `Idempotent-Replayed: true`. The same key with a different body returns `409`. To put money back after a reversal, make a new manual adjustment. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *WalletTransactionService) Reverse(ctx context.Context, customer int, transaction int, params *WalletTransactionsReverseParams, opts ...RequestOption) (*SdkReverseWalletTransactionResponseValue201ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("reverseWalletTransaction", true)}, opts...)
+	var result SdkReverseWalletTransactionResponseValue201ApplicationJSON
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/wallets/%s/transactions/%s/reverse", url.PathEscape(fmt.Sprint(customer)), url.PathEscape(fmt.Sprint(transaction))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReverseWalletTransactionRequestApplicationJson\",\"properties\":{\"note\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minLength\":1,\"maxLength\":255}},\"expected_balance_cents\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":999999999999}}},\"required\":[\"note\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *WalletTransactionService) ReverseWithResponse(ctx context.Context, customer int, transaction int, params *WalletTransactionsReverseParams, opts ...RequestOption) (*RawResponse[*SdkReverseWalletTransactionResponseValue201ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Reverse(ctx, customer, transaction, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
 // WalletTransactionsListParams contains the parameters for List.
 type WalletTransactionsListParams struct {
 	// Defaults to 1.

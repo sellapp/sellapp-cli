@@ -206,6 +206,12 @@ type TicketsMessagesV2SearchTicketMessagesParams struct {
 	Sort     []*V2SearchTicketMessagesRequestApplicationJSONPropertySortItem     `json:"sort,omitempty" url:"-"`
 	Search   *V2SearchTicketMessagesRequestApplicationJSONPropertySearch         `json:"search,omitempty" url:"-"`
 	Includes []*V2SearchTicketMessagesRequestApplicationJSONPropertyIncludesItem `json:"includes,omitempty" url:"-"`
+	// Limit is number of items to return per page.
+	// Defaults to 15.
+	Limit *int `url:"limit,omitempty" json:"-"`
+	// Page is page number to return.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
 }
 
 // MarshalJSON implements json.Marshaler for TicketsMessagesV2SearchTicketMessagesParams.
@@ -235,10 +241,10 @@ func (p TicketsMessagesV2SearchTicketMessagesParams) MarshalJSON() ([]byte, erro
 }
 
 // V2SearchTicketMessages search ticket messages
-// Search a ticket's messages using JSON body filters, search terms, includes, and sort instructions. This v2 route is store-scoped. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Search a ticket's messages using JSON body filters, search terms, includes, and sort instructions. This v2 route is store-scoped. Page through results with `limit` (1 to 100, default 15; a larger value returns `422`) and `page`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *TicketsMessageService) V2SearchTicketMessages(ctx context.Context, ticket int, params *TicketsMessagesV2SearchTicketMessagesParams, opts ...RequestOption) *Iterator[V2SearchTicketMessagesResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("v2SearchTicketMessages", false)}, opts...)
-	return newIterator[V2SearchTicketMessagesResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", fmt.Sprintf("/v2/tickets/%s/messages/search", url.PathEscape(fmt.Sprint(ticket))), nil, "after", "data", opts, nil, func() any {
+	return newIterator[V2SearchTicketMessagesResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", fmt.Sprintf("/v2/tickets/%s/messages/search", url.PathEscape(fmt.Sprint(ticket))), params, "after", "data", opts, map[string]string{"limit": "15"}, func() any {
 		if params == nil {
 			return nil
 		}

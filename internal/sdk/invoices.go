@@ -388,7 +388,7 @@ func (s *InvoiceService) MarkVoidedWithResponse(ctx context.Context, invoice int
 
 // InvoicesIssueReplacementParams contains the parameters for IssueReplacement.
 type InvoicesIssueReplacementParams struct {
-	ProductVariants *IssueReplacementForCompletedInvoiceRequestApplicationJSONPropertyProductVariants `json:"product_variants" url:"-"`
+	ProductVariants interface{} `json:"product_variants" url:"-"`
 }
 
 // IssueReplacement for completed invoice
@@ -396,7 +396,7 @@ type InvoicesIssueReplacementParams struct {
 func (s *InvoiceService) IssueReplacement(ctx context.Context, invoice int, params *InvoicesIssueReplacementParams, opts ...RequestOption) (*SdkIssueReplacementForCompletedInvoiceResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("issueReplacementForCompletedInvoice", false)}, opts...)
 	var result SdkIssueReplacementForCompletedInvoiceResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v2/invoices/%s/issue-replacement", url.PathEscape(fmt.Sprint(invoice))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkIssueReplacementForCompletedInvoiceRequestApplicationJson\",\"properties\":{\"product_variants\":{\"kind\":\"object\",\"modelName\":\"IssueReplacementForCompletedInvoiceRequestApplicationJsonPropertyProductVariants\",\"properties\":{},\"required\":[],\"additionalProperties\":true}},\"required\":[\"product_variants\"],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v2/invoices/%s/issue-replacement", url.PathEscape(fmt.Sprint(invoice))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkIssueReplacementForCompletedInvoiceRequestApplicationJson\",\"properties\":{\"product_variants\":{\"kind\":\"union\",\"variants\":[{\"kind\":\"primitive\",\"type\":\"integer\"},{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}}],\"composition\":\"anyOf\"}},\"required\":[\"product_variants\"],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -473,8 +473,10 @@ func (s *InvoiceService) UpdateStatusWithResponse(ctx context.Context, invoice i
 
 // InvoicesCreateRefundParams contains the parameters for CreateRefund.
 type InvoicesCreateRefundParams struct {
-	// Amount is optional partial refund amount in major currency units. Omit for the full remaining refundable amount.
+	// Amount is optional partial refund amount in major units of the invoice's `payment.refund_currency`. Omit for the full remaining refundable amount.
 	Amount *string `json:"amount,omitempty" url:"-"`
+	// ExpectedRefundedTotalCents is the refunded total you expect, in integer minor units of the invoice's `payment.refund_currency`, which can differ from the invoice currency: `500` means $5.00 in USD. Read it from `payment.refunded_total_cents` on the invoice and send it unchanged; it is `0` before the first refund. After a refund, `data.invoice.payment.refunded_total_cents` in the response is the value to send with the next one. With this field, the refund goes out only while the refunded total still equals it and no other refund on the order is pending. Omit it or send null to refund without the check.
+	ExpectedRefundedTotalCents *int `json:"expected_refunded_total_cents,omitempty" url:"-"`
 	// NullFields lists JSON field names to send as an explicit null,
 	// clearing the corresponding value (e.g. []string{"external_id"}).
 	NullFields []string `json:"-" url:"-"`
@@ -495,7 +497,8 @@ func (p InvoicesCreateRefundParams) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	nullable := map[string]bool{
-		"amount": true,
+		"amount":                        true,
+		"expected_refunded_total_cents": true,
 	}
 	for _, f := range p.NullFields {
 		if !nullable[f] {
@@ -507,7 +510,7 @@ func (p InvoicesCreateRefundParams) MarshalJSON() ([]byte, error) {
 }
 
 // CreateRefund create invoice refund
-// Request a full or partial provider refund using the same idempotent refund ledger as the dashboard. Amounts are decimal currency strings, never floating-point numbers. Requires the `invoice` token ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Request a full or partial provider refund using the same idempotent refund ledger as the dashboard. This sends real money back to the customer. Amounts are decimal currency strings, never floating-point numbers. Send the invoice's `payment.refunded_total_cents` unchanged as `expected_refunded_total_cents` so that a repeated or concurrent request is refused instead of refunding twice: the refund goes out only while the refunded total is still the amount you sent. A changed total returns `422` on `expected_refunded_total_cents`; read the invoice again before deciding whether to refund. Other refusals return `422` on `refund`, including, when you send `expected_refunded_total_cents`, a refund still pending on the order. Requires the `invoice` token ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *InvoiceService) CreateRefund(ctx context.Context, invoice int, params *InvoicesCreateRefundParams, opts ...RequestOption) (*SdkCreateInvoiceRefundResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("createInvoiceRefund", false)}, opts...)
 	var result SdkCreateInvoiceRefundResponseValue200ApplicationJSON
@@ -515,7 +518,7 @@ func (s *InvoiceService) CreateRefund(ctx context.Context, invoice int, params *
 		if params == nil {
 			return nil
 		}
-		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCreateInvoiceRefundRequestApplicationJson\",\"properties\":{\"amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":32,\"pattern\":\"^\\\\d+(\\\\.\\\\d+)?$\"}}}},\"required\":[],\"additionalProperties\":true}"))
+		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCreateInvoiceRefundRequestApplicationJson\",\"properties\":{\"amount\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":32,\"pattern\":\"^\\\\d+(\\\\.\\\\d+)?$\"}}},\"expected_refunded_total_cents\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0}}}},\"required\":[],\"additionalProperties\":true}"))
 	}(), &result, opts)
 	if err != nil {
 		return nil, err

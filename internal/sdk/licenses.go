@@ -78,10 +78,20 @@ type LicensesListParams struct {
 	// Page is page number to return.
 	// Defaults to 1.
 	Page *int `url:"page,omitempty" json:"-"`
+	// Key is keep keys that contain this text: letters, digits, and hyphens, up to 100 characters. A full key as the customer sees it, including the store's key prefix, also finds its key.
+	Key *string `url:"key,omitempty" json:"-"`
+	// CustomerEmail is keep keys of the store customer with exactly this email address.
+	CustomerEmail *string `url:"customer_email,omitempty" json:"-"`
+	// ProductID is keep keys issued for this product.
+	ProductID *int `url:"product_id,omitempty" json:"-"`
+	// OrderID is keep keys issued by this order.
+	OrderID *int `url:"order_id,omitempty" json:"-"`
+	// Validity is keep keys by whether they validate now, decided the way license validation decides it: `active` keys are switched on and not past their expiry, `inactive` keys are switched off but not expired, and `expired` keys are past `expires_at`.
+	Validity *LicensesValidity `url:"validity,omitempty" json:"-"`
 }
 
 // List all license keys
-// List your store's license keys. Use `limit` and `page` to read one page at a time. The response schema describes each license. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List your store's license keys, one page at a time with `limit` and `page`. Filter by part of the key, the customer's email, the product, the order, or `validity`; several filters combine, and a key must match all of them. A filter value in the wrong shape returns `422` on that parameter. Requires the `license` API-key ability. The response schema describes each license. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *LicenseService) List(ctx context.Context, params *LicensesListParams, opts ...RequestOption) *Iterator[SdkListLicenseKeysResponseValue200ApplicationJSON] {
 	opts = append([]RequestOption{withOperation("listLicenseKeys", false)}, opts...)
 	return newIterator[SdkListLicenseKeysResponseValue200ApplicationJSON](ctx, s.client, "GET", "/v2/license-keys", params, "after", "data", opts, map[string]string{"limit": "15"})

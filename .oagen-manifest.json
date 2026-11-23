@@ -22,6 +22,7 @@
     "docs/resources/bundle-items.md",
     "docs/resources/cashback-rules.md",
     "docs/resources/charges.md",
+    "docs/resources/checkout-field-templates.md",
     "docs/resources/community-connections.md",
     "docs/resources/coupons.md",
     "docs/resources/courses.md",
@@ -40,6 +41,7 @@
     "docs/resources/license-instances.md",
     "docs/resources/licenses.md",
     "docs/resources/line-items.md",
+    "docs/resources/notifications.md",
     "docs/resources/oauth-management.md",
     "docs/resources/oauth.md",
     "docs/resources/orders.md",
@@ -55,6 +57,10 @@
     "docs/resources/store.md",
     "docs/resources/stores.md",
     "docs/resources/subscriptions.md",
+    "docs/resources/support-automation-rules.md",
+    "docs/resources/support-automation-settings.md",
+    "docs/resources/support-reasons.md",
+    "docs/resources/support-reply-templates.md",
     "docs/resources/tickets.md",
     "docs/resources/upsell-offers.md",
     "docs/resources/variant-deliverable-files.md",
@@ -131,14 +137,19 @@
     "internal/sdk/affiliate_referral_sessions.go",
     "internal/sdk/affiliate_referrals.go",
     "internal/sdk/affiliates.go",
+    "internal/sdk/affiliates_coupon.go",
+    "internal/sdk/affiliates_products.go",
     "internal/sdk/blacklists.go",
     "internal/sdk/bookings.go",
     "internal/sdk/bookings_calendar_events.go",
     "internal/sdk/bundle_items.go",
     "internal/sdk/cashback_rules.go",
     "internal/sdk/charges.go",
+    "internal/sdk/checkout_field_templates.go",
     "internal/sdk/cli_bridge.go",
     "internal/sdk/community_connections.go",
+    "internal/sdk/community_connections_servers.go",
+    "internal/sdk/community_connections_slack.go",
     "internal/sdk/coupons.go",
     "internal/sdk/courses.go",
     "internal/sdk/courses_lessons.go",
@@ -167,6 +178,7 @@
     "internal/sdk/licenses_instances.go",
     "internal/sdk/line_items.go",
     "internal/sdk/models.go",
+    "internal/sdk/notifications.go",
     "internal/sdk/oauth.go",
     "internal/sdk/oauth_management.go",
     "internal/sdk/options.go",
@@ -175,12 +187,17 @@
     "internal/sdk/pagination.go",
     "internal/sdk/payment_methods.go",
     "internal/sdk/payment_methods_custom.go",
+    "internal/sdk/payment_methods_modifier.go",
     "internal/sdk/pkg/events/events.go",
     "internal/sdk/product_variants.go",
     "internal/sdk/product_variants_booking.go",
+    "internal/sdk/product_variants_community_access.go",
     "internal/sdk/product_variants_pricing.go",
+    "internal/sdk/product_variants_subscription_settings.go",
     "internal/sdk/products.go",
     "internal/sdk/products_addons.go",
+    "internal/sdk/products_featured_variant.go",
+    "internal/sdk/products_similar_products.go",
     "internal/sdk/promotions.go",
     "internal/sdk/promotions_phases.go",
     "internal/sdk/refunds.go",
@@ -191,12 +208,20 @@
     "internal/sdk/sections.go",
     "internal/sdk/sellapp.go",
     "internal/sdk/store_custom_domains.go",
+    "internal/sdk/store_integrations.go",
     "internal/sdk/store_notification_channels.go",
+    "internal/sdk/store_sender_email.go",
     "internal/sdk/store_settings.go",
     "internal/sdk/subscriptions.go",
     "internal/sdk/subscriptions_actions.go",
+    "internal/sdk/support_automation_rules.go",
+    "internal/sdk/support_automation_settings.go",
+    "internal/sdk/support_reasons.go",
+    "internal/sdk/support_reply_templates.go",
     "internal/sdk/tickets.go",
+    "internal/sdk/tickets_analytics.go",
     "internal/sdk/tickets_messages.go",
+    "internal/sdk/tickets_wallet_refunds.go",
     "internal/sdk/upsell_offers.go",
     "internal/sdk/variant_deliverable_files.go",
     "internal/sdk/variant_deliverable_folders.go",
@@ -204,6 +229,8 @@
     "internal/sdk/variant_serials.go",
     "internal/sdk/wallet.go",
     "internal/sdk/wallet_bonus_tiers.go",
+    "internal/sdk/wallet_ledger.go",
+    "internal/sdk/wallet_overview.go",
     "internal/sdk/wallet_settings.go",
     "internal/sdk/wallet_topups.go",
     "internal/sdk/wallet_transactions.go",
@@ -243,6 +270,10 @@
     },
     "PUT /v2/charges/{charge_id}/voided": {
       "sdkMethod": "MarkVoided",
+      "service": "charges"
+    },
+    "GET /v2/charges/summary": {
+      "sdkMethod": "GetSummary",
       "service": "charges"
     },
     "GET /v2/groups": {
@@ -425,6 +456,34 @@
       "sdkMethod": "BatchDelete",
       "service": "products"
     },
+    "POST /v2/products/{product}/publish": {
+      "sdkMethod": "Publish",
+      "service": "products"
+    },
+    "POST /v2/products/{product}/duplicate": {
+      "sdkMethod": "Duplicate",
+      "service": "products"
+    },
+    "PUT /v2/products/{product}/position": {
+      "sdkMethod": "Move",
+      "service": "products"
+    },
+    "GET /v2/products/{product}/featured-variant": {
+      "sdkMethod": "Get",
+      "service": "products_featured_variant"
+    },
+    "PUT /v2/products/{product}/featured-variant": {
+      "sdkMethod": "Replace",
+      "service": "products_featured_variant"
+    },
+    "GET /v2/products/{product}/similar-products": {
+      "sdkMethod": "List",
+      "service": "products_similar_products"
+    },
+    "PUT /v2/products/{product}/similar-products": {
+      "sdkMethod": "Replace",
+      "service": "products_similar_products"
+    },
     "GET /v2/products/{product}/variants": {
       "sdkMethod": "List",
       "service": "product_variants"
@@ -484,6 +543,30 @@
     "DELETE /v2/products/{product}/variants/batch": {
       "sdkMethod": "BatchDelete",
       "service": "product_variants"
+    },
+    "POST /v2/products/{product}/variants/{variant}/publish": {
+      "sdkMethod": "Publish",
+      "service": "product_variants"
+    },
+    "POST /v2/products/{product}/variants/{variant}/duplicate": {
+      "sdkMethod": "Duplicate",
+      "service": "product_variants"
+    },
+    "PUT /v2/products/{product}/variants/order": {
+      "sdkMethod": "Reorder",
+      "service": "product_variants"
+    },
+    "GET /v2/products/{product}/variants/{variant}/subscription-settings": {
+      "sdkMethod": "Get",
+      "service": "product_variants_subscription_settings"
+    },
+    "PATCH /v2/products/{product}/variants/{variant}/subscription-settings": {
+      "sdkMethod": "Update",
+      "service": "product_variants_subscription_settings"
+    },
+    "PUT /v2/products/{product}/variants/{variant}/community-access": {
+      "sdkMethod": "Replace",
+      "service": "product_variants_community_access"
     },
     "PATCH /v2/subscriptions/{subscription}/cancel": {
       "sdkMethod": "Cancel",
@@ -597,6 +680,10 @@
       "sdkMethod": "Set",
       "service": "bookings_calendar_events"
     },
+    "POST /v2/booking-products": {
+      "sdkMethod": "Create",
+      "service": "bookings"
+    },
     "GET /v2/bundles/{bundle}/items/{item}": {
       "sdkMethod": "Get",
       "service": "bundle_items"
@@ -612,6 +699,22 @@
     "DELETE /v2/bundles/{bundle}/items/detach": {
       "sdkMethod": "Detach",
       "service": "bundle_items"
+    },
+    "GET /v2/products/{product}/variants/{variant}/deliverable/buyer-notification": {
+      "sdkMethod": "Preview",
+      "service": "variant_deliverables"
+    },
+    "POST /v2/products/{product}/variants/{variant}/deliverable/buyer-notification": {
+      "sdkMethod": "Notify",
+      "service": "variant_deliverables"
+    },
+    "GET /v2/products/{product}/variants/{variant}/deliverable": {
+      "sdkMethod": "Get",
+      "service": "variant_deliverables"
+    },
+    "PUT /v2/products/{product}/variants/{variant}/deliverable": {
+      "sdkMethod": "Replace",
+      "service": "variant_deliverables"
     },
     "GET /v2/promotions": {
       "sdkMethod": "List",
@@ -652,6 +755,10 @@
     "PUT /v2/promotions/{promotion}/phases": {
       "sdkMethod": "Replace",
       "service": "promotions_phases"
+    },
+    "GET /v2/promotions/{promotion}/usage": {
+      "sdkMethod": "GetUsage",
+      "service": "promotions"
     },
     "GET /v2/addons": {
       "sdkMethod": "List",
@@ -793,6 +900,114 @@
       "sdkMethod": "Send",
       "service": "webhook_channels"
     },
+    "GET /v2/support-reply-templates": {
+      "sdkMethod": "List",
+      "service": "support_reply_templates"
+    },
+    "POST /v2/support-reply-templates": {
+      "sdkMethod": "Create",
+      "service": "support_reply_templates"
+    },
+    "GET /v2/support-reply-templates/{supportReplyTemplate}": {
+      "sdkMethod": "Get",
+      "service": "support_reply_templates"
+    },
+    "PUT /v2/support-reply-templates/{supportReplyTemplate}": {
+      "sdkMethod": "Replace",
+      "service": "support_reply_templates"
+    },
+    "PATCH /v2/support-reply-templates/{supportReplyTemplate}": {
+      "sdkMethod": "Update",
+      "service": "support_reply_templates"
+    },
+    "DELETE /v2/support-reply-templates/{supportReplyTemplate}": {
+      "sdkMethod": "Delete",
+      "service": "support_reply_templates"
+    },
+    "POST /v2/support-reply-templates/{supportReplyTemplate}/render": {
+      "sdkMethod": "Render",
+      "service": "support_reply_templates"
+    },
+    "PATCH /v2/support-reply-templates/reorder": {
+      "sdkMethod": "Reorder",
+      "service": "support_reply_templates"
+    },
+    "GET /v2/support-reply-templates/options": {
+      "sdkMethod": "GetOptions",
+      "service": "support_reply_templates"
+    },
+    "GET /v2/support-reasons": {
+      "sdkMethod": "List",
+      "service": "support_reasons"
+    },
+    "POST /v2/support-reasons": {
+      "sdkMethod": "Create",
+      "service": "support_reasons"
+    },
+    "GET /v2/support-reasons/{supportReason}": {
+      "sdkMethod": "Get",
+      "service": "support_reasons"
+    },
+    "PUT /v2/support-reasons/{supportReason}": {
+      "sdkMethod": "Replace",
+      "service": "support_reasons"
+    },
+    "PATCH /v2/support-reasons/{supportReason}": {
+      "sdkMethod": "Update",
+      "service": "support_reasons"
+    },
+    "DELETE /v2/support-reasons/{supportReason}": {
+      "sdkMethod": "Delete",
+      "service": "support_reasons"
+    },
+    "GET /v2/support-reasons/options": {
+      "sdkMethod": "GetOptions",
+      "service": "support_reasons"
+    },
+    "GET /v2/support-automation-rules": {
+      "sdkMethod": "List",
+      "service": "support_automation_rules"
+    },
+    "POST /v2/support-automation-rules": {
+      "sdkMethod": "Create",
+      "service": "support_automation_rules"
+    },
+    "GET /v2/support-automation-rules/{supportAutomationRule}": {
+      "sdkMethod": "Get",
+      "service": "support_automation_rules"
+    },
+    "PUT /v2/support-automation-rules/{supportAutomationRule}": {
+      "sdkMethod": "Replace",
+      "service": "support_automation_rules"
+    },
+    "PATCH /v2/support-automation-rules/{supportAutomationRule}": {
+      "sdkMethod": "Update",
+      "service": "support_automation_rules"
+    },
+    "PATCH /v2/support-automation-rules/{supportAutomationRule}/state": {
+      "sdkMethod": "UpdateState",
+      "service": "support_automation_rules"
+    },
+    "PATCH /v2/support-automation-rules/reorder": {
+      "sdkMethod": "Reorder",
+      "service": "support_automation_rules"
+    },
+    "GET /v2/support-automation-rules/dry-run": {
+      "sdkMethod": "DryRun",
+      "service": "support_automation_rules"
+    },
+    "GET /v2/support-automation-settings": {
+      "sdkMethod": "Get",
+      "service": "support_automation_settings"
+    },
+    "PUT /v2/support-automation-settings": {
+      "sdkMethod": "Replace",
+      "service": "support_automation_settings"
+    },
+    "PATCH /v2/support-automation-settings": {
+      "sdkMethod": "Update",
+      "service": "support_automation_settings"
+    },
     "GET /v2/customers": {
       "sdkMethod": "List",
       "service": "customers"
@@ -869,6 +1084,10 @@
       "sdkMethod": "SendFulfillmentNotifications",
       "service": "orders"
     },
+    "POST /v2/orders/{order}/telegram-invites": {
+      "sdkMethod": "RegenerateTelegramInvite",
+      "service": "orders"
+    },
     "GET /v2/orders/{order}/deliverables": {
       "sdkMethod": "ListDeliverables",
       "service": "orders"
@@ -904,14 +1123,6 @@
     "GET /v2/orders/{order}/line-items/{lineItem}": {
       "sdkMethod": "Get",
       "service": "orders_line_items"
-    },
-    "GET /v2/products/{product}/variants/{variant}/deliverable": {
-      "sdkMethod": "Get",
-      "service": "variant_deliverables"
-    },
-    "PUT /v2/products/{product}/variants/{variant}/deliverable": {
-      "sdkMethod": "Replace",
-      "service": "variant_deliverables"
     },
     "GET /v2/products/{product}/variants/{variant}/deliverable/files": {
       "sdkMethod": "List",
@@ -995,6 +1206,10 @@
     },
     "POST /v2/affiliate-invitations": {
       "sdkMethod": "Invite",
+      "service": "affiliate_program"
+    },
+    "POST /v2/affiliate-invitations/{invitation}/resend": {
+      "sdkMethod": "Resend",
       "service": "affiliate_program"
     },
     "GET /v2/reward-rules": {
@@ -1089,6 +1304,10 @@
       "sdkMethod": "Delete",
       "service": "upsell_offers"
     },
+    "GET /v2/upsell-offers/{upsellOffer}/performance": {
+      "sdkMethod": "GetPerformance",
+      "service": "upsell_offers"
+    },
     "GET /v2/community-connections": {
       "sdkMethod": "List",
       "service": "community_connections"
@@ -1113,6 +1332,34 @@
       "sdkMethod": "Disconnect",
       "service": "community_connections"
     },
+    "GET /v2/community-connections/failed-grant-reasons": {
+      "sdkMethod": "ListFailedGrantReasons",
+      "service": "community_connections"
+    },
+    "GET /v2/community-connections/{platform}/servers/{server}": {
+      "sdkMethod": "Get",
+      "service": "community_connections_servers"
+    },
+    "DELETE /v2/community-connections/{platform}/servers/{server}": {
+      "sdkMethod": "Remove",
+      "service": "community_connections_servers"
+    },
+    "POST /v2/community-connections/discord/sync-roles": {
+      "sdkMethod": "SyncDiscordRoles",
+      "service": "community_connections"
+    },
+    "GET /v2/community-connections/slack/channels": {
+      "sdkMethod": "ListChannels",
+      "service": "community_connections_slack"
+    },
+    "POST /v2/community-connections/slack/channels": {
+      "sdkMethod": "AddChannel",
+      "service": "community_connections_slack"
+    },
+    "PUT /v2/community-connections/slack/invite-link": {
+      "sdkMethod": "ReplaceInviteLink",
+      "service": "community_connections_slack"
+    },
     "GET /v2/wallet/settings": {
       "sdkMethod": "Get",
       "service": "wallet_settings"
@@ -1136,6 +1383,18 @@
     "PATCH /v2/wallets/{customer}/status": {
       "sdkMethod": "UpdateStatus",
       "service": "wallet"
+    },
+    "POST /v2/wallets/{customer}/transactions/{transaction}/reverse": {
+      "sdkMethod": "Reverse",
+      "service": "wallet_transactions"
+    },
+    "GET /v2/wallet/transactions": {
+      "sdkMethod": "List",
+      "service": "wallet_ledger"
+    },
+    "GET /v2/wallet/overview": {
+      "sdkMethod": "Get",
+      "service": "wallet_overview"
     },
     "GET /v2/wallets/{customer}/transactions": {
       "sdkMethod": "List",
@@ -1169,6 +1428,10 @@
       "sdkMethod": "Restore",
       "service": "cashback_rules"
     },
+    "GET /v2/cashback-rules/quote": {
+      "sdkMethod": "Quote",
+      "service": "cashback_rules"
+    },
     "GET /v2/wallet-bonus-tiers": {
       "sdkMethod": "List",
       "service": "wallet_bonus_tiers"
@@ -1193,8 +1456,16 @@
       "sdkMethod": "Restore",
       "service": "wallet_bonus_tiers"
     },
+    "GET /v2/wallet-bonus-tiers/quote": {
+      "sdkMethod": "Quote",
+      "service": "wallet_bonus_tiers"
+    },
     "GET /v2/courses": {
       "sdkMethod": "List",
+      "service": "courses"
+    },
+    "POST /v2/courses": {
+      "sdkMethod": "Create",
       "service": "courses"
     },
     "POST /v2/courses/search": {
@@ -1211,6 +1482,10 @@
     },
     "PATCH /v2/courses/{course}": {
       "sdkMethod": "Update",
+      "service": "courses"
+    },
+    "GET /v2/course-students": {
+      "sdkMethod": "GetStudentSummary",
       "service": "courses"
     },
     "POST /v2/courses/{course}/sections": {
@@ -1253,6 +1528,34 @@
       "sdkMethod": "Reorder",
       "service": "courses_lessons"
     },
+    "GET /v2/checkout-field-templates": {
+      "sdkMethod": "List",
+      "service": "checkout_field_templates"
+    },
+    "POST /v2/checkout-field-templates": {
+      "sdkMethod": "Create",
+      "service": "checkout_field_templates"
+    },
+    "GET /v2/checkout-field-templates/{checkoutFieldTemplate}": {
+      "sdkMethod": "Get",
+      "service": "checkout_field_templates"
+    },
+    "PUT /v2/checkout-field-templates/{checkoutFieldTemplate}": {
+      "sdkMethod": "Replace",
+      "service": "checkout_field_templates"
+    },
+    "PATCH /v2/checkout-field-templates/{checkoutFieldTemplate}": {
+      "sdkMethod": "Update",
+      "service": "checkout_field_templates"
+    },
+    "DELETE /v2/checkout-field-templates/{checkoutFieldTemplate}": {
+      "sdkMethod": "Delete",
+      "service": "checkout_field_templates"
+    },
+    "POST /v2/checkout-field-templates/{checkoutFieldTemplate}/duplicate": {
+      "sdkMethod": "Duplicate",
+      "service": "checkout_field_templates"
+    },
     "GET /v2/payment-methods": {
       "sdkMethod": "List",
       "service": "payment_methods"
@@ -1272,6 +1575,14 @@
     "PUT /v2/payment-methods/{paymentMethod}/configuration": {
       "sdkMethod": "Validate",
       "service": "payment_methods"
+    },
+    "GET /v2/payment-methods/{paymentMethod}/modifier": {
+      "sdkMethod": "Get",
+      "service": "payment_methods_modifier"
+    },
+    "PUT /v2/payment-methods/{paymentMethod}/modifier": {
+      "sdkMethod": "Replace",
+      "service": "payment_methods_modifier"
     },
     "GET /v2/payment-methods/custom": {
       "sdkMethod": "List",
@@ -1325,6 +1636,98 @@
       "sdkMethod": "UpdateMarketing",
       "service": "store_settings"
     },
+    "GET /v2/store/settings/checkout": {
+      "sdkMethod": "GetCheckout",
+      "service": "store_settings"
+    },
+    "PUT /v2/store/settings/checkout": {
+      "sdkMethod": "ReplaceCheckout",
+      "service": "store_settings"
+    },
+    "PATCH /v2/store/settings/checkout": {
+      "sdkMethod": "UpdateCheckout",
+      "service": "store_settings"
+    },
+    "GET /v2/store/settings/taxes": {
+      "sdkMethod": "GetTaxes",
+      "service": "store_settings"
+    },
+    "PUT /v2/store/settings/taxes": {
+      "sdkMethod": "ReplaceTaxes",
+      "service": "store_settings"
+    },
+    "PATCH /v2/store/settings/taxes": {
+      "sdkMethod": "UpdateTaxes",
+      "service": "store_settings"
+    },
+    "GET /v2/store/settings/customer-emails": {
+      "sdkMethod": "GetCustomerEmails",
+      "service": "store_settings"
+    },
+    "PUT /v2/store/settings/customer-emails": {
+      "sdkMethod": "ReplaceCustomerEmails",
+      "service": "store_settings"
+    },
+    "PATCH /v2/store/settings/customer-emails": {
+      "sdkMethod": "UpdateCustomerEmails",
+      "service": "store_settings"
+    },
+    "GET /v2/store/settings/store-alerts": {
+      "sdkMethod": "GetAlerts",
+      "service": "store_settings"
+    },
+    "PUT /v2/store/settings/store-alerts": {
+      "sdkMethod": "ReplaceAlerts",
+      "service": "store_settings"
+    },
+    "PATCH /v2/store/settings/store-alerts": {
+      "sdkMethod": "UpdateAlerts",
+      "service": "store_settings"
+    },
+    "GET /v2/store/settings/personalization": {
+      "sdkMethod": "GetPersonalization",
+      "service": "store_settings"
+    },
+    "PUT /v2/store/settings/personalization": {
+      "sdkMethod": "ReplacePersonalization",
+      "service": "store_settings"
+    },
+    "PATCH /v2/store/settings/personalization": {
+      "sdkMethod": "UpdatePersonalization",
+      "service": "store_settings"
+    },
+    "PUT /v2/store/settings/checkout/crypto": {
+      "sdkMethod": "ReplaceCryptoCheckout",
+      "service": "store_settings"
+    },
+    "PATCH /v2/store/settings/checkout/crypto": {
+      "sdkMethod": "UpdateCryptoCheckout",
+      "service": "store_settings"
+    },
+    "GET /v2/store/settings/sender-email": {
+      "sdkMethod": "Get",
+      "service": "store_sender_email"
+    },
+    "PUT /v2/store/settings/sender-email": {
+      "sdkMethod": "Set",
+      "service": "store_sender_email"
+    },
+    "DELETE /v2/store/settings/sender-email": {
+      "sdkMethod": "Delete",
+      "service": "store_sender_email"
+    },
+    "POST /v2/store/settings/sender-email/verification": {
+      "sdkMethod": "SendVerification",
+      "service": "store_sender_email"
+    },
+    "GET /v2/store/settings/integrations": {
+      "sdkMethod": "Get",
+      "service": "store_integrations"
+    },
+    "DELETE /v2/store/settings/integrations/google-calendar": {
+      "sdkMethod": "DisconnectGoogleCalendar",
+      "service": "store_integrations"
+    },
     "GET /v2/store/notification-channels": {
       "sdkMethod": "List",
       "service": "store_notification_channels"
@@ -1368,6 +1771,14 @@
     "POST /v2/store/custom-domains/{customDomain}/refresh": {
       "sdkMethod": "Refresh",
       "service": "store_custom_domains"
+    },
+    "GET /v2/notifications": {
+      "sdkMethod": "List",
+      "service": "notifications"
+    },
+    "POST /v2/notifications/mark-seen": {
+      "sdkMethod": "Mark",
+      "service": "notifications"
     },
     "GET /v2/credit-products": {
       "sdkMethod": "List",
@@ -1425,6 +1836,26 @@
       "sdkMethod": "Update",
       "service": "affiliates"
     },
+    "GET /v2/affiliates/{affiliate}/products": {
+      "sdkMethod": "Get",
+      "service": "affiliates_products"
+    },
+    "PATCH /v2/affiliates/{affiliate}/products": {
+      "sdkMethod": "Update",
+      "service": "affiliates_products"
+    },
+    "GET /v2/affiliates/{affiliate}/coupon": {
+      "sdkMethod": "Get",
+      "service": "affiliates_coupon"
+    },
+    "PATCH /v2/affiliates/{affiliate}/coupon": {
+      "sdkMethod": "Save",
+      "service": "affiliates_coupon"
+    },
+    "DELETE /v2/affiliates/{affiliate}/coupon": {
+      "sdkMethod": "Disable",
+      "service": "affiliates_coupon"
+    },
     "GET /v2/affiliate-referrals": {
       "sdkMethod": "List",
       "service": "affiliate_referrals"
@@ -1459,6 +1890,10 @@
     },
     "PATCH /v2/affiliate-payouts/{payout}/status": {
       "sdkMethod": "Update",
+      "service": "affiliate_payouts"
+    },
+    "POST /v2/affiliate-payouts/mark-paid": {
+      "sdkMethod": "MarkPaid",
       "service": "affiliate_payouts"
     },
     "GET /v2/refunds": {
@@ -1849,6 +2284,10 @@
       "sdkMethod": "V2BatchDeleteCoupons",
       "service": "coupons"
     },
+    "GET /v2/coupons/{coupon}/usage": {
+      "sdkMethod": "V2GetCouponUsage",
+      "service": "coupons"
+    },
     "GET /v2/feedback": {
       "sdkMethod": "V2ListFeedback",
       "service": "feedback"
@@ -1952,6 +2391,34 @@
     "GET /v2/tickets/{ticket}/messages/{message}": {
       "sdkMethod": "V2GetTicketMessage",
       "service": "tickets_messages"
+    },
+    "PATCH /v2/tickets/batch": {
+      "sdkMethod": "BatchUpdate",
+      "service": "tickets"
+    },
+    "GET /v2/tickets/{ticket}/context": {
+      "sdkMethod": "GetContext",
+      "service": "tickets"
+    },
+    "GET /v2/tickets/{ticket}/wallet-refund-options": {
+      "sdkMethod": "ListOptions",
+      "service": "tickets_wallet_refunds"
+    },
+    "GET /v2/tickets/{ticket}/wallet-refunds": {
+      "sdkMethod": "List",
+      "service": "tickets_wallet_refunds"
+    },
+    "POST /v2/tickets/{ticket}/wallet-refunds": {
+      "sdkMethod": "Create",
+      "service": "tickets_wallet_refunds"
+    },
+    "POST /v2/tickets/{ticket}/wallet-refunds/{walletRefund}/reverse": {
+      "sdkMethod": "Reverse",
+      "service": "tickets_wallet_refunds"
+    },
+    "GET /v2/support-analytics": {
+      "sdkMethod": "Get",
+      "service": "tickets_analytics"
     },
     "GET /.well-known/oauth-authorization-server": {
       "sdkMethod": "GetAuthorizationServerMetadata",

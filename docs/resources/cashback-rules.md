@@ -6,7 +6,7 @@
 
 Archive a cashback rule
 
-Archive a cashback rule. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Archive a cashback rule. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/wallet/cashback-rules) · Effect: **consequential**
 
@@ -53,7 +53,7 @@ Inspect the complete schema: `sellapp commands cashback-rules archive --json`.
 
 Create a cashback rule
 
-Create a cashback rule. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Create a cashback rule. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/wallet/cashback-rules) · Effect: **consequential**
 
@@ -103,7 +103,7 @@ Inspect the complete schema: `sellapp commands cashback-rules create --json`.
 
 List cashback rules
 
-List current and archived store records. Requires the `wallet` or `wallet:write` API ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+List current and archived store records. Requires the `wallet` or `wallet:write` API-key ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/wallet/cashback-rules) · Effect: **read**
 
@@ -145,11 +145,59 @@ Response data is printed to stdout; diagnostics go to stderr. Use `--output json
 
 Inspect the complete schema: `sellapp commands cashback-rules list --json`.
 
+## quote
+
+Quote a cashback rule
+
+See which cashback rule a purchase would earn right now, and how much it would add to the customer's wallet, without creating anything. Send `product_id` to check one product (a rule naming the product wins over the store-wide rule); leave it out to check only the store-wide rule. Add `purchase_cents` to get the cashback amount. Amounts are integer USD cents: `purchase_cents=10000` asks about a $100.00 purchase. Requires the `wallet` or `wallet:write` API-key ability and the wallet permission in your team role. A product that is not in your store returns `422` on `product_id`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/wallet/quote-cashback) · Effect: **read**
+
+```sh
+sellapp cashback-rules quote
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --product-id | No | The product to quote. Leave it out to quote the store-wide rule. |
+| --purchase-cents | No | The purchase amount to quote, in integer USD cents. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands cashback-rules quote --json`.
+
 ## replace
 
 Update a cashback rule
 
-Update a cashback rule. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Update a cashback rule. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/wallet/cashback-rules) · Effect: **consequential**
 
@@ -200,7 +248,7 @@ Inspect the complete schema: `sellapp commands cashback-rules replace --json`.
 
 Restore a cashback rule
 
-Restore a cashback rule. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Restore a cashback rule. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/wallet/cashback-rules) · Effect: **consequential**
 
@@ -247,7 +295,7 @@ Inspect the complete schema: `sellapp commands cashback-rules restore --json`.
 
 Update a cashback rule
 
-Update a cashback rule. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Update a cashback rule. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/wallet/cashback-rules) · Effect: **consequential**
 

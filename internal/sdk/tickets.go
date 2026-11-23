@@ -127,10 +127,16 @@ type TicketsV2ListTicketsParams struct {
 	// Page is page number to return.
 	// Defaults to 1.
 	Page *int `url:"page,omitempty" json:"-"`
+	// WaitingOn is `store`: the latest message is from the customer, so the ticket waits on you. `customer`: the latest message is yours. A ticket without messages matches neither.
+	WaitingOn *TicketsWaitingOn `url:"waiting_on,omitempty" json:"-"`
+	// Reason is a ticket reason by its label (as tickets show it in `reason`), its key such as `platform:refund_request`, or its code; case does not matter. A reason the store does not have returns `422` on `reason`, listing the store's reasons.
+	Reason *string `url:"reason,omitempty" json:"-"`
+	// CustomerEmail is part of the customer's email, case-insensitive. `%` and `_` match those characters literally.
+	CustomerEmail *string `url:"customer_email,omitempty" json:"-"`
 }
 
 // V2ListTickets list all tickets
-// List your store's support tickets, 15 per page by default. This v2 route is store-scoped. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List your store's support tickets, 15 per page by default. This v2 route is store-scoped. Narrow the results with `waiting_on`, `reason` and `customer_email`; they combine with each other and with any other filters. An unknown `waiting_on` or `reason`, or a `customer_email` longer than 255 characters, returns `422`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *TicketService) V2ListTickets(ctx context.Context, params *TicketsV2ListTicketsParams, opts ...RequestOption) *Iterator[V2ListTicketsResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("v2ListTickets", false)}, opts...)
 	return newIterator[V2ListTicketsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/tickets", params, "after", "data", opts, map[string]string{"limit": "15"})
@@ -152,6 +158,21 @@ type TicketsV2SearchTicketsParams struct {
 	Sort     []*V2SearchTicketsRequestApplicationJSONPropertySortItem     `json:"sort,omitempty" url:"-"`
 	Search   *V2SearchTicketsRequestApplicationJSONPropertySearch         `json:"search,omitempty" url:"-"`
 	Includes []*V2SearchTicketsRequestApplicationJSONPropertyIncludesItem `json:"includes,omitempty" url:"-"`
+	// WaitingOn is `store`: the latest message is from the customer, so the ticket waits on you. `customer`: the latest message is yours. A ticket without messages matches neither.
+	WaitingOn *WaitingOn `json:"waiting_on,omitempty" url:"-"`
+	// Reason is a ticket reason by its label (as tickets show it in `reason`), its key such as `platform:refund_request`, or its code; case does not matter. A reason the store does not have returns `422` on `reason`, listing the store's reasons.
+	Reason *string `json:"reason,omitempty" url:"-"`
+	// CustomerEmail is part of the customer's email, case-insensitive. `%` and `_` match those characters literally.
+	CustomerEmail *string `json:"customer_email,omitempty" url:"-"`
+	// Limit is number of items to return per page.
+	// Defaults to 15.
+	Limit *int `url:"limit,omitempty" json:"-"`
+	// Page is page number to return.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
 }
 
 // MarshalJSON implements json.Marshaler for TicketsV2SearchTicketsParams.
@@ -161,7 +182,7 @@ func (p TicketsV2SearchTicketsParams) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if p.Filters == nil && p.Sort == nil && p.Includes == nil {
+	if len(p.NullFields) == 0 && p.Filters == nil && p.Sort == nil && p.Includes == nil {
 		return data, nil
 	}
 	var m map[string]any
@@ -177,18 +198,29 @@ func (p TicketsV2SearchTicketsParams) MarshalJSON() ([]byte, error) {
 	if p.Includes != nil {
 		m["includes"] = p.Includes
 	}
+	nullable := map[string]bool{
+		"waiting_on":     true,
+		"reason":         true,
+		"customer_email": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("TicketsV2SearchTicketsParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
 	return json.Marshal(m)
 }
 
 // V2SearchTickets search tickets
-// Search tickets using JSON body filters, search terms, includes, and sort instructions. This v2 route is store-scoped. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Search tickets using JSON body filters, search terms, includes, and sort instructions. This v2 route is store-scoped. Narrow the results with `waiting_on`, `reason` and `customer_email`; they combine with each other and with any other filters. An unknown `waiting_on` or `reason`, or a `customer_email` longer than 255 characters, returns `422`. Page through results with `limit` (1 to 100, default 15; a larger value returns `422`) and `page`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *TicketService) V2SearchTickets(ctx context.Context, params *TicketsV2SearchTicketsParams, opts ...RequestOption) *Iterator[V2SearchTicketsResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("v2SearchTickets", false)}, opts...)
-	return newIterator[V2SearchTicketsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", "/v2/tickets/search", nil, "after", "data", opts, nil, func() any {
+	return newIterator[V2SearchTicketsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", "/v2/tickets/search", params, "after", "data", opts, map[string]string{"limit": "15"}, func() any {
 		if params == nil {
 			return nil
 		}
-		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2SearchTicketsRequestApplicationJson\",\"properties\":{\"filters\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchTicketsRequestApplicationJsonPropertyFiltersItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"operator\":{\"kind\":\"primitive\",\"type\":\"string\"},\"value\":{\"kind\":\"primitive\",\"type\":\"unknown\"},\"type\":{\"kind\":\"enum\",\"values\":[\"and\",\"or\"]},\"nested\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchTicketsRequestApplicationJsonPropertyFiltersItemPropertyNestedItem\",\"properties\":{},\"required\":[],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}},\"sort\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchTicketsRequestApplicationJsonPropertySortItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"direction\":{\"kind\":\"enum\",\"values\":[\"asc\",\"desc\"]}},\"required\":[\"field\"],\"additionalProperties\":true}},\"search\":{\"kind\":\"object\",\"modelName\":\"V2SearchTicketsRequestApplicationJsonPropertySearch\",\"properties\":{\"value\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"case_sensitive\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true},\"includes\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchTicketsRequestApplicationJsonPropertyIncludesItem\",\"properties\":{\"relation\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[\"relation\"],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}"))
+		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2SearchTicketsRequestApplicationJson\",\"properties\":{\"filters\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchTicketsRequestApplicationJsonPropertyFiltersItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"operator\":{\"kind\":\"primitive\",\"type\":\"string\"},\"value\":{\"kind\":\"primitive\",\"type\":\"unknown\"},\"type\":{\"kind\":\"enum\",\"values\":[\"and\",\"or\"]},\"nested\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchTicketsRequestApplicationJsonPropertyFiltersItemPropertyNestedItem\",\"properties\":{},\"required\":[],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}},\"sort\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchTicketsRequestApplicationJsonPropertySortItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"direction\":{\"kind\":\"enum\",\"values\":[\"asc\",\"desc\"]}},\"required\":[\"field\"],\"additionalProperties\":true}},\"search\":{\"kind\":\"object\",\"modelName\":\"V2SearchTicketsRequestApplicationJsonPropertySearch\",\"properties\":{\"value\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"case_sensitive\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true},\"includes\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchTicketsRequestApplicationJsonPropertyIncludesItem\",\"properties\":{\"relation\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[\"relation\"],\"additionalProperties\":true}},\"waiting_on\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"enum\",\"values\":[\"store\",\"customer\",\"null\"]}},\"reason\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":150}}},\"customer_email\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}}}},\"required\":[],\"additionalProperties\":true}"))
 	}())
 }
 
@@ -228,14 +260,16 @@ func (s *TicketService) V2GetTicketWithResponse(ctx context.Context, ticket int,
 type TicketsUpdateParams struct {
 	Status   *SdkUpdateTicketRequestApplicationJSONStatus `json:"status,omitempty" url:"-"`
 	Archived *bool                                        `json:"archived,omitempty" url:"-"`
+	// Outcome is why the ticket was closed: `refunded`, `refunded_partial` (partly refunded), `delivered`, `no_action`, `duplicate` or `other`. Only with `status` `CLOSED`.
+	Outcome *SdkUpdateTicketRequestApplicationJSONOutcome `json:"outcome,omitempty" url:"-"`
 }
 
 // Update close, reopen, or archive a ticket
-// Change ticket status or archive state in the selected store. Requires the ticket API-key ability and store ticket permission. Send status OPEN to reopen or CLOSED to close; closing sends the existing customer notification only when the status changes. Send archived true to archive or false to restore. You may send both fields together; omitted fields stay unchanged. Use the same optional Idempotency-Key and identical body after a lost response. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Close, reopen, archive or restore a ticket in the selected store. Send `status` `CLOSED` to close or `OPEN` to reopen, and `archived` `true` to archive or `false` to restore; you may send both, and omitted fields stay unchanged. When you close a ticket you can record why with `outcome`, which is accepted only together with `status` `CLOSED`. Closing emails the customer that the ticket was closed, at most once an hour per ticket: reopening and closing again within the hour sends no second email. A closed ticket keeps its outcome. Sending the outcome it already has changes nothing; a different outcome, or an outcome for a ticket that was closed without one, returns `422` on `outcome` and nothing in the request is applied, so reopen the ticket first. Requires the `ticket` API-key ability and the ticket permission in your team role. Use the same optional Idempotency-Key and identical body after a lost response. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *TicketService) Update(ctx context.Context, ticket int, params *TicketsUpdateParams, opts ...RequestOption) (*SdkUpdateTicketResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("updateTicket", true)}, opts...)
 	var result SdkUpdateTicketResponseValue200ApplicationJSON
-	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v2/tickets/%s", url.PathEscape(fmt.Sprint(ticket))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateTicketRequestApplicationJson\",\"properties\":{\"status\":{\"kind\":\"enum\",\"values\":[\"OPEN\",\"CLOSED\"]},\"archived\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
+	_, err := s.client.request(ctx, "PATCH", fmt.Sprintf("/v2/tickets/%s", url.PathEscape(fmt.Sprint(ticket))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkUpdateTicketRequestApplicationJson\",\"properties\":{\"status\":{\"kind\":\"enum\",\"values\":[\"OPEN\",\"CLOSED\"]},\"archived\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"outcome\":{\"kind\":\"enum\",\"values\":[\"refunded\",\"refunded_partial\",\"delivered\",\"no_action\",\"duplicate\",\"other\"]}},\"required\":[],\"additionalProperties\":true}")), &result, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -246,6 +280,60 @@ func (s *TicketService) UpdateWithResponse(ctx context.Context, ticket int, para
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
 	value, err := s.Update(ctx, ticket, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// TicketsBatchUpdateParams contains the parameters for BatchUpdate.
+type TicketsBatchUpdateParams struct {
+	// Action is what to do with every listed ticket. `restore` takes a ticket out of the archive.
+	Action SdkBatchUpdateTicketsRequestApplicationJSONAction `json:"action" url:"-"`
+	// Outcome is why the ticket was closed: `refunded`, `refunded_partial` (partly refunded), `delivered`, `no_action`, `duplicate` or `other`. Required for `close` and refused for every other action.
+	Outcome *SdkBatchUpdateTicketsRequestApplicationJSONOutcome `json:"outcome,omitempty" url:"-"`
+	// Resources is between 1 and 50 different ticket IDs.
+	Resources []int `json:"resources" url:"-"`
+}
+
+// BatchUpdate update several tickets
+// Close, reopen, archive, restore or mark as unread up to 50 tickets in one request, and get one result per ticket in the order you sent them. Every ID must be a ticket of the selected store: one unknown ID returns `404` and changes nothing. Each ticket is then changed on its own, so one refusal does not undo the others. `close` needs an `outcome`, which is recorded on every ticket it closes, and emails each customer that the ticket was closed, at most once an hour per ticket. `mark_unread` marks the ticket unread for your store (`read_status.store` becomes `false`). Requires the `ticket` API-key ability and the ticket permission in your team role. Repeating the same request is safe: a ticket already in the requested state comes back as `skipped`. Send an optional `Idempotency-Key` with an identical body to get the original response back after a lost connection. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *TicketService) BatchUpdate(ctx context.Context, params *TicketsBatchUpdateParams, opts ...RequestOption) (*SdkBatchUpdateTicketsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("batchUpdateTickets", true)}, opts...)
+	var result SdkBatchUpdateTicketsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PATCH", "/v2/tickets/batch", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkBatchUpdateTicketsRequestApplicationJson\",\"properties\":{\"action\":{\"kind\":\"enum\",\"values\":[\"close\",\"reopen\",\"archive\",\"restore\",\"mark_unread\"]},\"outcome\":{\"kind\":\"enum\",\"values\":[\"refunded\",\"refunded_partial\",\"delivered\",\"no_action\",\"duplicate\",\"other\"]},\"resources\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}},\"constraints\":{\"minItems\":1,\"maxItems\":50,\"uniqueItems\":true}}},\"required\":[\"action\",\"resources\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *TicketService) BatchUpdateWithResponse(ctx context.Context, params *TicketsBatchUpdateParams, opts ...RequestOption) (*RawResponse[*SdkBatchUpdateTicketsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.BatchUpdate(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// GetContext retrieve a ticket's customer and refund context
+// Read what you need beside a ticket's conversation in one call: the resolution, the customer's order history in this store, the linked order, what can still be refunded to the customer's wallet, and the latest 20 support activity entries, newest first. `refund_options` has the same items as the ticket's wallet refund options. The customer figures count the store's completed orders whose customer or order email is the ticket's email. Requires the `ticket` API-key ability and the ticket permission in your team role. The response includes the customer's email, order count and lifetime spend, so give a key with this ability only to people and tools that may see them. Amounts are integer USD cents: `1999` means $19.99. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *TicketService) GetContext(ctx context.Context, ticket int, opts ...RequestOption) (*SdkV2GetTicketContextResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("v2GetTicketContext", false)}, opts...)
+	var result SdkV2GetTicketContextResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", fmt.Sprintf("/v2/tickets/%s/context", url.PathEscape(fmt.Sprint(ticket))), nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *TicketService) GetContextWithResponse(ctx context.Context, ticket int, opts ...RequestOption) (*RawResponse[*SdkV2GetTicketContextResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.GetContext(ctx, ticket, captureOpts...)
 	if err != nil {
 		return nil, err
 	}

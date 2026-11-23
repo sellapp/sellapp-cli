@@ -53,7 +53,7 @@ Inspect the complete schema: `sellapp commands disputes get-dispute --json`.
 
 List disputes
 
-Read-only, redacted, store-scoped disputes that may reference an Order or Charge. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+List your store's payment disputes, most recently opened first, 50 per page. Each dispute is read-only and redacted, and may reference an order or a standalone charge. Filter by `status`, `provider`, or the day a dispute was opened; filters combine, and the date filters read whole days in the store's time zone and include both ends. An unknown `status`, a date that cannot be read, or an `opened_before` earlier than `opened_after` returns `422` on that parameter. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/disputes) · Effect: **read**
 
@@ -63,6 +63,11 @@ sellapp disputes list-disputes
 
 | Input | Required | Meaning |
 | --- | --- | --- |
+| --page | No | Page number, starting at 1. |
+| --status | No | Keep disputes in this state: `open`, `under_review`, `won`, `lost`, or `closed`. |
+| --provider | No | Keep disputes raised through this payment provider, such as `stripe`. Any letter case works. |
+| --opened-after | No | Keep disputes opened on or after this moment. A date such as `2026-08-01` starts at midnight of that day in the store's time zone; a date-time without an offset is also read in the store's time zone. Inclusive. |
+| --opened-before | No | Keep disputes opened on or before this moment. A date such as `2026-08-31` runs to the last second of that day in the store's time zone; a date-time without an offset is also read in the store's time zone. Inclusive. |
 
 A request body is optional or not used by this operation.
 

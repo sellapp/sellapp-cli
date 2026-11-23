@@ -13,17 +13,32 @@ type DisputeService struct {
 	client *Client
 }
 
-// List disputes
-// Read-only, redacted, store-scoped disputes that may reference an Order or Charge. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
-func (s *DisputeService) List(ctx context.Context, opts ...RequestOption) *Iterator[ListDisputesResponseValue200ApplicationJSONPropertyDataItem] {
-	opts = append([]RequestOption{withOperation("listDisputes", false)}, opts...)
-	return newIterator[ListDisputesResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/disputes", nil, "after", "data", opts, nil)
+// DisputesListParams contains the parameters for List.
+type DisputesListParams struct {
+	// Page is page number, starting at 1.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
+	// Status is keep disputes in this state: `open`, `under_review`, `won`, `lost`, or `closed`.
+	Status *DisputesStatus `url:"status,omitempty" json:"-"`
+	// Provider is keep disputes raised through this payment provider, such as `stripe`. Any letter case works.
+	Provider *string `url:"provider,omitempty" json:"-"`
+	// OpenedAfter is keep disputes opened on or after this moment. A date such as `2026-08-01` starts at midnight of that day in the store's time zone; a date-time without an offset is also read in the store's time zone. Inclusive.
+	OpenedAfter *string `url:"opened_after,omitempty" json:"-"`
+	// OpenedBefore is keep disputes opened on or before this moment. A date such as `2026-08-31` runs to the last second of that day in the store's time zone; a date-time without an offset is also read in the store's time zone. Inclusive.
+	OpenedBefore *string `url:"opened_before,omitempty" json:"-"`
 }
 
-func (s *DisputeService) ListWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*Iterator[ListDisputesResponseValue200ApplicationJSONPropertyDataItem]], error) {
+// List disputes
+// List your store's payment disputes, most recently opened first, 50 per page. Each dispute is read-only and redacted, and may reference an order or a standalone charge. Filter by `status`, `provider`, or the day a dispute was opened; filters combine, and the date filters read whole days in the store's time zone and include both ends. An unknown `status`, a date that cannot be read, or an `opened_before` earlier than `opened_after` returns `422` on that parameter. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *DisputeService) List(ctx context.Context, params *DisputesListParams, opts ...RequestOption) *Iterator[ListDisputesResponseValue200ApplicationJSONPropertyDataItem] {
+	opts = append([]RequestOption{withOperation("listDisputes", false)}, opts...)
+	return newIterator[ListDisputesResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/disputes", params, "after", "data", opts, nil)
+}
+
+func (s *DisputeService) ListWithResponse(ctx context.Context, params *DisputesListParams, opts ...RequestOption) (*RawResponse[*Iterator[ListDisputesResponseValue200ApplicationJSONPropertyDataItem]], error) {
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
-	value := s.List(ctx, captureOpts...)
+	value := s.List(ctx, params, captureOpts...)
 	if err := value.Err(); err != nil {
 		return nil, err
 	}

@@ -155,6 +155,55 @@ Response data is printed to stdout; diagnostics go to stderr. Use `--output json
 
 Inspect the complete schema: `sellapp commands promotions get --json`.
 
+## get-usage
+
+Retrieve promotion usage
+
+Count the completed orders that used a promotion, across all of its phases and its whole life, and list the newest of them. Only orders whose status is `COMPLETED` count; pending and refunded orders do not. A promotion from another store returns `404`, and so does a deleted one unless you send `with_trashed=true`. Requires the `promotion` API-key ability and the promotion permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/promotions/retrieve-promotion-usage) · Effect: **read**
+
+```sh
+sellapp promotions get-usage 30
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| promotion (positional) | Yes | The promotion ID. |
+| --with-trashed | No | Set to `true` to also find a deleted promotion. |
+| --only-trashed | No | Set to `true` to find only a deleted promotion. Ignored when `with_trashed` is `true`. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands promotions get-usage --json`.
+
 ## list
 
 List promotions

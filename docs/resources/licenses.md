@@ -246,7 +246,7 @@ Inspect the complete schema: `sellapp commands licenses instances list --json`.
 
 List all license keys
 
-List your store's license keys. Use `limit` and `page` to read one page at a time. The response schema describes each license. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+List your store's license keys, one page at a time with `limit` and `page`. Filter by part of the key, the customer's email, the product, the order, or `validity`; several filters combine, and a key must match all of them. A filter value in the wrong shape returns `422` on that parameter. Requires the `license` API-key ability. The response schema describes each license. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/licenses/list-all-license-keys) · Effect: **read**
 
@@ -258,6 +258,11 @@ sellapp licenses list
 | --- | --- | --- |
 | --limit | No | Number of items to return per page. |
 | --page | No | Page number to return. |
+| --key | No | Keep keys that contain this text: letters, digits, and hyphens, up to 100 characters. A full key as the customer sees it, including the store's key prefix, also finds its key. |
+| --customer-email | No | Keep keys of the store customer with exactly this email address. |
+| --product-id | No | Keep keys issued for this product. |
+| --order-id | No | Keep keys issued by this order. |
+| --validity | No | Keep keys by whether they validate now, decided the way license validation decides it: `active` keys are switched on and not past their expiry, `inactive` keys are switched off but not expired, and `expired` keys are past `expires_at`. |
 
 A request body is optional or not used by this operation.
 

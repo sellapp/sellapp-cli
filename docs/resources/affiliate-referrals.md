@@ -53,7 +53,7 @@ Inspect the complete schema: `sellapp commands affiliate-referrals get --json`.
 
 List affiliate referrals
 
-List store referrals with their attributed order and purchase line item. Requires the `affiliate` credential ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+List store referrals with their attributed order and purchase line item, newest first, 15 per page by default. Requires the `affiliate` credential ability. Use `search` to find referrals by affiliate email, product or variant title, or an exact referral or order ID. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/affiliates/list-referrals) · Effect: **read**
 
@@ -63,6 +63,7 @@ sellapp affiliate-referrals list
 
 | Input | Required | Meaning |
 | --- | --- | --- |
+| --search | No | Text to look for in the affiliate's email address and the product and variant titles. A number also matches the referral ID or the order ID exactly. `%` and `_` match themselves. |
 | --affiliate-id | No | Filter by store affiliate ID. |
 | --order-id | No | Filter by attributed Order ID. |
 | --status | No | Filter by referral status. |

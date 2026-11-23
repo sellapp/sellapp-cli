@@ -440,7 +440,7 @@ Inspect the complete schema: `sellapp commands groups products replace --json`.
 
 Search products within group
 
-Search the products in a group using JSON body filters, search terms, includes, and sort instructions. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Search the products in a group using JSON body filters, search terms, includes, and sort instructions, 15 per page by default. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/groups/search-products-within-group) · Effect: **read**
 
@@ -451,6 +451,8 @@ sellapp groups products search 1 --body '{"filters":[{"field":"id","operator":"=
 | Input | Required | Meaning |
 | --- | --- | --- |
 | group (positional) | Yes | The group path parameter. |
+| --limit | No | Number of items to return per page. |
+| --page | No | Page number to return. |
 | --filters | No | Value for filters. |
 | --sort | No | Value for sort. |
 | --search | No | Value for search. |
@@ -491,7 +493,7 @@ Inspect the complete schema: `sellapp commands groups products search --json`.
 
 Search groups
 
-Search groups using JSON body filters, search terms, includes, and sort instructions. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Search groups using JSON body filters, search terms, includes, and sort instructions, 15 per page by default. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/groups/search-groups) · Effect: **read**
 
@@ -501,6 +503,8 @@ sellapp groups search --body '{"filters":[{"field":"id","operator":"=","value":1
 
 | Input | Required | Meaning |
 | --- | --- | --- |
+| --limit | No | Number of items to return per page. |
+| --page | No | Page number to return. |
 | --filters | No | Value for filters. |
 | --sort | No | Value for sort. |
 | --search | No | Value for search. |

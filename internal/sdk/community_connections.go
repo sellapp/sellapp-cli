@@ -4,6 +4,7 @@ package sellapp
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 )
@@ -160,4 +161,88 @@ func (s *CommunityConnectionService) DisconnectWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return rawResponse(struct{}{}, metadata), nil
+}
+
+// ListFailedGrantReasons list community failed grant reasons
+// List why community access grants failed across all platforms, with how many grants failed for each reason and what you can do about it, most frequent first. A grant is the access a purchase gives a customer, such as a Discord role or a place in a Telegram group. Only reasons that still need attention or are retried are counted; failures nobody can act on, such as a customer who left the server, are not. Only SellApp's records are read; no platform is contacted. An empty `data` array means no grant is failing. Requires the `community` API-key ability and the `community` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *CommunityConnectionService) ListFailedGrantReasons(ctx context.Context, opts ...RequestOption) (*SdkListCommunityFailedGrantReasonsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("listCommunityFailedGrantReasons", false)}, opts...)
+	var result SdkListCommunityFailedGrantReasonsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", "/v2/community-connections/failed-grant-reasons", nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *CommunityConnectionService) ListFailedGrantReasonsWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*SdkListCommunityFailedGrantReasonsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.ListFailedGrantReasons(ctx, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// CommunityConnectionsSyncDiscordRolesParams contains the parameters for SyncDiscordRoles.
+type CommunityConnectionsSyncDiscordRolesParams struct {
+	// ServerID is the Discord server to sync. Leave out or send `null` to sync every connected server.
+	ServerID *string `json:"server_id,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for CommunityConnectionsSyncDiscordRolesParams.
+func (p CommunityConnectionsSyncDiscordRolesParams) MarshalJSON() ([]byte, error) {
+	type Alias CommunityConnectionsSyncDiscordRolesParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	nullable := map[string]bool{
+		"server_id": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("CommunityConnectionsSyncDiscordRolesParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
+}
+
+// SyncDiscordRoles
+// Read the role list of the store's Discord servers from Discord again and check the bot's role position, which tells whether the bot can give the roles your products sell. Syncs every connected server, or only `server_id`. A server Discord refuses is reported on its own row with `synced: false`, and the others still sync; `failed_count` counts those rows. Nothing is given to or taken from a member, so repeating the request is safe. `422` on `platform` when no Discord server is connected, and on `server_id` when that server is not connected to this store. Requires the `community` API-key ability and the `community` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *CommunityConnectionService) SyncDiscordRoles(ctx context.Context, params *CommunityConnectionsSyncDiscordRolesParams, opts ...RequestOption) (*SdkSyncDiscordRolesResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("syncDiscordRoles", false)}, opts...)
+	var result SdkSyncDiscordRolesResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "POST", "/v2/community-connections/discord/sync-roles", nil, func() any {
+		if params == nil {
+			return nil
+		}
+		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkSyncDiscordRolesRequestApplicationJson\",\"properties\":{\"server_id\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":32}}}},\"required\":[],\"additionalProperties\":true}"))
+	}(), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *CommunityConnectionService) SyncDiscordRolesWithResponse(ctx context.Context, params *CommunityConnectionsSyncDiscordRolesParams, opts ...RequestOption) (*RawResponse[*SdkSyncDiscordRolesResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.SyncDiscordRoles(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
 }

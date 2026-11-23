@@ -506,6 +506,105 @@ Response data is printed to stdout; diagnostics go to stderr. Use `--output json
 
 Inspect the complete schema: `sellapp commands payment-methods list --json`.
 
+## modifier get
+
+Retrieve a payment method modifier
+
+Get the discount or fee customers get at checkout when they pay with this payment method: a percentage of the order total, a fixed amount, or both. `kind` is `none` when there is neither. `condition` and `threshold` show when it applies only to checkouts above or below a total, and are `null` when every checkout gets it. Requires the `payment-method` or `store` API-key ability, with the same permission in your team role. An unknown payment method returns `404`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/payment-methods/payment-method-modifier) · Effect: **read**
+
+```sh
+sellapp payment-methods modifier get STRIPE
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| paymentMethod (positional) | Yes | Uppercase payment method identifier returned by the collection endpoint. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands payment-methods modifier get --json`.
+
+## modifier replace
+
+Update a payment method modifier
+
+Set the discount or fee customers get at checkout when they pay with this payment method. Send `kind` with positive amounts: `fee` adds them to the price and `discount` takes them off. A discount or fee needs `percentage`, `fixed_amount` or both; send `kind: none` with both `null` to remove it. Both amount fields are required and may be `null`, and the amounts you send replace the current ones. The condition works differently: leave out both `condition` and `threshold` to keep the condition the method has now, even one changed in the dashboard while your request was in flight; send `condition: null` to remove it so every checkout gets the discount or fee; send `condition` with `threshold` to set it. A `threshold` without a `condition`, or a `condition` with `kind: none`, returns `422` on `condition`. The method must be turned on for checkout, otherwise `422` on `payment_method`. A percentage over 100 returns `422` on `percentage`, and a fixed amount over 100000 returns `422` on `fixed_amount`. Sending the modifier the method already has returns `200` and changes nothing, so a retry is safe; the `data` of `GET /v2/payment-methods/{paymentMethod}/modifier` without `payment_method` is such a request. Requires the `store` API-key ability and the `store` permission in your team role. An unknown payment method returns `404`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/payment-methods/payment-method-modifier) · Effect: **consequential**
+
+```sh
+sellapp payment-methods modifier replace STRIPE --kind fee --percentage 3.00 --fixed-amount 0.30 --condition below --threshold 20.00 --yes
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| paymentMethod (positional) | Yes | Uppercase payment method identifier returned by the collection endpoint. |
+| --kind | Yes | `discount` lowers the price customers pay with this method, `fee` raises it, and `none` means neither. |
+| --percentage | Yes | Percentage of the order total, as a positive decimal string with at most two decimals: `"3.00"` is 3%. At most 100. `null` when not used. |
+| --fixed-amount | Yes | Fixed amount added or taken off once per checkout, as a positive decimal string in the checkout's currency with at most two decimals: `"0.30"` on a USD checkout is $0.30. At most 100000. `null` when not used. |
+| --condition | No | Optional. `above` or `below` gives the discount or fee only to checkouts whose total is more than or less than `threshold`. `null` removes the condition, so every checkout gets it. Leave out both `condition` and `threshold` to keep the condition the method has now. A `condition` with `kind: none` returns `422` on `condition`. |
+| --threshold | No | Required when `condition` is `above` or `below`: the checkout total to compare against, in the checkout's own currency, as a number or decimal string with at most two decimals from `0.01` to `99999999`. `20` and `"20.00"` mean the same. Leave it out or send `null` otherwise: a `threshold` without a `condition` returns `422` on `condition`. |
+
+The request body is required.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands payment-methods modifier replace --json`.
+
 ## validate
 
 Validate and save payment method configuration

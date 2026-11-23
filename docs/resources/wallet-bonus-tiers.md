@@ -6,7 +6,7 @@
 
 Archive a wallet bonus tier
 
-Archive a wallet bonus tier. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Archive a wallet bonus tier. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/wallet/bonus-tiers) · Effect: **consequential**
 
@@ -53,7 +53,7 @@ Inspect the complete schema: `sellapp commands wallet-bonus-tiers archive --json
 
 Create a wallet bonus tier
 
-Create a wallet bonus tier. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Create a wallet bonus tier. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/wallet/bonus-tiers) · Effect: **consequential**
 
@@ -106,7 +106,7 @@ Inspect the complete schema: `sellapp commands wallet-bonus-tiers create --json`
 
 List wallet bonus tiers
 
-List current and archived store records. Requires the `wallet` or `wallet:write` API ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+List current and archived store records. Requires the `wallet` or `wallet:write` API-key ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/wallet/bonus-tiers) · Effect: **read**
 
@@ -148,11 +148,58 @@ Response data is printed to stdout; diagnostics go to stderr. Use `--output json
 
 Inspect the complete schema: `sellapp commands wallet-bonus-tiers list --json`.
 
+## quote
+
+Quote a wallet bonus tier
+
+See which bonus tier a top-up of a given amount would earn right now, and how much bonus it would add, without creating anything. Amounts are integer USD cents: `top_up_cents=20000` asks about a $200.00 top-up. Requires the `wallet` or `wallet:write` API-key ability and the wallet permission in your team role. A missing amount, `0`, or an amount above 999999999999 returns `422` on `top_up_cents`. Only your store's active tiers are considered. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/wallet/quote-bonus-tier) · Effect: **read**
+
+```sh
+sellapp wallet-bonus-tiers quote --top-up-cents 20000
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --top-up-cents | Yes | The top-up amount to quote, in integer USD cents. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands wallet-bonus-tiers quote --json`.
+
 ## replace
 
 Update a wallet bonus tier
 
-Update a wallet bonus tier. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Update a wallet bonus tier. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/wallet/bonus-tiers) · Effect: **consequential**
 
@@ -206,7 +253,7 @@ Inspect the complete schema: `sellapp commands wallet-bonus-tiers replace --json
 
 Restore a wallet bonus tier
 
-Restore a wallet bonus tier. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Restore a wallet bonus tier. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/wallet/bonus-tiers) · Effect: **consequential**
 
@@ -253,7 +300,7 @@ Inspect the complete schema: `sellapp commands wallet-bonus-tiers restore --json
 
 Update a wallet bonus tier
 
-Update a wallet bonus tier. Requires the `wallet:write` API ability and the store wallet permission. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Update a wallet bonus tier. Requires the `wallet:write` API-key ability and the wallet permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/wallet/bonus-tiers) · Effect: **consequential**
 

@@ -218,6 +218,12 @@ type GroupsSearchParams struct {
 	Sort     []*SearchGroupsRequestApplicationJSONPropertySortItem     `json:"sort,omitempty" url:"-"`
 	Search   *SearchGroupsRequestApplicationJSONPropertySearch         `json:"search,omitempty" url:"-"`
 	Includes []*SearchGroupsRequestApplicationJSONPropertyIncludesItem `json:"includes,omitempty" url:"-"`
+	// Limit is number of items to return per page.
+	// Defaults to 15.
+	Limit *int `url:"limit,omitempty" json:"-"`
+	// Page is page number to return.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
 }
 
 // MarshalJSON implements json.Marshaler for GroupsSearchParams.
@@ -247,10 +253,10 @@ func (p GroupsSearchParams) MarshalJSON() ([]byte, error) {
 }
 
 // Search groups
-// Search groups using JSON body filters, search terms, includes, and sort instructions. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Search groups using JSON body filters, search terms, includes, and sort instructions, 15 per page by default. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *GroupService) Search(ctx context.Context, params *GroupsSearchParams, opts ...RequestOption) *Iterator[SearchGroupsResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("searchGroups", false)}, opts...)
-	return newIterator[SearchGroupsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", "/v2/groups/search", nil, "after", "data", opts, nil, func() any {
+	return newIterator[SearchGroupsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", "/v2/groups/search", params, "after", "data", opts, map[string]string{"limit": "15"}, func() any {
 		if params == nil {
 			return nil
 		}

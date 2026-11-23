@@ -22,10 +22,18 @@ type ChargesListParams struct {
 	// Page is page number to return.
 	// Defaults to 1.
 	Page *int `url:"page,omitempty" json:"-"`
+	// Status is keep charges in this status: `PENDING`, `REVERSED`, `PARTIAL`, `VOIDED`, `REFUNDED`, `PAID`, `COMPLETED`, `DISPUTING`, or `REVIEW`. `FAILED` is not accepted, because failed charges are never listed.
+	Status *ChargesStatus `url:"status,omitempty" json:"-"`
+	// CustomerEmail is keep charges whose customer email contains this text.
+	CustomerEmail *string `url:"customer_email,omitempty" json:"-"`
+	// CreatedAfter is keep charges created on or after this moment. A date such as `2026-08-01` starts at midnight of that day in the store's time zone; a date-time without an offset is also read in the store's time zone. Inclusive.
+	CreatedAfter *string `url:"created_after,omitempty" json:"-"`
+	// CreatedBefore is keep charges created on or before this moment. A date such as `2026-08-31` runs to the last second of that day in the store's time zone; a date-time without an offset is also read in the store's time zone. Inclusive.
+	CreatedBefore *string `url:"created_before,omitempty" json:"-"`
 }
 
 // List all charges
-// Retrieve a paginated list of charges for your store. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List your store's charges, 15 per page by default. Failed charges are never listed. Filter by `status`, part of the customer email, or the day a charge was created; the date filters read whole days in the store's time zone and include both ends. An unknown filter value, `status=FAILED`, or a `created_before` earlier than `created_after` returns `422` on that parameter. Requires the `charge` API-key ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *ChargeService) List(ctx context.Context, params *ChargesListParams, opts ...RequestOption) *Iterator[ListChargesResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("listCharges", false)}, opts...)
 	return newIterator[ListChargesResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/charges", params, "after", "data", opts, map[string]string{"limit": "15"})
@@ -108,7 +116,7 @@ func (p ChargesCreateParams) MarshalJSON() ([]byte, error) {
 }
 
 // Create a charge
-// Create a standalone charge for payment or a free claim. Requires the charge API ability and store permission. The total is an integer in the currency's minor units: 1999 USD means $19.99. Supplying currency requires total. For a positive paid charge, choose enabled payment_method/payment_methods or use_all_payment_methods; availability depends on the store and currency. CUSTOM_PAYMENT_METHOD is supported: preselection requires custom_payment_method_id. custom_payment_method_ids optionally restricts the available custom methods; omission snapshots the currently usable IDs for this store, without product assignments. Customer proof or confirmation changes custom charges to REVIEW, not COMPLETED. Creating a charge does not prove payment. A repeated create may create another charge; check the original result before retrying. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Create a standalone charge for payment or a free claim. Requires the charge API-key ability and store permission. The total is an integer in the currency's minor units: 1999 USD means $19.99. Supplying currency requires total. For a positive paid charge, choose enabled payment_method/payment_methods or use_all_payment_methods; availability depends on the store and currency. CUSTOM_PAYMENT_METHOD is supported: preselection requires custom_payment_method_id. custom_payment_method_ids optionally restricts the available custom methods; omission snapshots the currently usable IDs for this store, without product assignments. Customer proof or confirmation changes custom charges to REVIEW, not COMPLETED. Creating a charge does not prove payment. A repeated create may create another charge; check the original result before retrying. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *ChargeService) Create(ctx context.Context, params *ChargesCreateParams, opts ...RequestOption) (*SdkCreateChargeResponseValue201ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("createCharge", false)}, opts...)
 	var result SdkCreateChargeResponseValue201ApplicationJSON
@@ -152,7 +160,7 @@ func (s *ChargeService) GetWithResponse(ctx context.Context, charge int, opts ..
 }
 
 // MarkCompleted mark pending charge completed
-// Manually complete a PENDING or VOIDED ordinary charge, or a custom-payment charge in REVIEW, after independently verifying receipt of funds. This does not collect, capture, or verify payment. Initialized custom-payment wallet top-ups may be approved from PENDING or REVIEW and credit the deposit plus any snapshotted bonus exactly once. Other wallet gateways cannot be completed manually, and voided custom top-ups cannot be revived. Completion emits charge.completed webhooks and store notifications and records applicable platform fees. Requires the charge API ability and update permission. A charge already completed returns 422; retrieve its state before retrying. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Manually complete a PENDING or VOIDED ordinary charge, or a custom-payment charge in REVIEW, after independently verifying receipt of funds. This does not collect, capture, or verify payment. Initialized custom-payment wallet top-ups may be approved from PENDING or REVIEW and credit the deposit plus any snapshotted bonus exactly once. Other wallet gateways cannot be completed manually, and voided custom top-ups cannot be revived. Completion emits charge.completed webhooks and store notifications and records applicable platform fees. Requires the charge API-key ability and update permission. A charge already completed returns 422; retrieve its state before retrying. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *ChargeService) MarkCompleted(ctx context.Context, chargeID int, opts ...RequestOption) (*SdkMarkPendingChargeCompletedResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("markPendingChargeCompleted", false)}, opts...)
 	var result SdkMarkPendingChargeCompletedResponseValue200ApplicationJSON
@@ -174,7 +182,7 @@ func (s *ChargeService) MarkCompletedWithResponse(ctx context.Context, chargeID 
 }
 
 // MarkVoided mark pending charge voided
-// Void a PENDING charge or a custom-payment charge in REVIEW. This cancels the internal charge, releases an applicable redeemed reward coupon, and emits charge.voided; it does not refund a payment. Requires the charge API ability and update permission. Other states return 422, including a repeat after successful voiding; retrieve its state before retrying. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Void a PENDING charge or a custom-payment charge in REVIEW. This cancels the internal charge, releases an applicable redeemed reward coupon, and emits charge.voided; it does not refund a payment. Requires the charge API-key ability and update permission. Other states return 422, including a repeat after successful voiding; retrieve its state before retrying. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *ChargeService) MarkVoided(ctx context.Context, chargeID int, opts ...RequestOption) (*SdkMarkPendingChargeVoidedResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("markPendingChargeVoided", false)}, opts...)
 	var result SdkMarkPendingChargeVoidedResponseValue200ApplicationJSON
@@ -189,6 +197,39 @@ func (s *ChargeService) MarkVoidedWithResponse(ctx context.Context, chargeID int
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
 	value, err := s.MarkVoided(ctx, chargeID, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// ChargesGetSummaryParams contains the parameters for GetSummary.
+type ChargesGetSummaryParams struct {
+	// Preset is a named range in the store's time zone: `today`, `yesterday`, `this_week`, `last_week`, `this_month`, `last_month`, `last_7_days`, `last_30_days` (the default), or `all_time`. `this_week`, `this_month`, and the `last_*_days` presets end today. `all_time` starts on the day the store was created or took its first order, whichever is earlier. Ignored when `start_date` or `end_date` is sent.
+	// Defaults to "last_30_days".
+	Preset *ChargesPreset `url:"preset,omitempty" json:"-"`
+	// StartDate is first day of the range, `YYYY-MM-DD`, in the store's time zone. Inclusive. Sent without `end_date`, the range runs to the end of today.
+	StartDate *string `url:"start_date,omitempty" json:"-"`
+	// EndDate is last day of the range, `YYYY-MM-DD`, in the store's time zone. Inclusive. Sent without `start_date`, the range starts on the day the store was created or took its first order, whichever is earlier.
+	EndDate *string `url:"end_date,omitempty" json:"-"`
+}
+
+// GetSummary retrieve the charge summary
+// Total your store's completed charges for a date range and compare them with the period of the same length just before it, as the charges analytics page does. Only `COMPLETED` charges count, dated by when they completed; pending, voided, and failed charges are left out. `revenue` is in integer minor units of the store currency, converted from each charge's USD total: `12450` means $124.50 in USD. Send `start_date` and `end_date` as `YYYY-MM-DD` days in the store's time zone, both included, or a `preset`; dates take precedence over `preset`, and without either the summary covers `last_30_days`. An unknown `preset` or a date not in `YYYY-MM-DD` form returns `422` on that parameter, and a range that ends before it starts returns `422` on `start_date` when you sent `start_date`, otherwise `end_date`. Requires the `charge` API-key ability and the charge permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *ChargeService) GetSummary(ctx context.Context, params *ChargesGetSummaryParams, opts ...RequestOption) (*SdkGetChargeSummaryResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("getChargeSummary", false)}, opts...)
+	var result SdkGetChargeSummaryResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", "/v2/charges/summary", params, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *ChargeService) GetSummaryWithResponse(ctx context.Context, params *ChargesGetSummaryParams, opts ...RequestOption) (*RawResponse[*SdkGetChargeSummaryResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.GetSummary(ctx, params, captureOpts...)
 	if err != nil {
 		return nil, err
 	}

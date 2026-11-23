@@ -6,7 +6,7 @@
 
 Create an upsell offer
 
-Create an ordered post-purchase offer. Every product and variant ID is checked against the selected store and expected parent product. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Create an ordered post-purchase offer. Every product and variant ID is checked against the selected store and expected parent product. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/products) · Effect: **consequential**
 
@@ -65,7 +65,7 @@ Inspect the complete schema: `sellapp commands upsell-offers create --json`.
 
 Delete an upsell offer
 
-Soft-delete an upsell offer while preserving checkout and reporting attribution. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Soft-delete an upsell offer while preserving checkout and reporting attribution. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/products) · Effect: **consequential**
 
@@ -112,7 +112,7 @@ Inspect the complete schema: `sellapp commands upsell-offers delete --json`.
 
 Retrieve an upsell offer
 
-Retrieve one store-scoped upsell offer and its ordered target items. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Retrieve one store-scoped upsell offer and its ordered target items. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/products) · Effect: **read**
 
@@ -155,11 +155,60 @@ Response data is printed to stdout; diagnostics go to stderr. Use `--output json
 
 Inspect the complete schema: `sellapp commands upsell-offers get --json`.
 
+## get-performance
+
+Retrieve upsell offer performance
+
+Report how an upsell offer has performed over its whole life: how often customers saw it, started its checkout, and bought it, and the revenue those purchases brought. An offer from another store returns `404`, and so does a deleted one unless you send `with_trashed=true`. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/products/retrieve-upsell-offer-performance) · Effect: **read**
+
+```sh
+sellapp upsell-offers get-performance 71
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| upsellOffer (positional) | Yes | The upsell offer ID. |
+| --with-trashed | No | Set to `true` to also find a deleted upsell offer. |
+| --only-trashed | No | Set to `true` to find only a deleted upsell offer. Ignored when `with_trashed` is `true`. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands upsell-offers get-performance --json`.
+
 ## list
 
 List upsell offers
 
-List the authenticated store's ordered post-purchase offers. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+List the authenticated store's ordered post-purchase offers. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/products) · Effect: **read**
 
@@ -208,7 +257,7 @@ Inspect the complete schema: `sellapp commands upsell-offers list --json`.
 
 Update an upsell offer
 
-Update supplied fields. When items are supplied, they replace the complete ordered target-item set. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Update supplied fields. When items are supplied, they replace the complete ordered target-item set. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/products) · Effect: **consequential**
 
@@ -268,7 +317,7 @@ Inspect the complete schema: `sellapp commands upsell-offers replace --json`.
 
 Search upsell offers
 
-Search offer names and descriptions and compose supported filters and sort instructions. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Search offer names and descriptions and compose supported filters and sort instructions. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/products) · Effect: **read**
 
@@ -321,7 +370,7 @@ Inspect the complete schema: `sellapp commands upsell-offers search --json`.
 
 Update an upsell offer
 
-Update supplied fields. When items are supplied, they replace the complete ordered target-item set. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Update supplied fields. When items are supplied, they replace the complete ordered target-item set. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/products) · Effect: **consequential**
 

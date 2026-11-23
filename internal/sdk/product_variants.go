@@ -346,6 +346,16 @@ type ProductVariantsSearchParams struct {
 	Sort     []*SearchProductVariantsRequestApplicationJSONPropertySortItem     `json:"sort,omitempty" url:"-"`
 	Search   *SearchProductVariantsRequestApplicationJSONPropertySearch         `json:"search,omitempty" url:"-"`
 	Includes []*SearchProductVariantsRequestApplicationJSONPropertyIncludesItem `json:"includes,omitempty" url:"-"`
+	// Limit is number of items to return per page.
+	// Defaults to 15.
+	Limit *int `url:"limit,omitempty" json:"-"`
+	// Page is page number to return.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
+	// WithDrafts is include draft variants alongside published variants.
+	WithDrafts *bool `url:"with_drafts,omitempty" json:"-"`
+	// OnlyDrafts is return only draft variants.
+	OnlyDrafts *bool `url:"only_drafts,omitempty" json:"-"`
 }
 
 // MarshalJSON implements json.Marshaler for ProductVariantsSearchParams.
@@ -375,10 +385,10 @@ func (p ProductVariantsSearchParams) MarshalJSON() ([]byte, error) {
 }
 
 // Search product variants
-// Search a product's variants using JSON body filters, search terms, includes, and sort instructions. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Search a product's variants using JSON body filters, search terms, includes, and sort instructions, 15 per page by default. Draft variants are left out unless you send `with_drafts` or `only_drafts`. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *ProductVariantService) Search(ctx context.Context, product int, params *ProductVariantsSearchParams, opts ...RequestOption) *Iterator[SearchProductVariantsResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("searchProductVariants", false)}, opts...)
-	return newIterator[SearchProductVariantsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", fmt.Sprintf("/v2/products/%s/variants/search", url.PathEscape(fmt.Sprint(product))), nil, "after", "data", opts, nil, func() any {
+	return newIterator[SearchProductVariantsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", fmt.Sprintf("/v2/products/%s/variants/search", url.PathEscape(fmt.Sprint(product))), params, "after", "data", opts, map[string]string{"limit": "15"}, func() any {
 		if params == nil {
 			return nil
 		}
@@ -470,4 +480,76 @@ func (s *ProductVariantService) BatchDeleteWithResponse(ctx context.Context, pro
 		return nil, err
 	}
 	return rawResponse(struct{}{}, metadata), nil
+}
+
+// Publish a product variant
+// Publish one draft option of a booking product so customers can book it. It is checked the way the booking editor checks it: a title, a description of at least 5 characters, finished booking settings, a price, and payment methods enabled for the store that can take its currency. On a published booking product the option can be booked straight away; a draft booking product still needs `POST /v2/products/{product}/publish`, which needs at least one published option when the product has several. Only booking options are published one at a time. A variant of any other kind of product returns `422` on `variant`: its variants are published with the product through `POST /v2/products/{product}/publish`. Requires the `listing` API-key ability and the `listing` permission in your team role. Safe to repeat: once the option is published, another call changes nothing and returns `422` with `This booking option is already published.` on `variant`. Every other refusal is also `422` on `variant`, with one sentence per thing the option still needs. A variant of another product, or a product of another store, returns `404`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *ProductVariantService) Publish(ctx context.Context, product int, variant int, opts ...RequestOption) (*SdkPublishProductVariantResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("publishProductVariant", false)}, opts...)
+	var result SdkPublishProductVariantResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/products/%s/variants/%s/publish", url.PathEscape(fmt.Sprint(product)), url.PathEscape(fmt.Sprint(variant))), nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *ProductVariantService) PublishWithResponse(ctx context.Context, product int, variant int, opts ...RequestOption) (*RawResponse[*SdkPublishProductVariantResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Publish(ctx, product, variant, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// Duplicate a product variant
+// Copy a variant of a normal product onto the same product and return the copy. The copy keeps every setting, the title, and the draft state, so a copy of a published variant is on sale straight away. Downloadable files and their folders are copied too. Serial codes and issued licence keys are not copied: a copy that delivers serial codes gets a stock of `0`, so it shows as sold out until you add codes. Subscription variants cannot be duplicated. Requires the `listing` API-key ability and the `listing` permission in your team role. Not safe to retry blindly: every call creates another variant. If a response is lost, list the product's variants, with `with_drafts=true` for a draft, before trying again. A variant of a bundle, add-on, credits product, booking product, or course returns `422` on `product`. A subscription variant returns `422` on `variant`. A variant of another product returns `404`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *ProductVariantService) Duplicate(ctx context.Context, product int, variant int, opts ...RequestOption) (*SdkDuplicateProductVariantResponseValue201ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("duplicateProductVariant", false)}, opts...)
+	var result SdkDuplicateProductVariantResponseValue201ApplicationJSON
+	_, err := s.client.request(ctx, "POST", fmt.Sprintf("/v2/products/%s/variants/%s/duplicate", url.PathEscape(fmt.Sprint(product)), url.PathEscape(fmt.Sprint(variant))), nil, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *ProductVariantService) DuplicateWithResponse(ctx context.Context, product int, variant int, opts ...RequestOption) (*RawResponse[*SdkDuplicateProductVariantResponseValue201ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Duplicate(ctx, product, variant, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}
+
+// ProductVariantsReorderParams contains the parameters for Reorder.
+type ProductVariantsReorderParams struct {
+	// VariantIDs is every published variant ID of the product, first to last.
+	VariantIDs []int `json:"variant_ids" url:"-"`
+}
+
+// Reorder product variants
+// Set the order buyers see a normal product's published variants in, first to last. Send every published variant ID exactly once; draft variants are not part of the order and are refused. The response lists the product's published variants in their new order, without pagination. Requires the `listing` API-key ability and the `listing` permission in your team role. Safe to repeat: the same list gives the same order. A list that leaves out a published variant, or names a draft or a variant of another product, returns `422` on `variant_ids`; read the variants again and send the full list. An ID sent twice returns `422` on `variant_ids.{i}`. A listing that is not a normal product returns `422` on `product`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *ProductVariantService) Reorder(ctx context.Context, product int, params *ProductVariantsReorderParams, opts ...RequestOption) (*SdkReorderProductVariantsResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("reorderProductVariants", false)}, opts...)
+	var result SdkReorderProductVariantsResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "PUT", fmt.Sprintf("/v2/products/%s/variants/order", url.PathEscape(fmt.Sprint(product))), nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkReorderProductVariantsRequestApplicationJson\",\"properties\":{\"variant_ids\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1}},\"constraints\":{\"minItems\":1,\"maxItems\":500,\"uniqueItems\":true}}},\"required\":[\"variant_ids\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *ProductVariantService) ReorderWithResponse(ctx context.Context, product int, params *ProductVariantsReorderParams, opts ...RequestOption) (*RawResponse[*SdkReorderProductVariantsResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Reorder(ctx, product, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
 }

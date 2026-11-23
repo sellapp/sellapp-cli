@@ -146,6 +146,12 @@ type GroupsProductsSearchParams struct {
 	Sort     []*SearchProductsWithinGroupRequestApplicationJSONPropertySortItem     `json:"sort,omitempty" url:"-"`
 	Search   *SearchProductsWithinGroupRequestApplicationJSONPropertySearch         `json:"search,omitempty" url:"-"`
 	Includes []*SearchProductsWithinGroupRequestApplicationJSONPropertyIncludesItem `json:"includes,omitempty" url:"-"`
+	// Limit is number of items to return per page.
+	// Defaults to 15.
+	Limit *int `url:"limit,omitempty" json:"-"`
+	// Page is page number to return.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
 }
 
 // MarshalJSON implements json.Marshaler for GroupsProductsSearchParams.
@@ -175,10 +181,10 @@ func (p GroupsProductsSearchParams) MarshalJSON() ([]byte, error) {
 }
 
 // Search products within group
-// Search the products in a group using JSON body filters, search terms, includes, and sort instructions. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Search the products in a group using JSON body filters, search terms, includes, and sort instructions, 15 per page by default. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *GroupsProductService) Search(ctx context.Context, group int, params *GroupsProductsSearchParams, opts ...RequestOption) *Iterator[SearchProductsWithinGroupResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("searchProductsWithinGroup", false)}, opts...)
-	return newIterator[SearchProductsWithinGroupResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", fmt.Sprintf("/v2/groups/%s/products/search", url.PathEscape(fmt.Sprint(group))), nil, "after", "data", opts, nil, func() any {
+	return newIterator[SearchProductsWithinGroupResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", fmt.Sprintf("/v2/groups/%s/products/search", url.PathEscape(fmt.Sprint(group))), params, "after", "data", opts, map[string]string{"limit": "15"}, func() any {
 		if params == nil {
 			return nil
 		}

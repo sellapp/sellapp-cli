@@ -438,6 +438,12 @@ type SectionsV2SearchSectionsParams struct {
 	Sort     []*V2SearchSectionsRequestApplicationJSONPropertySortItem     `json:"sort,omitempty" url:"-"`
 	Search   *V2SearchSectionsRequestApplicationJSONPropertySearch         `json:"search,omitempty" url:"-"`
 	Includes []*V2SearchSectionsRequestApplicationJSONPropertyIncludesItem `json:"includes,omitempty" url:"-"`
+	// Limit is number of items to return per page.
+	// Defaults to 15.
+	Limit *int `url:"limit,omitempty" json:"-"`
+	// Page is page number to return.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
 }
 
 // MarshalJSON implements json.Marshaler for SectionsV2SearchSectionsParams.
@@ -470,7 +476,7 @@ func (p SectionsV2SearchSectionsParams) MarshalJSON() ([]byte, error) {
 // Search sections using JSON body filters, search terms, includes, and sort instructions. This v2 route is store-scoped. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *SectionService) V2SearchSections(ctx context.Context, params *SectionsV2SearchSectionsParams, opts ...RequestOption) *Iterator[V2SearchSectionsResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("v2SearchSections", true)}, opts...)
-	return newIterator[V2SearchSectionsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", "/v2/sections/search", nil, "after", "data", opts, nil, func() any {
+	return newIterator[V2SearchSectionsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", "/v2/sections/search", params, "after", "data", opts, map[string]string{"limit": "15"}, func() any {
 		if params == nil {
 			return nil
 		}

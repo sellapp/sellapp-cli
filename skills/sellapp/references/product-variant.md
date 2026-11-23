@@ -2,7 +2,7 @@
 
 Create a catalog product with a purchasable variant and verify both records.
 
-Contract: `23a0b45478edca19e5ab59d7c5b7bfffe2298eb336e937126ee04dcbbf13c3d0`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/sell-a-product.mdx`.
+Contract: `3bde22b9c73f8b5d220304d2596e0bfa25534f99f12917f31abb9f0096ad440b`; workflow: `947cc96cf269b4f747312873047eebf27a4ecdca3a83e407eb359617bc27266c`. Source: `content/docs/api/(guides)/sell-a-product.mdx`.
 
 ## Prerequisites
 

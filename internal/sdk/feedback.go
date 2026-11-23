@@ -154,10 +154,13 @@ type FeedbackV2ListFeedbackParams struct {
 	// Page is page number to return.
 	// Defaults to 1.
 	Page *int `url:"page,omitempty" json:"-"`
+	// ReplyState is `replied`: feedback with a non-empty seller reply. `unreplied`: feedback without one. `all` (default): both. Any other value returns `422`.
+	// Defaults to "all".
+	ReplyState *FeedbackReplyState `url:"reply_state,omitempty" json:"-"`
 }
 
 // V2ListFeedback list all feedback
-// List customer feedback for your store, 15 entries per page by default. This v2 route is store-scoped. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List customer feedback for your store, 15 entries per page by default. This v2 route is store-scoped. Use `reply_state` to list only feedback you have or have not replied to. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *FeedbackService) V2ListFeedback(ctx context.Context, params *FeedbackV2ListFeedbackParams, opts ...RequestOption) *Iterator[V2ListFeedbackResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("v2ListFeedback", false)}, opts...)
 	return newIterator[V2ListFeedbackResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/feedback", params, "after", "data", opts, map[string]string{"limit": "15"})
@@ -179,6 +182,17 @@ type FeedbackV2SearchFeedbackParams struct {
 	Sort     []*V2SearchFeedbackRequestApplicationJSONPropertySortItem     `json:"sort,omitempty" url:"-"`
 	Search   *V2SearchFeedbackRequestApplicationJSONPropertySearch         `json:"search,omitempty" url:"-"`
 	Includes []*V2SearchFeedbackRequestApplicationJSONPropertyIncludesItem `json:"includes,omitempty" url:"-"`
+	// ReplyState is `replied`: feedback with a non-empty seller reply. `unreplied`: feedback without one. `all` (default): both. Any other value returns `422`.
+	ReplyState *ReplyState `json:"reply_state,omitempty" url:"-"`
+	// Limit is number of items to return per page.
+	// Defaults to 15.
+	Limit *int `url:"limit,omitempty" json:"-"`
+	// Page is page number to return.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
 }
 
 // MarshalJSON implements json.Marshaler for FeedbackV2SearchFeedbackParams.
@@ -188,7 +202,7 @@ func (p FeedbackV2SearchFeedbackParams) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if p.Filters == nil && p.Sort == nil && p.Includes == nil {
+	if len(p.NullFields) == 0 && p.Filters == nil && p.Sort == nil && p.Includes == nil {
 		return data, nil
 	}
 	var m map[string]any
@@ -204,18 +218,27 @@ func (p FeedbackV2SearchFeedbackParams) MarshalJSON() ([]byte, error) {
 	if p.Includes != nil {
 		m["includes"] = p.Includes
 	}
+	nullable := map[string]bool{
+		"reply_state": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("FeedbackV2SearchFeedbackParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
 	return json.Marshal(m)
 }
 
 // V2SearchFeedback search feedback
-// Search feedback using JSON body filters, search terms, includes, and sort instructions. This v2 route is store-scoped. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Search feedback using JSON body filters, search terms, includes, and sort instructions. This v2 route is store-scoped. Use `reply_state` to find only feedback you have or have not replied to. Page through results with `limit` (1 to 100, default 15; a larger value returns `422`) and `page`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *FeedbackService) V2SearchFeedback(ctx context.Context, params *FeedbackV2SearchFeedbackParams, opts ...RequestOption) *Iterator[V2SearchFeedbackResponseValue200ApplicationJSONPropertyDataItem] {
 	opts = append([]RequestOption{withOperation("v2SearchFeedback", false)}, opts...)
-	return newIterator[V2SearchFeedbackResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", "/v2/feedback/search", nil, "after", "data", opts, nil, func() any {
+	return newIterator[V2SearchFeedbackResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "POST", "/v2/feedback/search", params, "after", "data", opts, map[string]string{"limit": "15"}, func() any {
 		if params == nil {
 			return nil
 		}
-		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2SearchFeedbackRequestApplicationJson\",\"properties\":{\"filters\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchFeedbackRequestApplicationJsonPropertyFiltersItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"operator\":{\"kind\":\"primitive\",\"type\":\"string\"},\"value\":{\"kind\":\"primitive\",\"type\":\"unknown\"},\"type\":{\"kind\":\"enum\",\"values\":[\"and\",\"or\"]},\"nested\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchFeedbackRequestApplicationJsonPropertyFiltersItemPropertyNestedItem\",\"properties\":{},\"required\":[],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}},\"sort\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchFeedbackRequestApplicationJsonPropertySortItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"direction\":{\"kind\":\"enum\",\"values\":[\"asc\",\"desc\"]}},\"required\":[\"field\"],\"additionalProperties\":true}},\"search\":{\"kind\":\"object\",\"modelName\":\"V2SearchFeedbackRequestApplicationJsonPropertySearch\",\"properties\":{\"value\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"case_sensitive\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true},\"includes\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchFeedbackRequestApplicationJsonPropertyIncludesItem\",\"properties\":{\"relation\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[\"relation\"],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}"))
+		return schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkV2SearchFeedbackRequestApplicationJson\",\"properties\":{\"filters\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchFeedbackRequestApplicationJsonPropertyFiltersItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"operator\":{\"kind\":\"primitive\",\"type\":\"string\"},\"value\":{\"kind\":\"primitive\",\"type\":\"unknown\"},\"type\":{\"kind\":\"enum\",\"values\":[\"and\",\"or\"]},\"nested\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchFeedbackRequestApplicationJsonPropertyFiltersItemPropertyNestedItem\",\"properties\":{},\"required\":[],\"additionalProperties\":true}}},\"required\":[],\"additionalProperties\":true}},\"sort\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchFeedbackRequestApplicationJsonPropertySortItem\",\"properties\":{\"field\":{\"kind\":\"primitive\",\"type\":\"string\"},\"direction\":{\"kind\":\"enum\",\"values\":[\"asc\",\"desc\"]}},\"required\":[\"field\"],\"additionalProperties\":true}},\"search\":{\"kind\":\"object\",\"modelName\":\"V2SearchFeedbackRequestApplicationJsonPropertySearch\",\"properties\":{\"value\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"case_sensitive\":{\"kind\":\"primitive\",\"type\":\"boolean\"}},\"required\":[],\"additionalProperties\":true},\"includes\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"V2SearchFeedbackRequestApplicationJsonPropertyIncludesItem\",\"properties\":{\"relation\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[\"relation\"],\"additionalProperties\":true}},\"reply_state\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"enum\",\"values\":[\"all\",\"replied\",\"unreplied\",\"null\"]}}},\"required\":[],\"additionalProperties\":true}"))
 	}())
 }
 

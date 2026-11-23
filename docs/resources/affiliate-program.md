@@ -52,7 +52,7 @@ Inspect the complete schema: `sellapp commands affiliate-program get --json`.
 
 Invite an affiliate
 
-Create a pending affiliate invitation and email a single-use onboarding link. Duplicate invitations are rejected and invites are rate limited per store. The affiliate program must be enabled. Requires the `affiliate` token ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Create a pending affiliate invitation and email a single-use onboarding link. Duplicate invitations are rejected and invites are rate limited per store. The affiliate program must be enabled. Requires the `affiliate` token ability, and the staff member who owns the key also needs the `store` permission, the same permission that inviting affiliates in the dashboard requires. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/affiliate-program/invite-an-affiliate) · Effect: **consequential**
 
@@ -147,7 +147,7 @@ Inspect the complete schema: `sellapp commands affiliate-program list --json`.
 
 Replace affiliate program configuration
 
-Replace the complete affiliate-program configuration. The products array is authoritative: enabled entries replace existing store-level product restrictions, and every variant ID must belong to the authenticated store. Requires the `affiliate` token ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Replace the complete affiliate-program configuration. The products array is authoritative: enabled entries replace existing store-level product restrictions, and every variant ID must belong to the authenticated store. Requires the `affiliate` token ability, and the staff member who owns the key also needs the `store` permission, the same permission that changing the program in the dashboard requires. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/affiliate-program/replace-affiliate-program) · Effect: **consequential**
 
@@ -191,4 +191,51 @@ Credential alternatives and scopes:
 Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
 
 Inspect the complete schema: `sellapp commands affiliate-program replace --json`.
+
+## resend
+
+Resend an affiliate invitation
+
+Email a pending affiliate invitation again, with a new sign-in link that expires after 6 hours, to the address it was created for. The invitation itself does not change: `invited_at` keeps the original date. Send no body. Requires the `affiliate` API-key ability, and the staff member who owns the key needs the affiliate and `store` permissions, the same as inviting an affiliate. Every refusal returns `422` on `invitation` and sends nothing: the invitation was already answered or is no longer pending, the affiliate program is not configured or turned off, the same invitation was sent within the last minute, your store reached its limit of 10 invitation emails per hour (new invitations and resends count together; the message says how many seconds to wait), or the email could not be sent. An invitation from another store returns `404`. Not safe to retry blindly: each successful call sends another email. A repeat within a minute is refused, so a quick retry after a lost response cannot send twice; after that, check with the invitee or wait for them to answer before sending again. If sending failed, wait a minute and try again. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/affiliate-program/resend-an-affiliate-invitation) · Effect: **consequential**
+
+```sh
+sellapp affiliate-program resend 77 --yes
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| invitation (positional) | Yes | The invitation ID, as returned by `GET /v2/affiliate-invitations` or `POST /v2/affiliate-invitations`. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands affiliate-program resend --json`.
 

@@ -61,18 +61,19 @@ Inspect the complete schema: `sellapp commands invoices create --json`.
 
 Create invoice refund
 
-Request a full or partial provider refund using the same idempotent refund ledger as the dashboard. Amounts are decimal currency strings, never floating-point numbers. Requires the `invoice` token ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Request a full or partial provider refund using the same idempotent refund ledger as the dashboard. This sends real money back to the customer. Amounts are decimal currency strings, never floating-point numbers. Send the invoice's `payment.refunded_total_cents` unchanged as `expected_refunded_total_cents` so that a repeated or concurrent request is refused instead of refunding twice: the refund goes out only while the refunded total is still the amount you sent. A changed total returns `422` on `expected_refunded_total_cents`; read the invoice again before deciding whether to refund. Other refusals return `422` on `refund`, including, when you send `expected_refunded_total_cents`, a refund still pending on the order. Requires the `invoice` token ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/invoices/refund-an-invoice) · Effect: **consequential**
 
 ```sh
-sellapp invoices create-refund 1 --amount 12.50 --yes
+sellapp invoices create-refund 1 --amount 12.50 --expected-refunded-total-cents 0 --yes
 ```
 
 | Input | Required | Meaning |
 | --- | --- | --- |
 | invoice (positional) | Yes | The invoice path parameter. |
-| --amount | No | Optional partial refund amount in major currency units. Omit for the full remaining refundable amount. |
+| --amount | No | Optional partial refund amount in major units of the invoice's `payment.refund_currency`. Omit for the full remaining refundable amount. |
+| --expected-refunded-total-cents | No | The refunded total you expect, in integer minor units of the invoice's `payment.refund_currency`, which can differ from the invoice currency: `500` means $5.00 in USD. Read it from `payment.refunded_total_cents` on the invoice and send it unchanged; it is `0` before the first refund. After a refund, `data.invoice.payment.refunded_total_cents` in the response is the value to send with the next one. With this field, the refund goes out only while the refunded total still equals it and no other refund on the order is pending. Omit it or send null to refund without the check. |
 
 A request body is optional or not used by this operation.
 

@@ -28,7 +28,7 @@ type UpsellOffersListParams struct {
 }
 
 // List upsell offers
-// List the authenticated store's ordered post-purchase offers. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// List the authenticated store's ordered post-purchase offers. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *UpsellOfferService) List(ctx context.Context, params *UpsellOffersListParams, opts ...RequestOption) *Iterator[SdkListUpsellOffersResponseValue200ApplicationJSON] {
 	opts = append([]RequestOption{withOperation("listUpsellOffers", false)}, opts...)
 	return newIterator[SdkListUpsellOffersResponseValue200ApplicationJSON](ctx, s.client, "GET", "/v2/upsell-offers", params, "after", "data", opts, map[string]string{"limit": "15"})
@@ -103,7 +103,7 @@ func (p UpsellOffersCreateParams) MarshalJSON() ([]byte, error) {
 }
 
 // Create an upsell offer
-// Create an ordered post-purchase offer. Every product and variant ID is checked against the selected store and expected parent product. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Create an ordered post-purchase offer. Every product and variant ID is checked against the selected store and expected parent product. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *UpsellOfferService) Create(ctx context.Context, params *UpsellOffersCreateParams, opts ...RequestOption) (*SdkCreateUpsellOfferResponseValue201ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("createUpsellOffer", false)}, opts...)
 	var result SdkCreateUpsellOfferResponseValue201ApplicationJSON
@@ -168,7 +168,7 @@ func (p UpsellOffersSearchParams) MarshalJSON() ([]byte, error) {
 }
 
 // Search upsell offers
-// Search offer names and descriptions and compose supported filters and sort instructions. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Search offer names and descriptions and compose supported filters and sort instructions. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *UpsellOfferService) Search(ctx context.Context, params *UpsellOffersSearchParams, opts ...RequestOption) *Iterator[SdkSearchUpsellOffersResponseValue200ApplicationJSON] {
 	opts = append([]RequestOption{withOperation("searchUpsellOffers", false)}, opts...)
 	return newIterator[SdkSearchUpsellOffersResponseValue200ApplicationJSON](ctx, s.client, "POST", "/v2/upsell-offers/search", params, "after", "data", opts, map[string]string{"limit": "15"}, func() any {
@@ -190,7 +190,7 @@ func (s *UpsellOfferService) SearchWithResponse(ctx context.Context, params *Ups
 }
 
 // Get retrieve an upsell offer
-// Retrieve one store-scoped upsell offer and its ordered target items. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Retrieve one store-scoped upsell offer and its ordered target items. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *UpsellOfferService) Get(ctx context.Context, upsellOffer int, opts ...RequestOption) (*SdkGetUpsellOfferResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("getUpsellOffer", false)}, opts...)
 	var result SdkGetUpsellOfferResponseValue200ApplicationJSON
@@ -273,7 +273,7 @@ func (p UpsellOffersReplaceParams) MarshalJSON() ([]byte, error) {
 }
 
 // Replace update an upsell offer
-// Update supplied fields. When items are supplied, they replace the complete ordered target-item set. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Update supplied fields. When items are supplied, they replace the complete ordered target-item set. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *UpsellOfferService) Replace(ctx context.Context, upsellOffer int, params *UpsellOffersReplaceParams, opts ...RequestOption) (*SdkReplaceUpsellOfferResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("replaceUpsellOffer", false)}, opts...)
 	var result SdkReplaceUpsellOfferResponseValue200ApplicationJSON
@@ -356,7 +356,7 @@ func (p UpsellOffersUpdateParams) MarshalJSON() ([]byte, error) {
 }
 
 // Update an upsell offer
-// Update supplied fields. When items are supplied, they replace the complete ordered target-item set. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Update supplied fields. When items are supplied, they replace the complete ordered target-item set. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *UpsellOfferService) Update(ctx context.Context, upsellOffer int, params *UpsellOffersUpdateParams, opts ...RequestOption) (*SdkUpdateUpsellOfferResponseValue200ApplicationJSON, error) {
 	opts = append([]RequestOption{withOperation("updateUpsellOffer", false)}, opts...)
 	var result SdkUpdateUpsellOfferResponseValue200ApplicationJSON
@@ -378,7 +378,7 @@ func (s *UpsellOfferService) UpdateWithResponse(ctx context.Context, upsellOffer
 }
 
 // Delete an upsell offer
-// Soft-delete an upsell offer while preserving checkout and reporting attribution. Requires a Sanctum token with the `upsell` ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+// Soft-delete an upsell offer while preserving checkout and reporting attribution. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 func (s *UpsellOfferService) Delete(ctx context.Context, upsellOffer int, opts ...RequestOption) error {
 	opts = append([]RequestOption{withOperation("deleteUpsellOffer", false)}, opts...)
 	_, err := s.client.request(ctx, "DELETE", fmt.Sprintf("/v2/upsell-offers/%s", url.PathEscape(fmt.Sprint(upsellOffer))), nil, nil, nil, opts)
@@ -392,4 +392,36 @@ func (s *UpsellOfferService) DeleteWithResponse(ctx context.Context, upsellOffer
 		return nil, err
 	}
 	return rawResponse(struct{}{}, metadata), nil
+}
+
+// UpsellOffersGetPerformanceParams contains the parameters for GetPerformance.
+type UpsellOffersGetPerformanceParams struct {
+	// WithTrashed is set to `true` to also find a deleted upsell offer.
+	// Defaults to false.
+	WithTrashed *bool `url:"with_trashed,omitempty" json:"-"`
+	// OnlyTrashed is set to `true` to find only a deleted upsell offer. Ignored when `with_trashed` is `true`.
+	// Defaults to false.
+	OnlyTrashed *bool `url:"only_trashed,omitempty" json:"-"`
+}
+
+// GetPerformance retrieve upsell offer performance
+// Report how an upsell offer has performed over its whole life: how often customers saw it, started its checkout, and bought it, and the revenue those purchases brought. An offer from another store returns `404`, and so does a deleted one unless you send `with_trashed=true`. Requires the `upsell` API-key ability and the Upsells role for the store selected by `X-STORE`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *UpsellOfferService) GetPerformance(ctx context.Context, upsellOffer int, params *UpsellOffersGetPerformanceParams, opts ...RequestOption) (*SdkGetUpsellOfferPerformanceResponseValue200ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("getUpsellOfferPerformance", false)}, opts...)
+	var result SdkGetUpsellOfferPerformanceResponseValue200ApplicationJSON
+	_, err := s.client.request(ctx, "GET", fmt.Sprintf("/v2/upsell-offers/%s/performance", url.PathEscape(fmt.Sprint(upsellOffer))), params, nil, &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *UpsellOfferService) GetPerformanceWithResponse(ctx context.Context, upsellOffer int, params *UpsellOffersGetPerformanceParams, opts ...RequestOption) (*RawResponse[*SdkGetUpsellOfferPerformanceResponseValue200ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.GetPerformance(ctx, upsellOffer, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
 }

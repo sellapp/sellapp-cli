@@ -158,6 +158,9 @@ func TestCompactIndexPreservesCoverageAndFullSchemaLookup(t *testing.T) {
 	if len(out) > 100*1024 {
 		t.Fatalf("compact index exceeded 100 KiB: %d bytes", len(out))
 	}
+	if strings.Count(out, "\n") != 1 {
+		t.Fatal("compact JSON index includes formatting whitespace")
+	}
 	var rows []map[string]any
 	if err = json.Unmarshal([]byte(out), &rows); err != nil {
 		t.Fatal(err)
@@ -177,6 +180,17 @@ func TestCompactIndexPreservesCoverageAndFullSchemaLookup(t *testing.T) {
 		if _, ok := row["retry"]; ok {
 			t.Fatal("index duplicated retry rules")
 		}
+	}
+	selected, err := execute(t, "--llms", "--output", "json", "--fields", "command,operation_id", "--filter", "operation_id=listProducts")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var selectedRows []map[string]any
+	if err = json.Unmarshal([]byte(selected), &selectedRows); err != nil {
+		t.Fatal(err)
+	}
+	if len(selectedRows) != 1 || len(selectedRows[0]) != 2 || selectedRows[0]["operation_id"] != "listProducts" {
+		t.Fatal("compact index lost field/filter controls", selected)
 	}
 	full, err := execute(t, "--llms-full", "--output", "json")
 	if err != nil {

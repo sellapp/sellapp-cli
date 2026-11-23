@@ -476,6 +476,56 @@ Response data is printed to stdout; diagnostics go to stderr. Use `--output json
 
 Inspect the complete schema: `sellapp commands product-variants booking update --json`.
 
+## community-access replace
+
+Replace variant community access
+
+Give buyers of a normal product's variant access to a community your store has connected: a Discord server with optional roles, a Telegram group, a Slack channel, or a WhatsApp group. It replaces the variant's access on the platform you send and keeps its access on the other platforms. `community.role_ids` is for Discord only: for other platforms leave it out or send an empty list. Discord roles must belong to the chosen server. Read the saved access on the variant (`GET /v2/products/{product}/variants/{variant}`) under `other_settings.community_servers.<platform>`, as `server_id`, `roles` (the Discord role IDs you sent as `role_ids`), `required`, and `remove_on_expire`. For Discord the same values are also in `other_settings.discord_server`, `discord_roles`, `discord_data_required`, and `discord_kick_on_expire`. Requires the `listing` API-key ability and the `listing` permission in your team role. Send the variant's `updated_at` as `expected_updated_at` to refuse the change when the variant was edited since you read it. Repeating the same body without `expected_updated_at` gives the same result. A server, group, channel, or role your store has not connected returns `422` on `community.server_id` or `community.role_ids`, and so do roles for a platform other than Discord. A stale `expected_updated_at` returns `422` on `expected_updated_at`. A variant of a listing that is not a normal product returns `422` on `community`. A variant of another product returns `404`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/product-variants/replace-variant-community-access) · Effect: **write**
+
+```sh
+sellapp product-variants community-access replace --product 1 2 --body '{"community":{"platform":"discord","server_id":"1187040134912155648","role_ids":["1187040299781210112"],"required":true,"remove_on_expire":true},"expected_updated_at":"2024-01-10T18:47:22.000000Z"}'
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --product | Yes | The product path parameter. |
+| variant (positional) | Yes | The variant path parameter. |
+| --community | Yes | Value for community. |
+| --expected-updated-at | No | The variant's `updated_at` from your last read. The change is refused with `422` when the variant changed since. |
+
+The request body is required.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands product-variants community-access replace --json`.
+
 ## create
 
 Create a product variant
@@ -582,6 +632,54 @@ Credential alternatives and scopes:
 Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
 
 Inspect the complete schema: `sellapp commands product-variants delete --json`.
+
+## duplicate
+
+Duplicate a product variant
+
+Copy a variant of a normal product onto the same product and return the copy. The copy keeps every setting, the title, and the draft state, so a copy of a published variant is on sale straight away. Downloadable files and their folders are copied too. Serial codes and issued licence keys are not copied: a copy that delivers serial codes gets a stock of `0`, so it shows as sold out until you add codes. Subscription variants cannot be duplicated. Requires the `listing` API-key ability and the `listing` permission in your team role. Not safe to retry blindly: every call creates another variant. If a response is lost, list the product's variants, with `with_drafts=true` for a draft, before trying again. A variant of a bundle, add-on, credits product, booking product, or course returns `422` on `product`. A subscription variant returns `422` on `variant`. A variant of another product returns `404`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/product-variants/duplicate-a-product-variant) · Effect: **write**
+
+```sh
+sellapp product-variants duplicate --product 1 2
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --product | Yes | The product path parameter. |
+| variant (positional) | Yes | The variant path parameter. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands product-variants duplicate --json`.
 
 ## get
 
@@ -790,6 +888,102 @@ Response data is printed to stdout; diagnostics go to stderr. Use `--output json
 
 Inspect the complete schema: `sellapp commands product-variants pricing update --json`.
 
+## publish
+
+Publish a product variant
+
+Publish one draft option of a booking product so customers can book it. It is checked the way the booking editor checks it: a title, a description of at least 5 characters, finished booking settings, a price, and payment methods enabled for the store that can take its currency. On a published booking product the option can be booked straight away; a draft booking product still needs `POST /v2/products/{product}/publish`, which needs at least one published option when the product has several. Only booking options are published one at a time. A variant of any other kind of product returns `422` on `variant`: its variants are published with the product through `POST /v2/products/{product}/publish`. Requires the `listing` API-key ability and the `listing` permission in your team role. Safe to repeat: once the option is published, another call changes nothing and returns `422` with `This booking option is already published.` on `variant`. Every other refusal is also `422` on `variant`, with one sentence per thing the option still needs. A variant of another product, or a product of another store, returns `404`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/product-variants/publish-a-product-variant) · Effect: **consequential**
+
+```sh
+sellapp product-variants publish --product 11 12 --yes
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --product | Yes | The product path parameter. |
+| variant (positional) | Yes | The variant path parameter. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands product-variants publish --json`.
+
+## reorder
+
+Reorder product variants
+
+Set the order buyers see a normal product's published variants in, first to last. Send every published variant ID exactly once; draft variants are not part of the order and are refused. The response lists the product's published variants in their new order, without pagination. Requires the `listing` API-key ability and the `listing` permission in your team role. Safe to repeat: the same list gives the same order. A list that leaves out a published variant, or names a draft or a variant of another product, returns `422` on `variant_ids`; read the variants again and send the full list. An ID sent twice returns `422` on `variant_ids.{i}`. A listing that is not a normal product returns `422` on `product`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/product-variants/reorder-product-variants) · Effect: **consequential**
+
+```sh
+sellapp product-variants reorder 1 --body '{"variant_ids":[2,1]}' --yes
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| product (positional) | Yes | The product path parameter. |
+| --variant-ids | Yes | Every published variant ID of the product, first to last. |
+
+The request body is required.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands product-variants reorder --json`.
+
 ## replace
 
 Update a product variant with PUT
@@ -854,7 +1048,7 @@ Inspect the complete schema: `sellapp commands product-variants replace --json`.
 
 Search product variants
 
-Search a product's variants using JSON body filters, search terms, includes, and sort instructions. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Search a product's variants using JSON body filters, search terms, includes, and sort instructions, 15 per page by default. Draft variants are left out unless you send `with_drafts` or `only_drafts`. Requires a token with the listing ability. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/product-variants/search-product-variants) · Effect: **read**
 
@@ -865,6 +1059,10 @@ sellapp product-variants search 1 --body '{"filters":[{"field":"id","operator":"
 | Input | Required | Meaning |
 | --- | --- | --- |
 | product (positional) | Yes | The product path parameter. |
+| --limit | No | Number of items to return per page. |
+| --page | No | Page number to return. |
+| --with-drafts | No | Include draft variants alongside published variants. |
+| --only-drafts | No | Return only draft variants. |
 | --filters | No | Value for filters. |
 | --sort | No | Value for sort. |
 | --search | No | Value for search. |
@@ -900,6 +1098,106 @@ Credential alternatives and scopes:
 Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
 
 Inspect the complete schema: `sellapp commands product-variants search --json`.
+
+## subscription-settings get
+
+Retrieve variant subscription settings
+
+Get how buyers of a published subscription variant may pause (`pause_policy`) and move their billing date (`billing_date_policy`), whether its delivery is repeated on each renewal (`renewal_policy`), and the plan changes offered to them (`change_paths`). A setting that was never saved shows the default the dashboard would save. `state` identifies these values; send it back as `expected_state` when you update them. Requires the `listing` API-key ability and the `listing` permission in your team role. A one-time variant or a draft variant has no such settings and returns `404`, as does a variant of another product. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/product-variants/variant-subscription-settings) · Effect: **read**
+
+```sh
+sellapp product-variants subscription-settings get --product 1 4
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --product | Yes | The product path parameter. |
+| variant (positional) | Yes | The variant path parameter. |
+
+A request body is optional or not used by this operation.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands product-variants subscription-settings get --json`.
+
+## subscription-settings update
+
+Update variant subscription settings
+
+Update the pause, billing date, and renewal settings of a published subscription variant. Send only the policies you change: a policy you leave out is not written, and a field you leave out inside a policy keeps its current value. The result is checked as a whole, as the dashboard checks it. Plan changes (`change_paths`) cannot be changed here. Requires the `listing` API-key ability and the `listing` permission in your team role. Send the `state` from your last read as `expected_state` to refuse the update when someone changed the settings in the meantime; that refusal is `422` on `expected_state`. Repeating the same body without `expected_state` gives the same result. A one-time variant or a draft variant returns `422` on `variant_id`. A body without any policy returns `422` on `pause_policy`, an unknown field inside a policy returns `422` on that policy, and a value out of range returns `422` on the field, such as `billing_date_policy.allowed_day_max`. A variant of another product returns `404`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+
+[API reference](https://sell.app/docs/api/product-variants/variant-subscription-settings) · Effect: **write**
+
+```sh
+sellapp product-variants subscription-settings update --product 1 4 --body '{"pause_policy":{"max_pause_days":30},"renewal_policy":{"redeliver_on_renewal":false},"expected_state":"3f9a1c0e7b2d4a6f8e1c5b9d0a7f3e2c4b6d8a0f1e3c5a7b9d2f4e6a8c0b1d3e"}'
+```
+
+| Input | Required | Meaning |
+| --- | --- | --- |
+| --product | Yes | The product path parameter. |
+| variant (positional) | Yes | The variant path parameter. |
+| --pause-policy | No | Value for pause policy. |
+| --billing-date-policy | No | Value for billing date policy. |
+| --renewal-policy | No | Value for renewal policy. |
+| --expected-state | No | The `state` from your last read. The update is refused when the settings changed since. |
+
+The request body is required.
+
+Credential alternatives and scopes:
+
+```json
+[
+  [
+    {
+      "schemeName": "bearerAuth",
+      "scopes": []
+    }
+  ],
+  [
+    {
+      "schemeName": "oauthAccessToken",
+      "scopes": [
+        "admin"
+      ]
+    },
+    {
+      "schemeName": "storeAuth",
+      "scopes": []
+    }
+  ]
+]
+```
+
+Response data is printed to stdout; diagnostics go to stderr. Use `--output json` for automation. [Output, errors, and transport controls](../usage.md).
+
+Inspect the complete schema: `sellapp commands product-variants subscription-settings update --json`.
 
 ## update
 

@@ -216,3 +216,101 @@ func (s *BookingService) CancelWithResponse(ctx context.Context, booking string,
 	}
 	return rawResponse(value, metadata), nil
 }
+
+// BookingsCreateParams contains the parameters for Create.
+type BookingsCreateParams struct {
+	// Title is the product name customers see. The URL slug is made from it.
+	Title string `json:"title" url:"-"`
+	// Description is the product description as HTML, 5 to 5000 characters. Leave it out to start without one.
+	Description *string            `json:"description,omitempty" url:"-"`
+	Visibility  *CatalogVisibility `json:"visibility,omitempty" url:"-"`
+	// VariantTitle is the name of the bookable option.
+	VariantTitle *string `json:"variant_title,omitempty" url:"-"`
+	// VariantDescription is the option's description. Defaults to the product description, or to `Book an appointment for` and the title when there is none.
+	VariantDescription *string `json:"variant_description,omitempty" url:"-"`
+	// PriceCents is the price of one appointment in the smallest unit of `currency`: `2500` means $25.00 in USD, and `0` makes it free. A paid price outside the currency's limits, such as below 0.50 in USD, returns `422` on `price_cents`.
+	PriceCents int `json:"price_cents" url:"-"`
+	// CompareAtPriceCents is an optional crossed-out price shown next to the real one, in the same unit. It must be higher than `price_cents` and within the currency's limits; otherwise the request returns `422` on `compare_at_price_cents`.
+	CompareAtPriceCents *int `json:"compare_at_price_cents,omitempty" url:"-"`
+	// Currency is the currency of both prices.
+	Currency *SdkCreateBookingProductRequestApplicationJSONCurrency `json:"currency,omitempty" url:"-"`
+	// PaymentMethods is how customers can pay. Each must be enabled for the store, or the request returns `422` on `payment_methods`. Leave it out to use the store's default payment methods for the currency; a paid booking with none available returns `422` on `payment_methods`.
+	PaymentMethods []SdkCreateBookingProductRequestApplicationJSONPaymentMethods `json:"payment_methods,omitempty" url:"-"`
+	// Timezone is the IANA timezone the weekly availability is read in. Defaults to the store's timezone.
+	Timezone                  *string                                                          `json:"timezone,omitempty" url:"-"`
+	DurationMinutes           *int                                                             `json:"duration_minutes,omitempty" url:"-"`
+	MinNoticeMinutes          *int                                                             `json:"min_notice_minutes,omitempty" url:"-"`
+	MaxAdvanceDays            *int                                                             `json:"max_advance_days,omitempty" url:"-"`
+	BufferBeforeMinutes       *int                                                             `json:"buffer_before_minutes,omitempty" url:"-"`
+	BufferAfterMinutes        *int                                                             `json:"buffer_after_minutes,omitempty" url:"-"`
+	ProviderConnectionIDs     []int                                                            `json:"provider_connection_ids,omitempty" url:"-"`
+	VideoProvider             *SdkCreateBookingProductRequestApplicationJSONVideoProvider      `json:"video_provider,omitempty" url:"-"`
+	VideoProviderConnectionID *int                                                             `json:"video_provider_connection_id,omitempty" url:"-"`
+	RemindersEnabled          *bool                                                            `json:"reminders_enabled,omitempty" url:"-"`
+	ReminderOffsetValue       *int                                                             `json:"reminder_offset_value,omitempty" url:"-"`
+	ReminderOffsetUnit        *SdkCreateBookingProductRequestApplicationJSONReminderOffsetUnit `json:"reminder_offset_unit,omitempty" url:"-"`
+	// Availability is weekly opening hours, one entry per day from `1` to `7`, in 30-minute steps. Days you leave out are closed. Leave the whole list out to open days `1` to `5` from 09:00 to 17:00.
+	Availability []*CreateBookingProductRequestApplicationJSONPropertyAvailabilityItem `json:"availability,omitempty" url:"-"`
+	// NullFields lists JSON field names to send as an explicit null,
+	// clearing the corresponding value (e.g. []string{"external_id"}).
+	NullFields []string `json:"-" url:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for BookingsCreateParams.
+func (p BookingsCreateParams) MarshalJSON() ([]byte, error) {
+	type Alias BookingsCreateParams
+	data, err := json.Marshal(Alias(p))
+	if err != nil {
+		return nil, err
+	}
+	if len(p.NullFields) == 0 && p.PaymentMethods == nil && p.ProviderConnectionIDs == nil && p.Availability == nil {
+		return data, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	if p.PaymentMethods != nil {
+		m["payment_methods"] = p.PaymentMethods
+	}
+	if p.ProviderConnectionIDs != nil {
+		m["provider_connection_ids"] = p.ProviderConnectionIDs
+	}
+	if p.Availability != nil {
+		m["availability"] = p.Availability
+	}
+	nullable := map[string]bool{
+		"description":                  true,
+		"compare_at_price_cents":       true,
+		"video_provider_connection_id": true,
+	}
+	for _, f := range p.NullFields {
+		if !nullable[f] {
+			return nil, fmt.Errorf("BookingsCreateParams: %q is not a nullable field", f)
+		}
+		m[f] = nil
+	}
+	return json.Marshal(m)
+}
+
+// Create a booking product
+// Create a draft booking product with one draft option that customers book as a timed appointment, one per purchase and one customer per time slot. Nothing can be booked until you publish it, whatever `visibility` you send: `visibility`, `PRIVATE` by default, applies once the product is published. Publish it with `POST /v2/products/{product}/publish`. Schedule fields you leave out take their defaults; read the result with `GET /v2/products/{product}/variants/{variant}/booking`. Each successful call creates another product, so do not retry blindly after a lost response: list your products first. Requires the `listing` API-key ability and the `listing` permission in your team role. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+func (s *BookingService) Create(ctx context.Context, params *BookingsCreateParams, opts ...RequestOption) (*SdkCreateBookingProductResponseValue201ApplicationJSON, error) {
+	opts = append([]RequestOption{withOperation("createBookingProduct", false)}, opts...)
+	var result SdkCreateBookingProductResponseValue201ApplicationJSON
+	_, err := s.client.request(ctx, "POST", "/v2/booking-products", nil, schemaValidatedBody(params, mustRuntimeSchema("{\"kind\":\"object\",\"modelName\":\"SdkCreateBookingProductRequestApplicationJson\",\"properties\":{\"title\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"description\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minLength\":5,\"maxLength\":5000}}},\"visibility\":{\"kind\":\"enum\",\"values\":[\"PUBLIC\",\"ON_HOLD\",\"HIDDEN\",\"PRIVATE\"]},\"variant_title\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"maxLength\":255}},\"variant_description\":{\"kind\":\"primitive\",\"type\":\"string\",\"constraints\":{\"minLength\":5,\"maxLength\":5000}},\"price_cents\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0}},\"compare_at_price_cents\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"currency\":{\"kind\":\"enum\",\"values\":[\"AUD\",\"BRL\",\"CAD\",\"CNY\",\"CZK\",\"DKK\",\"EUR\",\"GHS\",\"HKD\",\"HUF\",\"ILS\",\"INR\",\"JPY\",\"MYR\",\"MXN\",\"NGN\",\"TWD\",\"NZD\",\"NOK\",\"PHP\",\"PLN\",\"GBP\",\"RUB\",\"SGD\",\"SEK\",\"CHF\",\"THB\",\"USD\",\"ZAR\"]},\"payment_methods\":{\"kind\":\"array\",\"items\":{\"kind\":\"enum\",\"values\":[\"AUTHNET\",\"BTCPAY\",\"CASHAPP\",\"COINBASE\",\"PADDLE\",\"PAYDASH\",\"PAYPAL\",\"PAYSTACK\",\"SQUARE\",\"STRIPE\",\"VENMO\",\"NMI\",\"MERCADO_PAGO\",\"MOLLIE\",\"RAZORPAY\",\"CUSTOM_PAYMENT_METHOD\",\"LIFI\",\"BTC\",\"LTC\",\"ETH\",\"XMR\",\"SOL\",\"ADA\",\"BNB\",\"TRX\",\"MATIC\",\"ETH_USDT\",\"ETH_USDC\",\"ETH_UNI\",\"ETH_SHIB\",\"ETH_DAI\",\"BNB_USDT\",\"BNB_USDC\",\"TRX_USDT\",\"TRX_USDC\",\"SOL_USDT\",\"SOL_USDC\"]},\"constraints\":{\"uniqueItems\":true}},\"timezone\":{\"kind\":\"primitive\",\"type\":\"string\"},\"duration_minutes\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":30,\"multipleOf\":30}},\"min_notice_minutes\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":525600}},\"max_advance_days\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":730}},\"buffer_before_minutes\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":1440,\"multipleOf\":30}},\"buffer_after_minutes\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":0,\"maximum\":1440,\"multipleOf\":30}},\"provider_connection_ids\":{\"kind\":\"array\",\"items\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"video_provider\":{\"kind\":\"enum\",\"values\":[\"none\",\"google_meet\",\"zoom\"]},\"video_provider_connection_id\":{\"kind\":\"nullable\",\"inner\":{\"kind\":\"primitive\",\"type\":\"integer\"}},\"reminders_enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"reminder_offset_value\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":10080}},\"reminder_offset_unit\":{\"kind\":\"enum\",\"values\":[\"minutes\",\"hours\",\"days\",\"weeks\"]},\"availability\":{\"kind\":\"array\",\"items\":{\"kind\":\"object\",\"modelName\":\"CreateBookingProductRequestApplicationJsonPropertyAvailabilityItem\",\"properties\":{\"day\":{\"kind\":\"primitive\",\"type\":\"integer\",\"constraints\":{\"minimum\":1,\"maximum\":7}},\"enabled\":{\"kind\":\"primitive\",\"type\":\"boolean\"},\"start\":{\"kind\":\"primitive\",\"type\":\"string\"},\"end\":{\"kind\":\"primitive\",\"type\":\"string\"}},\"required\":[\"day\",\"enabled\",\"start\",\"end\"],\"additionalProperties\":true},\"constraints\":{\"minItems\":0,\"maxItems\":7}}},\"required\":[\"title\",\"price_cents\"],\"additionalProperties\":true}")), &result, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *BookingService) CreateWithResponse(ctx context.Context, params *BookingsCreateParams, opts ...RequestOption) (*RawResponse[*SdkCreateBookingProductResponseValue201ApplicationJSON], error) {
+	var metadata *responseMetadata
+	captureOpts := append(opts, withResponseMetadata(&metadata))
+	value, err := s.Create(ctx, params, captureOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return rawResponse(value, metadata), nil
+}

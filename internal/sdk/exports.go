@@ -13,17 +13,24 @@ type ExportService struct {
 	client *Client
 }
 
-// List exports
-// List permitted exports, 50 per page. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request. Sales, tax and customer reports require invoice store permission. Affiliate payout reports require affiliate and affiliate:payout permissions. The category selects the applicable permission checks; listing returns only authorized categories.
-func (s *ExportService) List(ctx context.Context, opts ...RequestOption) *Iterator[ListExportsResponseValue200ApplicationJSONPropertyDataItem] {
-	opts = append([]RequestOption{withOperation("listExports", false)}, opts...)
-	return newIterator[ListExportsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/exports", nil, "after", "data", opts, nil)
+// ExportsListParams contains the parameters for List.
+type ExportsListParams struct {
+	// Page is page number, starting at 1.
+	// Defaults to 1.
+	Page *int `url:"page,omitempty" json:"-"`
 }
 
-func (s *ExportService) ListWithResponse(ctx context.Context, opts ...RequestOption) (*RawResponse[*Iterator[ListExportsResponseValue200ApplicationJSONPropertyDataItem]], error) {
+// List exports
+// List permitted exports, newest first, 50 per page. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request. Sales, tax and customer reports require invoice store permission. Affiliate payout reports require affiliate and affiliate:payout permissions. The category selects the applicable permission checks; listing returns only authorized categories.
+func (s *ExportService) List(ctx context.Context, params *ExportsListParams, opts ...RequestOption) *Iterator[ListExportsResponseValue200ApplicationJSONPropertyDataItem] {
+	opts = append([]RequestOption{withOperation("listExports", false)}, opts...)
+	return newIterator[ListExportsResponseValue200ApplicationJSONPropertyDataItem](ctx, s.client, "GET", "/v2/exports", params, "after", "data", opts, nil)
+}
+
+func (s *ExportService) ListWithResponse(ctx context.Context, params *ExportsListParams, opts ...RequestOption) (*RawResponse[*Iterator[ListExportsResponseValue200ApplicationJSONPropertyDataItem]], error) {
 	var metadata *responseMetadata
 	captureOpts := append(opts, withResponseMetadata(&metadata))
-	value := s.List(ctx, captureOpts...)
+	value := s.List(ctx, params, captureOpts...)
 	if err := value.Err(); err != nil {
 		return nil, err
 	}

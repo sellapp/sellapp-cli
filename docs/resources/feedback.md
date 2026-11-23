@@ -214,7 +214,7 @@ Inspect the complete schema: `sellapp commands feedback v-2-get-feedback --json`
 
 List all feedback
 
-List customer feedback for your store, 15 entries per page by default. This v2 route is store-scoped. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+List customer feedback for your store, 15 entries per page by default. This v2 route is store-scoped. Use `reply_state` to list only feedback you have or have not replied to. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/feedback/list-all-feedback) · Effect: **read**
 
@@ -226,6 +226,7 @@ sellapp feedback v-2-list-feedback
 | --- | --- | --- |
 | --limit | No | Number of items to return per page. |
 | --page | No | Page number to return. |
+| --reply-state | No | `replied`: feedback with a non-empty seller reply. `unreplied`: feedback without one. `all` (default): both. Any other value returns `422`. |
 
 A request body is optional or not used by this operation.
 
@@ -358,7 +359,7 @@ Inspect the complete schema: `sellapp commands feedback v-2-reply-to-feedback --
 
 Search feedback
 
-Search feedback using JSON body filters, search terms, includes, and sort instructions. This v2 route is store-scoped. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
+Search feedback using JSON body filters, search terms, includes, and sort instructions. This v2 route is store-scoped. Use `reply_state` to find only feedback you have or have not replied to. Page through results with `limit` (1 to 100, default 15; a larger value returns `422`) and `page`. OAuth callers use the admin grant and select a store with X-STORE. Current membership and role permissions apply to every request.
 
 [API reference](https://sell.app/docs/api/feedback/search-feedback) · Effect: **read**
 
@@ -368,10 +369,13 @@ sellapp feedback v-2-search-feedback --body '{"filters":[{"field":"id","operator
 
 | Input | Required | Meaning |
 | --- | --- | --- |
+| --limit | No | Number of items to return per page. |
+| --page | No | Page number to return. |
 | --filters | No | Value for filters. |
 | --sort | No | Value for sort. |
 | --search | No | Value for search. |
 | --includes | No | Value for includes. |
+| --reply-state | No | `replied`: feedback with a non-empty seller reply. `unreplied`: feedback without one. `all` (default): both. Any other value returns `422`. |
 
 A request body is optional or not used by this operation.
 

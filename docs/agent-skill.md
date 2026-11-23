@@ -29,7 +29,7 @@ Use structured JSON/JSONL output in scripts, finite pagination and polling limit
 
 Establish a connection and an explicit target for commerce operations.
 
-Contract: `23a0b45478edca19e5ab59d7c5b7bfffe2298eb336e937126ee04dcbbf13c3d0`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/oauth-authorization.mdx`.
+Contract: `3bde22b9c73f8b5d220304d2596e0bfa25534f99f12917f31abb9f0096ad440b`; workflow: `947cc96cf269b4f747312873047eebf27a4ecdca3a83e407eb359617bc27266c`. Source: `content/docs/api/(guides)/oauth-authorization.mdx`.
 
 ## Prerequisites
 
@@ -104,7 +104,7 @@ New store creation is limited to one per user every 60 seconds across credential
 
 Create a catalog product with a purchasable variant and verify both records.
 
-Contract: `23a0b45478edca19e5ab59d7c5b7bfffe2298eb336e937126ee04dcbbf13c3d0`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/sell-a-product.mdx`.
+Contract: `3bde22b9c73f8b5d220304d2596e0bfa25534f99f12917f31abb9f0096ad440b`; workflow: `947cc96cf269b4f747312873047eebf27a4ecdca3a83e407eb359617bc27266c`. Source: `content/docs/api/(guides)/sell-a-product.mdx`.
 
 ## Prerequisites
 
@@ -242,7 +242,7 @@ When a non-idempotent creation has an uncertain response, inspect existing recor
 
 Create an order and distinguish its checkout URL from confirmed payment.
 
-Contract: `23a0b45478edca19e5ab59d7c5b7bfffe2298eb336e937126ee04dcbbf13c3d0`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/create-a-checkout.mdx`.
+Contract: `3bde22b9c73f8b5d220304d2596e0bfa25534f99f12917f31abb9f0096ad440b`; workflow: `947cc96cf269b4f747312873047eebf27a4ecdca3a83e407eb359617bc27266c`. Source: `content/docs/api/(guides)/create-a-checkout.mdx`.
 
 ## Prerequisites
 
@@ -324,7 +324,7 @@ Handle duplicate and out-of-order webhooks, and reconcile by reading current ord
 
 Inspect a sale and perform an explicitly intended recovery or refund.
 
-Contract: `23a0b45478edca19e5ab59d7c5b7bfffe2298eb336e937126ee04dcbbf13c3d0`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/fulfil-an-order.mdx`.
+Contract: `3bde22b9c73f8b5d220304d2596e0bfa25534f99f12917f31abb9f0096ad440b`; workflow: `947cc96cf269b4f747312873047eebf27a4ecdca3a83e407eb359617bc27266c`. Source: `content/docs/api/(guides)/fulfil-an-order.mdx`.
 
 ## Prerequisites
 
@@ -386,7 +386,8 @@ Canonical request body example (replace fixture values with the intended inputs 
 
 ```json
 {
-  "amount": "5.00"
+  "amount": "5.00",
+  "expected_refunded_total_cents": 0
 }
 ```
 
@@ -420,7 +421,7 @@ Do not blindly repeat consequential writes after an uncertain result; inspect th
 
 Apply only the subscription action currently supported for its provider.
 
-Contract: `23a0b45478edca19e5ab59d7c5b7bfffe2298eb336e937126ee04dcbbf13c3d0`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/handle-subscriptions.mdx`.
+Contract: `3bde22b9c73f8b5d220304d2596e0bfa25534f99f12917f31abb9f0096ad440b`; workflow: `947cc96cf269b4f747312873047eebf27a4ecdca3a83e407eb359617bc27266c`. Source: `content/docs/api/(guides)/handle-subscriptions.mdx`.
 
 ## Prerequisites
 
@@ -508,7 +509,7 @@ For an uncertain action, inspect current subscription state before attempting it
 
 Read the relevant ticket and messages, then send an authorized response.
 
-Contract: `23a0b45478edca19e5ab59d7c5b7bfffe2298eb336e937126ee04dcbbf13c3d0`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(resources)/tickets/index.mdx`.
+Contract: `3bde22b9c73f8b5d220304d2596e0bfa25534f99f12917f31abb9f0096ad440b`; workflow: `947cc96cf269b4f747312873047eebf27a4ecdca3a83e407eb359617bc27266c`. Source: `content/docs/api/(resources)/tickets/index.mdx`.
 
 ## Prerequisites
 
@@ -608,7 +609,7 @@ Preserve valid credentials when a ticket-specific or store-specific permission f
 
 Create an event subscription and verify delivery and processing separately.
 
-Contract: `23a0b45478edca19e5ab59d7c5b7bfffe2298eb336e937126ee04dcbbf13c3d0`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(guides)/webhooks.mdx`.
+Contract: `3bde22b9c73f8b5d220304d2596e0bfa25534f99f12917f31abb9f0096ad440b`; workflow: `947cc96cf269b4f747312873047eebf27a4ecdca3a83e407eb359617bc27266c`. Source: `content/docs/api/(guides)/webhooks.mdx`.
 
 ## Prerequisites
 
@@ -717,7 +718,7 @@ Do not log signing secrets, authorization headers or customer data unnecessarily
 
 Queue an export, poll within finite bounds and retrieve the completed file.
 
-Contract: `23a0b45478edca19e5ab59d7c5b7bfffe2298eb336e937126ee04dcbbf13c3d0`; workflow: `8b2d02e5e08f2d6b53bf9ae26b890671afd472d72346df57b4e6821f335e6fbf`. Source: `content/docs/api/(resources)/exports/index.mdx`.
+Contract: `3bde22b9c73f8b5d220304d2596e0bfa25534f99f12917f31abb9f0096ad440b`; workflow: `947cc96cf269b4f747312873047eebf27a4ecdca3a83e407eb359617bc27266c`. Source: `content/docs/api/(resources)/exports/index.mdx`.
 
 ## Prerequisites
 
