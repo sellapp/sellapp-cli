@@ -2,7 +2,7 @@
 
 Read the relevant ticket and messages, then send an authorized response.
 
-Contract: `3bde22b9c73f8b5d220304d2596e0bfa25534f99f12917f31abb9f0096ad440b`; workflow: `947cc96cf269b4f747312873047eebf27a4ecdca3a83e407eb359617bc27266c`. Source: `content/docs/api/(resources)/tickets/index.mdx`.
+Contract: `d33595d158da00a1ffd5c7e23e549325d801fad792e84de508935af06d52582a`; workflow: `947cc96cf269b4f747312873047eebf27a4ecdca3a83e407eb359617bc27266c`. Source: `content/docs/api/(resources)/tickets/index.mdx`.
 
 ## Prerequisites
 

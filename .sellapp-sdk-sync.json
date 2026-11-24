@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "language": "cli",
   "repository": "sellapp/sellapp-cli",
-  "sourceSha": "77cf567815f22f4c07cf6b707ab25d4ca74877af",
-  "specSha256": "588138cc0421d9c2f8b7382d2924ce51982635c344b9e57f6f46b68e18ea4d69",
+  "sourceSha": "47e5b156f89777b62ae90a33cac16756b9830558",
+  "specSha256": "2319bc01512943c10a5788a130a1d189fbb2b14d76b0142e62a47b759c391662",
   "runId": "0",
   "runAttempt": "1",
-  "treeDigest": "1ca5975b37c6197290559baaa2e0827a7b6313b03deea613991a66c0e7b4351c",
-  "contentDigest": "fc2346ccd4213624b5e628838fd285b6a3c2cc637fe7cfe560d527795695848c",
+  "treeDigest": "18e873b0ac2cb0ef6217a7681fb38e47fbe85e601e4627a546e9d55da416731b",
+  "contentDigest": "7d185596fec5db76ee4511c0f5b90fb32020c0743ef25d1b9647c71eb60de629",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -37,7 +37,7 @@
     {
       "path": "docs/agent-skill.md",
       "mode": "100644",
-      "sha256": "b305165d3f9758693281bce0866c08bf6da649a40ce64491822163ff0b8ae234"
+      "sha256": "b7e7aa64842b49cceb383c38b44f4673e680e2e3335057167c29a92658b40a68"
     },
     {
       "path": "docs/commands.md",
@@ -407,7 +407,7 @@
     {
       "path": "generation-manifest.json",
       "mode": "100644",
-      "sha256": "b99de35c080e38e189bfb8e668cb7e53615f55b2af389de5ef705948337f69ce"
+      "sha256": "5dce1553257ecb99b93e01b5f1d3adb97eef37cb0acdaf443ee292a23fbed0b2"
     },
     {
       "path": "go.mod",
@@ -432,7 +432,7 @@
     {
       "path": "internal/catalog/embedding.json",
       "mode": "100644",
-      "sha256": "b1ba6d1fd375e0780e4f7806592a37b86cd6b4b7de8cc68b4a7246c45978a78f"
+      "sha256": "27ad4c1c1962d201ce7d5922ee11cfdb590bf437119bb5de9e1cf29cba648dc3"
     },
     {
       "path": "internal/cli/adapters.go",
@@ -442,7 +442,7 @@
     {
       "path": "internal/cli/agent_assets.go",
       "mode": "100644",
-      "sha256": "28af1f924bced345ccd8db40112e72a53e78b2d32de5e5e545f47277eb629c13"
+      "sha256": "3793ca5187d3ecbd2323ef4f5bdb8c048c75e4377a736522ff4c02cca5057254"
     },
     {
       "path": "internal/cli/agent_safety_unix.go",
@@ -467,7 +467,7 @@
     {
       "path": "internal/cli/catalog.go",
       "mode": "100644",
-      "sha256": "5984248bac8c1400e3fa16b13599113b8847d5d2f35e91912858d1c3335ecdcf"
+      "sha256": "b4f628307d3af495841aa23b470c2021966b5d8ba368408a3c10823b9e016360"
     },
     {
       "path": "internal/cli/commerce.go",
@@ -642,12 +642,12 @@
     {
       "path": "internal/cli/version.go",
       "mode": "100644",
-      "sha256": "1440fa15a53e243ee820b6834ef269a8ba616489bbdaa821d617e72bad815576"
+      "sha256": "8a011a7e3e21589c360f5b5a4c46a8afa0387c30f8638c8c96e0827a44d85668"
     },
     {
       "path": "internal/cli/workflow_guides.go",
       "mode": "100644",
-      "sha256": "092c45c5e6f06bd96e6b14aa660b372dd3521e88247fe5cebb57411b4fd02d35"
+      "sha256": "baa17fd72007f0eef9e18f6691df3eebef027cf69dfcc65d576b33e3b649caa1"
     },
     {
       "path": "internal/cli/workflows.go",
@@ -897,7 +897,7 @@
     {
       "path": "internal/sdk/models.go",
       "mode": "100644",
-      "sha256": "455d5531e649d84ee3225e3ac61df33d990a4dc03fcef0457d4108e6fd15ed44"
+      "sha256": "932372229c68ddc101fa9a7d55b5a7ab4d87bd1b7c89f7c29cd918367a4a9d91"
     },
     {
       "path": "internal/sdk/notifications.go",
@@ -1032,7 +1032,7 @@
     {
       "path": "internal/sdk/runtime.go",
       "mode": "100644",
-      "sha256": "4498f6129b1d84680edf7d3ddb638d8e064529271aeef3b46fde017b606c77af"
+      "sha256": "993096e163c4550a26504a72d8e2b50e710c5071db655f57660874197fe6f2f5"
     },
     {
       "path": "internal/sdk/sections.go",
@@ -1192,12 +1192,12 @@
     {
       "path": "npm/launcher.cjs",
       "mode": "100644",
-      "sha256": "cc94a86b40cec35dadc67c2e14f1f8970bf73787a8b1b38ae44a978ddbdc633e"
+      "sha256": "647febf785c292ac95ae37b49c107f460b0936caa60c5cbcaa0186d2a01acb83"
     },
     {
       "path": "npm/package.json",
       "mode": "100644",
-      "sha256": "2255ecb3947bee805ff20d4fd2b9e9fb2ca35bbaa3d851675d904c869c95a785"
+      "sha256": "4afcfccee66129b4badb323c6ee9e450443a93b0016ea3d16be1348348884059"
     },
     {
       "path": "skills/sellapp/SKILL.md",
@@ -1207,47 +1207,47 @@
     {
       "path": "skills/sellapp/references/checkout.md",
       "mode": "100644",
-      "sha256": "afa91f1cf3c1f66390c70b7b196a69f0eda5fbf869641ed763c7e693a1639ec9"
+      "sha256": "a1e73a59eb07654a3ea96e20b66ce47b7256b465d9e792c5ea53751ccd82e040"
     },
     {
       "path": "skills/sellapp/references/connect-store.md",
       "mode": "100644",
-      "sha256": "ef83941d082a8e68cffb65530ecd9cc774513a2bc45e3c7f1542ded002a11628"
+      "sha256": "2e7203785aaa0c3cb923bb1ad6327ea1982e37c0b09fe3bbb64291b34da4017f"
     },
     {
       "path": "skills/sellapp/references/customer-support.md",
       "mode": "100644",
-      "sha256": "6ab00a2cef846e15a2c0a8b5c652209366740e9c6558f72f7dab5815218ad69d"
+      "sha256": "79b606a8d9f5a5f9130962e54e41dc44083c9d7faa2f4ff2cf5a3a93e7f08dc1"
     },
     {
       "path": "skills/sellapp/references/exports.md",
       "mode": "100644",
-      "sha256": "36a3bf3c8954323db0f27ef74e905732875d59647edde834e37f99c8fb784cb8"
+      "sha256": "d12692bdb748b2fdce68b56f32e76cdf5d0683e51747b17d01c2b2db42967090"
     },
     {
       "path": "skills/sellapp/references/orders-fulfillment-refunds.md",
       "mode": "100644",
-      "sha256": "e87299f79d9d88195cca916bf614d07b26662e357dd1bf3d5759c672b9b0f876"
+      "sha256": "619a58539195a40ac100d99f3c151e7f4b3b8690875d6b5dab8be84a6f9fc210"
     },
     {
       "path": "skills/sellapp/references/product-variant.md",
       "mode": "100644",
-      "sha256": "2496cd9181216769c25362be660b9e41b6ae1f077f82e1b61426362db34fee8c"
+      "sha256": "3ff06fc722e9fb122303b1c99c94932d6785bcd3aa35a411005e4fc4f8e13bc4"
     },
     {
       "path": "skills/sellapp/references/subscriptions.md",
       "mode": "100644",
-      "sha256": "b00bf279d33d52d825b74ecc01377cf6f197f34ed6f530f27463bb0b45744d5d"
+      "sha256": "71a7b428f048d89f8d84c067a66d013cea4b0dc551e65a1f1bfd8aaacb603d3e"
     },
     {
       "path": "skills/sellapp/references/webhooks.md",
       "mode": "100644",
-      "sha256": "5c9e5f79493c28c37a7c045735ae8326e10204ea0b364802db1b69c537ff5576"
+      "sha256": "c90247cd591fb6becf61277e69e886042563819907c784863699afe2bc607091"
     },
     {
       "path": "tools/release/main.go",
       "mode": "100644",
-      "sha256": "b4d734becee880df6e7b6a1f040bcc5b7551e0caa973764c985f2c92ea819eca"
+      "sha256": "7e3ed489ec7f434f4df05628d371dfbf858a325790e1ba93a119a32af2acf4ac"
     },
     {
       "path": "tools/release/main_test.go",
@@ -1257,7 +1257,7 @@
     {
       "path": "tools/test-distribution.mjs",
       "mode": "100644",
-      "sha256": "f23057beeee55cc4b50268a6a84affe352ef2d4369cd531b081fec580497e071"
+      "sha256": "1bccb7e88ee98609a46d17b41292610eee4615051f6ff66aacaad745d5d3fa96"
     }
   ]
 }
